@@ -28,13 +28,21 @@ class Post extends Component {
 
     } 
 
+
+
     componentWillReceiveProps(nextProps) { 
+
 
         if(nextProps.match.params.permalink != this.state.permalink) {
 
             this.loadContent(nextProps.match.params.author, nextProps.match.params.permalink)
 
         }
+
+        if(!nextProps.app.username && !nextProps.app.publicWif) {
+            // got logged out
+        }
+
 
     }
 
@@ -55,6 +63,11 @@ class Post extends Component {
     }
 
     castVote() {
+
+        if(!this.props.app.authorized) {
+            this.props.history.push("/login");
+            return false;
+        }
 
         this.setState({
             voting: true
