@@ -41,12 +41,15 @@ class Login extends Component {
             console.log("loginUser success", response);
             localStorage.setItem("username", response.payload.username);
             localStorage.setItem("publicWif", response.payload.publicWif);
+            localStorage.setItem("postingWif", response.payload.postingWif);
+            
 
         }).catch(err => {
 
             console.log("loginUser error", err)
 
-        })
+        });
+
     }
 
 

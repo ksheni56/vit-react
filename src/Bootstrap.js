@@ -20,7 +20,8 @@ class Bootstrap extends Component {
 
         // check if we have any creds saved up in localStorage
         let username = localStorage.getItem("username"), 
-            publicWif = localStorage.getItem("publicWif");
+            publicWif = localStorage.getItem("publicWif"),
+            postingWif = localStorage.getItem("postingWif");
 
         if(username && publicWif && !this.props.app.authorized) {
 
@@ -32,6 +33,7 @@ class Bootstrap extends Component {
                     // Invalid account name. Clean up local storage
                     localStorage.removeItem('username');
                     localStorage.removeItem('publicWif');
+                    localStorage.removeItem('postingWif');
                     return;
 
                 }
@@ -39,12 +41,15 @@ class Bootstrap extends Component {
                 // Verify publicWif against posting_key
                 let posting_key = accounts[0]['posting'].key_auths[0][0];
 
+                console.log("Account", accounts)
+
                 if(posting_key == publicWif) {
 
                     // saved creds are valid. Restore the session
                     this.props.restoreLogin({
                         "username": username,
-                        "publicWif": publicWif
+                        "publicWif": publicWif,
+                        "postingWif": postingWif
                     });
 
                 } else {
@@ -52,6 +57,7 @@ class Bootstrap extends Component {
                     // saved creds are not valid. Clean up local storage
                     localStorage.removeItem('username');
                     localStorage.removeItem('publicWif');
+                    localStorage.removeItem('postingWif');
 
                 }
 

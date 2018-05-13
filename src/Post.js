@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import { Player, BigPlayButton } from 'video-react';
 import { NavLink, Link } from 'react-router-dom';
+import { vote } from './actions/post';
 
 class Post extends Component {
 
@@ -13,6 +14,7 @@ class Post extends Component {
         this.state = {
             post: '',
             loading: true,
+            voting: false,
             related: [],
             loading_related: true,
             tag: this.props.match.params.tag,
@@ -20,7 +22,19 @@ class Post extends Component {
             permalink: this.props.match.params.permalink
         }
 
+        this.castVote = this.castVote.bind(this);
+
     } 
+
+    componentWillReceiveProps(nextProps) { 
+
+        if(nextProps.match.params.permalink != this.state.permalink) {
+
+            this.loadContent(nextProps.match.params.author, nextProps.match.params.permalink)
+
+        }
+
+    }
 
     componentDidMount() {
 
@@ -32,17 +46,49 @@ class Post extends Component {
 
         if(votes) {
             return (
-                <button type="button" className="btn btn-danger btn-sm"><i className="fa fa-thumbs-up"></i> Like <span className="votes">{votes.length}</span></button>
+                <button disabled={this.state.voting} onClick={() => this.castVote()} className="btn btn-danger btn-sm"><i className="fa fa-thumbs-up"></i> Like <span className="votes">{votes.length}</span></button>
             )
         }
         
+    }
 
+    castVote() {
+
+        this.setState({
+            voting: true
+        });
+
+        this.props.vote({
+
+            postingWif: this.props.app.postingWif,
+            username: this.props.app.username, 
+            author: this.props.match.params.author,
+            permalink: this.props.match.params.permalink,
+            weight: 10000
+
+        }).then( response => {
+
+            console.log("castVote success", response);
+
+            this.state.post.active_votes.push({'dummy': 'data'})
+
+            this.setState({
+                voting: false
+            });
+
+        }).catch(err => {
+
+            console.log("castVote error", err)
+
+            this.setState({
+                voting: false
+            });
+
+        });
     }
 
 
     loadContent(author, permalink) {
-
-        console.log("loadContent Post", author, permalink)
 
         steem.api.getContent(author, permalink, (err, result) => {
 
@@ -116,7 +162,7 @@ class Post extends Component {
                     
                                             </div>
                                             <div className="data-holder">
-                                                <div>{ this.state.post.author }</div>
+                                                <div className="channel-name">{ this.state.post.author }</div>
                                                 <button className="btn btn-sm btn-danger">Subscribe</button>
                                             </div>
                                         </div>
@@ -136,7 +182,7 @@ class Post extends Component {
                     }
 
                 </div>
-                <div className="col-3 related-videos">
+                <div className="col-3 related-videos pl-0">
                     <h3>Related Videos</h3>
 
                     {
@@ -179,10 +225,11 @@ class Post extends Component {
 function mapStateToProps(state) {
 
     return { 
-        search: state.search
+        search: state.search,
+        app: state.app
     };
     
 }
 
 
-export default connect(mapStateToProps, {})(Post);
+export default connect(mapStateToProps, { vote })(Post);

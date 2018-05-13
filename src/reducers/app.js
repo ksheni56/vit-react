@@ -13,6 +13,7 @@ export default function(state = initialState, action) {
             return Object.assign({}, state, {
                 "username": action.payload.username,
                 "publicWif": action.payload.publicWif,
+                "postingWif": action.payload.postingWif,
                 "authorized": true
             });
 

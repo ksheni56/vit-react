@@ -21,7 +21,9 @@ export function loginUser(request) {
 
 	        let posting_key = accounts[0]['posting'].key_auths[0][0],
 	            wif = steem.auth.toWif(request.username, request.password, ['posting']),
-	            publicWif = steem.auth.wifToPublic(wif);
+	            publicWif = steem.auth.wifToPublic(wif),
+	            postingWif = wif;
+
 
 	        if(posting_key == publicWif) {
 
@@ -29,7 +31,8 @@ export function loginUser(request) {
 	        		type: 'LOGIN_USER',
 	        		payload: {
 	        			'username': request.username,
-	        			'publicWif': publicWif
+	        			'publicWif': publicWif,
+	        			'postingWif': postingWif
 	        		}
 	        	})
 
