@@ -8,9 +8,14 @@ export function vote(request) {
 
 		console.log("request", request)
 
-		//var wif = steem.auth.toWif('sundaybaking', 'P5J5PDHb75B4csokAyX1UhR9UVVsvbXMaYXx49WseyX86Z1KeqQx', 'posting');
+		if(!request.postingWif) {
 
-		//console.log("wif", wif)
+			reject({
+	    		payload: 'Something went wrong'
+	    	});
+
+  			return;
+		}
 		
 		steem.broadcast.vote(
 	    	request.postingWif,

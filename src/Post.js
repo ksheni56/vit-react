@@ -14,6 +14,8 @@ class Post extends Component {
         this.state = {
             post: '',
             loading: true,
+            loading_comments: true,
+            comments: [],
             voting: false,
             related: [],
             loading_related: true,
@@ -46,7 +48,7 @@ class Post extends Component {
 
         if(votes) {
             return (
-                <button disabled={this.state.voting} onClick={() => this.castVote()} className="btn btn-danger btn-sm"><i className="fa fa-thumbs-up"></i> Like <span className="votes">{votes.length}</span></button>
+                <button disabled={this.state.voting} onClick={() => this.castVote()} className="btn btn-danger">Like <span className="votes font-weight-bold">{votes.length}</span></button>
             )
         }
         
@@ -90,11 +92,33 @@ class Post extends Component {
 
     loadContent(author, permalink) {
 
+        steem.api.getContentReplies(author, permalink, (err, result) => {
+
+            if(err) {
+                
+                this.setState({
+                    loading_comments: false,
+                    comments: []
+                });
+
+                return false;
+
+            }
+
+            console.log("Got comments", result)
+
+            this.setState({
+                loading_comments: false,
+                comments: result
+            });
+
+        });
+
         steem.api.getContent(author, permalink, (err, result) => {
 
             let post = result;
 
-            console.log("Got post", post)
+            //console.log("post", post)
 
             steem.api.getDiscussionsByAuthorBeforeDate(author.replace('@',''), permalink, post.active, 5, (err, result) => {
                 
@@ -124,6 +148,82 @@ class Post extends Component {
 
     }
 
+    displayComments() {
+
+        if(this.state.comments.length > 0) {
+
+            return (
+                <ul className="list-unstyled">
+                    { 
+
+                    this.state.comments.map(
+
+                        (Comment) =>
+                            <li key={ Comment.id } ref={ Comment.id } className="media mb-4">
+
+                                <div className="mr-3 avatar"></div>
+
+                                <div className="media-body">
+                                    <h5 className="mt-0 mb-1">{ Comment.author }</h5>
+                                    <span>{ Comment.body }</span>
+                                </div>
+                                
+
+                            </li>
+                        ) 
+
+                    }
+                </ul>
+            )
+
+        } else {
+
+            return (
+                <div className="alert alert-dark mb-0" role="alert">
+                    No comments yet...
+                </div>
+            )
+
+        }
+
+    }
+
+    displayRelatedContent() {
+
+        if(this.state.related.length > 0) {
+
+            return (
+                <ul className="list-unstyled">
+                    { 
+
+                    this.state.related.map(
+
+                        (Related) =>
+                            <li key={ Related.id } ref={ Related.id }>
+
+                                <Link to={ '/@' + Related.author + '/' + Related.permlink }>
+                                    <h4>{ Related.title }</h4>
+                                    <img src="/images/thumbnail.jpg" className="img-fluid"/>
+                                </Link>
+                            </li>
+                        ) 
+
+                    }
+                </ul>
+            )
+
+        } else {
+
+            return (
+                <div className="alert alert-dark mb-0" role="alert">
+                    No related videos yet...
+                </div>
+            )
+
+        }
+
+    }
+
     displayPayoutAmount(amount) {
         if(amount) return parseInt(amount.replace(' SBD','')).toFixed(2);
     }
@@ -133,45 +233,43 @@ class Post extends Component {
         return (
             <div className="row justify-content-center mt-3">
                 <div className="col-9 video-post">
+
                     <Player
                         playsInline
-                        src="https://media.w3.org/2010/05/sintel/trailer_hd.mp4"
-                    >
+                        src="https://media.w3.org/2010/05/sintel/trailer_hd.mp4">
                         <BigPlayButton position="center" />
                     </Player>
 
                     {
                         !this.state.loading ? (
-                            
+
                             <span>
-                                <div className="row video-info">
+                                <div className="row mt-3 video-info align-items-center">
                                     <div className="col-9">
-                                        <h2>{ this.state.post.title }</h2>
-                                    </div>
-                                    <div className="col-3 text-right amount">
-                                        { this.getVotes(this.state.post.active_votes) }
-                                    </div>
-                                </div>
-                                <div className="row video-meta align-items-center">
-                                    <div className="col-6 author">
-                                        <div className="d-flex author-card-wrapper align-items-center">
-                                            <div className="avatar-holder">
-
-                                                <img className="rounded-circle" src={ this.state.post.author_profile.json_metadata.profile.profile_image }/>
-
-                    
+                                        <div className="row align-items-center">
+                                            <div className="col-md-2 col-12">
+                                                <div className="d-flex justify-content-center w-100">
+                                                    <div>
+                                                        <div className="avatar" style={{'background': 'url( ' + this.state.post.author_profile.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
+                                                        <div className="username text-center">{ this.state.post.author }</div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="data-holder">
-                                                <div className="channel-name">{ this.state.post.author }</div>
-                                                <button className="btn btn-sm btn-danger">Subscribe</button>
+                                            <div className="col-md-10 col-12">
+                                                <h2>{ this.state.post.title }</h2>
+                                                    <div className="payout small">
+                                                        Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span>
+                                                    </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="col-6 meta text-right">
-                                        ${ this.displayPayoutAmount(this.state.post.pending_payout_value) }
+                                    <div className="col-3 text-right">
+                                        { this.getVotes(this.state.post.active_votes) }
                                     </div>
                                 </div>
+
                             </span>
+                            
 
                         ) : (
                             <div className="row w-100 h-100 justify-content-center mt-5">
@@ -181,6 +279,33 @@ class Post extends Component {
                     
                     }
 
+                    {
+                        (!this.state.loading_comments && !this.state.loading) ? (
+
+                            <span>
+                                
+                                <div className="row mt-3 video-info comments mb-3">
+                                    <div className="col-12">
+                                        <h3 className="mb-4">Comments <span>({this.state.comments.length})</span></h3>
+                                    </div>
+                                    <div className="col-12">
+                                        { this.displayComments() }
+                                    </div>
+                                </div>
+
+                            </span>
+                            
+
+                        ) : (
+                            <div className="row w-100 h-100 justify-content-center mt-5">
+                                <div className="text-center">Loading comments...</div>
+                            </div>
+                        )
+                    
+                    }
+
+                    
+
                 </div>
                 <div className="col-3 related-videos pl-0">
                     <h3>Related Videos</h3>
@@ -188,27 +313,11 @@ class Post extends Component {
                     {
                         !this.state.loading_related ? (
                             
-                            <ul className="list-unstyled">
-                                { 
-
-                                this.state.related.map(
-
-                                    (Related) =>
-                                        <li key={ Related.id } ref={ Related.id }>
-
-                                            <Link to={ '/@' + Related.author + '/' + Related.permlink }>
-                                                <h4>{ Related.title }</h4>
-                                                <img src="/images/thumbnail.jpg" className="img-fluid"/>
-                                            </Link>
-                                        </li>
-                                    ) 
-
-                                }
-                            </ul>
+                            <div>{ this.displayRelatedContent() }</div>
 
                         ) : (
-                            <div className="row w-100 h-100">
-                                
+                            <div className="text-center">
+                                Loading...
                             </div>
                         )
                     

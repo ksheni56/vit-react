@@ -1,4 +1,14 @@
 .video-post {
+
+    .avatar {
+        width:50px;
+        height:50px;
+        border-radius: 38%/38%;
+        position:relative;
+        margin:0 auto;
+        background-color:#be2402 !important;
+    }
+
     .video-info {
         background-color: #272b2e;
         padding-top:15px;
@@ -8,13 +18,43 @@
         
         h2 {
             font-size:20px;
-            margin:0 0 0 0;
-            line-height: 30px;
+            margin:0 0 5px 0;
+            line-height: 25px;
         }
 
-        .amount {
-            font-size:20px;
-            font-weight:600;
+        .payout {
+            color:#ccc;
+        }
+
+        .avatar {
+            position:relative;
+            margin:0 auto;
+        }
+
+        .username {
+            font-weight:700;
+            font-size:13px;
+            margin-top:5px;
+        }
+
+    }
+
+    .comments {
+        h3 {
+            font-size:17px;
+
+            span {
+                color:#ccc;
+            }
+        }
+
+        h5 {
+            font-size:16px;
+            font-weight:700;
+        }
+
+        .media-body span {
+            font-size:14px;
         }
     }
 
@@ -24,6 +64,8 @@
         margin:0 0 0 0;
         padding-top:15px;
         padding-bottom: 15px;
+
+
 
         .author-card-wrapper {
 
