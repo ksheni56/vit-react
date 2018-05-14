@@ -83,7 +83,7 @@ class Login extends Component {
                             value={this.state.password} 
                             required />
 
-                        <button type="submit" className="btn btn-primary" disabled={this.state.submitting}>Login</button>
+                        <button type="submit" className="btn btn-danger" disabled={this.state.submitting}>Login</button>
 
                     </Formsy>
                 </div>

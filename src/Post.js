@@ -3,7 +3,10 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import { Player, BigPlayButton } from 'video-react';
 import { NavLink, Link } from 'react-router-dom';
-import { vote } from './actions/post';
+import { vote, comment } from './actions/post';
+import Formsy from 'formsy-react';
+import moment from 'moment';
+import TextArea from './components/forms/TextArea';
 
 class Post extends Component {
 
@@ -15,6 +18,7 @@ class Post extends Component {
             post: '',
             loading: true,
             loading_comments: true,
+            commenting: false,
             comments: [],
             voting: false,
             related: [],
@@ -25,6 +29,7 @@ class Post extends Component {
         }
 
         this.castVote = this.castVote.bind(this);
+        this.submitComment = this.submitComment.bind(this);
 
     } 
 
@@ -100,6 +105,54 @@ class Post extends Component {
             });
 
         });
+
+    }
+
+    submitComment(form) {
+
+        if(!this.props.app.authorized) {
+            this.props.history.push("/login");
+            return false;
+        }
+
+        this.setState({
+            commenting: true
+        });
+
+        this.props.comment({
+
+            postingWif: this.props.app.postingWif,
+            username: this.props.app.username, 
+            author: this.props.match.params.author,
+            permalink: this.props.match.params.permalink,
+            comment: form.comment
+
+        }).then( response => {
+
+            console.log("comment submit success", response);
+
+            this.state.comments.unshift({
+                id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
+                author: response.payload.operations[0][1].parent_author,
+                body: response.payload.operations[0][1].body,
+                created: new Date()
+            })
+
+            this.setState({
+                commenting: false
+            });
+
+
+        }).catch(err => {
+
+            console.log("comment submit error", err)
+
+            this.setState({
+                commenting: false
+            });
+
+        });
+
     }
 
 
@@ -131,7 +184,7 @@ class Post extends Component {
 
             let post = result;
 
-            //console.log("post", post)
+            console.log("post", post)
 
             steem.api.getDiscussionsByAuthorBeforeDate(author.replace('@',''), permalink, post.active, 5, (err, result) => {
                 
@@ -179,6 +232,7 @@ class Post extends Component {
                                 <div className="media-body">
                                     <h5 className="mt-0 mb-1">{ Comment.author }</h5>
                                     <span>{ Comment.body }</span>
+                                    <div className="text-muted small">{ moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() }</div>
                                 </div>
                                 
 
@@ -271,7 +325,7 @@ class Post extends Component {
                                             <div className="col-md-10 col-12">
                                                 <h2>{ this.state.post.title }</h2>
                                                     <div className="payout small">
-                                                        Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span>
+                                                        Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span> &middot; { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() }
                                                     </div>
                                             </div>
                                         </div>
@@ -292,12 +346,37 @@ class Post extends Component {
                     
                     }
 
+                    <div className="row my-4 comments">
+
+                        <div className="col-12">
+
+                            <Formsy 
+                                onValidSubmit={this.submitComment} 
+                                ref="comment_form" 
+                                >
+
+                                <TextArea 
+                                    name="comment"
+                                    id="comment"
+                                    label="Your comment"
+                                    value={this.state.comment_text}
+                                    placeholder="Type here..." 
+                                    required />
+
+                                <button type="submit" className="btn btn-danger" disabled={this.state.submitting} disabled={this.state.commenting}>Submit</button>
+
+                            </Formsy>
+
+                        </div>
+
+                    </div>
+
                     {
                         (!this.state.loading_comments && !this.state.loading) ? (
 
                             <span>
                                 
-                                <div className="row mt-3 video-info comments mb-3">
+                                <div className="row mt-3 comments mb-3">
                                     <div className="col-12">
                                         <h3 className="mb-4">Comments <span>({this.state.comments.length})</span></h3>
                                     </div>
@@ -354,4 +433,4 @@ function mapStateToProps(state) {
 }
 
 
-export default connect(mapStateToProps, { vote })(Post);
+export default connect(mapStateToProps, { vote, comment })(Post);
