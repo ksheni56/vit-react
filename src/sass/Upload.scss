@@ -1,7 +1,24 @@
-@import "select/select";
-@import "select/control";
-@import "select/menu";
-@import "select/mixins";
-@import "select/multi";
-@import "select/spinner";
-@import "select/control";
+.upload-wrapper {
+	background:#272C2F;
+	border-radius:4px;
+	padding:20px;
+	border:1px solid #000;
+
+	h3 {
+		margin:0 0 0 0;
+		font-size:22px;
+	}
+
+	.dropzone {
+		cursor:pointer;
+		border:2px dashed #C41502;
+		border-radius:6px;	
+		padding:50px;
+		font-weight:500;
+		color:#999;
+
+		&:hover {
+			background:#16191c;		
+		}
+	}
+}
