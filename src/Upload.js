@@ -6,6 +6,11 @@ import moment from 'moment';
 import Header from './components/Header';
 import Dropzone from 'react-dropzone';
 import axios from 'axios';
+import { post } from './actions/post';
+import Formsy from 'formsy-react';
+import TextField from './components/forms/TextField';
+import Select from 'react-select';
+import './sass/Select.scss';
 
 class Upload extends Component {
 
@@ -19,18 +24,44 @@ class Upload extends Component {
             'error': false,
             'success': false,
             'ready_to_upload': false,
-            'uploading': false
+            'uploading': false,
+            'title': '',
+            'selected_category': [],
+            'categories': [],
+            'loading_categories': true,
+            'tags': [
+                { value: 'Tag1', label: 'Tag1' },
+                { value: 'Tag2', label: 'Tag2' },
+                { value: 'Tag3', label: 'Tag3' }
+            ],
+            'selected_tags': []
         }
 
         this.handleDrop = this.handleDrop.bind(this);
         this.handleDropRejected = this.handleDropRejected.bind(this);
+        this.handleChangeCategory = this.handleChangeCategory.bind(this);
+        this.handleChangeTags = this.handleChangeTags.bind(this);
         this.upload = this.upload.bind(this);
 
     } 
 
     componentDidMount() {
 
+        // TODO: change 'life'
+        steem.api.getTrendingTags('life', 20, (err, result) => {
+
+            let categories = [];
+            for(var i in result) {
+                categories.push({ value: result[i]['name'], label: result[i]['name']})
+            }
+            
+            this.setState({
+                categories: categories,
+                loading_categories: false
+            });
         
+
+        });
 
     }
 
@@ -38,12 +69,32 @@ class Upload extends Component {
 
     }
 
-    upload() {
+    upload(form_data) {
+
+        console.log("SSS", form_data.title, this.state)
+
+        // todo: parse tags & cats
 
         if(!this.props.app.authorized) {
             alert("Not so fast! You have to be looged in to upload your content!");
             return false;
         }
+
+        let tags = [],
+        category = this.state.selected_category.value;
+
+        if(!category) {
+            alert("Please select a category!");
+            return false;
+        }
+
+        if(this.state.selected_tags.length > 0) {
+            for(var i in this.state.selected_tags) {
+                tags.push(this.state.selected_tags[i]['value']);
+            }
+        }
+
+        var slug = form_data.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
 
         this.setState({
             success: false,
@@ -58,12 +109,35 @@ class Upload extends Component {
             }
         }).then(response => {
 
-            console.log("File response", response)
+            console.log("File upload response", response)
 
             this.setState({
                 success: true,
                 files: '',
                 ready_to_upload: false
+            });
+
+            let slug = form_data.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
+
+            this.props.post({
+
+                postingWif: this.props.app.postingWif, 
+                category: category, // category
+                username: this.props.app.username, 
+                slug: slug, // slug
+                title: form_data.title, // title
+                body: '...', // body,
+                tags: tags,
+                vit_data: response.data
+
+            }).then( response => {
+
+                console.log("post blockchain success", response);
+
+            }).catch(err => {
+
+                console.log("post error", err)
+
             });
 
         }).catch(err => {
@@ -87,6 +161,20 @@ class Upload extends Component {
 
     }
 
+    handleChangeCategory(category) {
+        console.log("selcted category", category);
+        this.setState({
+            selected_category: category
+        })
+    }
+
+    handleChangeTags(tags) {
+        console.log("selected tags", tags);
+        this.setState({
+            selected_tags: tags
+        })
+    }
+
     handleDropRejected(file) {
         console.log("rejected", file)
     }
@@ -97,48 +185,85 @@ class Upload extends Component {
             <div className="row justify-content-center">
                 <div className="col-8 mt-4">
                     <div className="upload-wrapper">
-                        <div className="text-center">
-                            <h3>Upload your content</h3>
+                        <div>
 
-                            {
-                                this.state.error ? (
-                                    <div className="alert alert-danger mt-4" role="alert">
-                                        <strong>Error!</strong> Something went wrong. Please try again!
-                                    </div>
-                                ) : null
-                            }
+                            <h3 className="text-center mb-4">Upload your content</h3>
 
-                            {
-                                this.state.success ? (
-                                    <div className="alert alert-success mt-4" role="alert">
-                                        <strong>Success!</strong> Your video is currently being processed.
-                                    </div>
-                                ) : null
-                            }
+                            <Formsy 
+                                onValidSubmit={this.upload} 
+                                ref="upload_form" 
+                                >
+
+                                <div className="col-8 px-0">
+
+                                    <TextField 
+                                        name="title"
+                                        id="title"
+                                        label="Title"
+                                        value={this.state.title}
+                                        placeholder="" 
+                                        maxLength={100}
+                                        required />
+
+                                    <label>Category</label>
+                                    <Select
+                                        name="category"
+                                        className="Select"
+                                        onChange={this.handleChangeCategory}
+                                        options={this.state.categories}
+                                    />
+
+                                    <label className="mt-3">Tags</label>
+                                    <Select
+                                        isMulti
+                                        className="Select"
+                                        options={this.state.tags}
+                                        onChange={this.handleChangeTags}
+                                    />
+
+                                </div>
+
+                                {
+                                    this.state.error ? (
+                                        <div className="alert alert-danger mt-4" role="alert">
+                                            <strong>Error!</strong> Something went wrong. Please try again!
+                                        </div>
+                                    ) : null
+                                }
+
+                                {
+                                    this.state.success ? (
+                                        <div className="alert alert-success mt-4" role="alert">
+                                            <strong>Success!</strong> Your video is currently being processed.
+                                        </div>
+                                    ) : null
+                                }
 
                             
-                            <Dropzone 
-                                className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
-                                onDrop={ this.handleDrop }
-                                multiple={ false } 
-                                onDropRejected={this.handleDropRejected }
-                            >
-                                <div>
-                                    Drag a file here or click to upload.
+                                <Dropzone 
+                                    className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
+                                    onDrop={ this.handleDrop }
+                                    multiple={ false } 
+                                    onDropRejected={this.handleDropRejected }
+                                >
+                                    <div>
+                                        Drag a file here or click to upload.
 
-                                    {
-                                        this.state.files.length > 0 ? (
-                                            <small className="d-block text-white">You are ready to upload <strong>{this.state.files[0].name}</strong></small>
-                                        ) : null
-                                    }
-                                </div>
-                            </Dropzone>
+                                        {
+                                            this.state.files.length > 0 ? (
+                                                <small className="d-block text-white text-center">You are ready to upload <strong>{this.state.files[0].name}</strong></small>
+                                            ) : null
+                                        }
+                                    </div>
+                                </Dropzone>
 
-                            <button 
-                                onClick={this.upload}
-                                className="btn btn-danger mt-4" 
-                                disabled={!this.state.ready_to_upload}
-                            >Upload!</button>
+                                <button 
+                                    type="submit"
+                                    className="btn btn-danger mt-4" 
+                                    disabled={!this.state.ready_to_upload}
+                                >Upload</button>
+
+                            </Formsy>
 
                         </div>
                     </div>
@@ -160,4 +285,4 @@ function mapStateToProps(state) {
 }
 
 
-export default connect(mapStateToProps, {})(Upload);
+export default connect(mapStateToProps, { post })(Upload);

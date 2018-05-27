@@ -102,3 +102,55 @@ export function comment(request) {
 	});
 
 }
+
+export function post(request) {
+
+	return new Promise((resolve, reject) => {
+
+		console.log("request for new post", request)
+
+		if(!request.postingWif) {
+
+			reject({
+	    		payload: 'Something went wrong. Most likely not logged in.'
+	    	});
+
+  			return;
+		}
+
+		steem.broadcast.comment(
+			request.postingWif, 
+            '', 
+            request.category, // category
+            request.username, 
+            request.slug, // slug
+            request.title, // title
+            request.body, // body 
+            {
+                tags: request.tags,
+                vit_data: request.vit_data
+            }, 
+            (err, result) => {
+                
+                if(err) {
+
+	      			reject({
+			    		payload: err
+			    	});
+
+	      			return;
+	      			
+	      		}
+
+	      		resolve({
+	        		type: 'POST_SUCCESS',
+	        		payload: result
+	        	});
+
+            }
+        );
+
+	      	
+	});
+
+}
