@@ -4,6 +4,7 @@ import steem from 'steem';
 import { NavLink } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import List from './../featured.json'
+import { getSubs } from './../actions/app';
 
 class Subscriptions extends Component {
 
@@ -20,14 +21,16 @@ class Subscriptions extends Component {
 
     componentDidMount() {
 
-        steem.api.getFollowing('sundaybaking', 0, 'blog', 10, (err, result) => {
-
-            console.log(result)
+        this.props.getSubs().then( response => {
 
             this.setState({
-                subscriptions: result,
+                subscriptions: response.payload,
                 loading: false
             });
+
+        }).catch(err => {
+
+            console.log("castVote error", err);
 
         });
 
@@ -88,4 +91,4 @@ function mapStateToProps(state) {
     
 }
 
-export default connect(mapStateToProps, {})(Subscriptions);
+export default connect(mapStateToProps, { getSubs })(Subscriptions);

@@ -41,8 +41,6 @@ class Bootstrap extends Component {
                 // Verify publicWif against posting_key
                 let posting_key = accounts[0]['posting'].key_auths[0][0];
 
-                console.log("Account", accounts)
-
                 if(posting_key == publicWif) {
 
                     // saved creds are valid. Restore the session

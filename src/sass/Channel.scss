@@ -1,0 +1,131 @@
+.channel-view {
+
+    .avatar {
+        width:50px;
+        height:50px;
+        border-radius: 38%/38%;
+        position:relative;
+        margin:0 auto;
+        background-color:#be2402 !important;
+    }
+
+    .video-info {
+        background-color: #272b2e;
+        padding-top:15px;
+        padding-bottom: 15px;
+        margin:0 0 0 0;
+        border-bottom:1px solid rgba(255, 255, 255, 0.1);
+        
+        h2 {
+            font-size:20px;
+            margin:0 0 5px 0;
+            line-height: 25px;
+        }
+
+        .payout {
+            color:#ccc;
+        }
+
+        .avatar {
+            position:relative;
+            margin:0 auto;
+        }
+
+        .username {
+            font-weight:700;
+            font-size:13px;
+            margin-top:5px;
+        }
+
+    }
+
+    .comments {
+        h3 {
+            font-size:17px;
+
+            span {
+                color:#ccc;
+            }
+        }
+
+        h5 {
+            font-size:16px;
+            font-weight:700;
+        }
+
+        .media-body span {
+            font-size:14px;
+        }
+    }
+
+    .video-meta {
+
+        background-color: #272b2e;
+        margin:0 0 0 0;
+        padding-top:15px;
+        padding-bottom: 15px;
+
+
+
+        .author-card-wrapper {
+
+            .avatar-holder {
+                width:90px;
+                img {
+                    width:75px;
+                    height:75px;
+                    margin-top:3px;
+                }
+            }
+
+            .data-holder {
+                width:calc(100% - 90px);
+                font-size:18px;
+                .btn {
+                    padding:2px 8px 2px 8px;
+                    font-size:12px;
+                    text-transform:uppercase;
+                    font-weight:500;
+                    margin:0 0 0 0;
+                    
+                }
+            }
+
+        }
+
+        .meta {
+            font-weight: 600;
+            font-size: 24px;
+        }
+    }
+
+}
+
+.related-videos {
+    
+    h3 {
+        text-transform:uppercase;
+        font-size:14px;
+        font-weight:600;
+        margin:0 0 20px 0;
+        color:#6D7174;
+    }
+
+    ul {
+        li {
+            a {
+                color:#fff;
+                text-decoration:none;
+            }
+            margin:0 0 0 0;
+            h4 {
+                font-size:14px;
+                margin:20px 0 10px 0;
+            }
+        }
+    }
+
+    img {
+        border-radius:6px;
+    }
+}

@@ -3,6 +3,7 @@ import store from './../reducers';
 import steem from 'steem';
 //import Config from './../config.json';
 
+
 export function loginUser(request) {   
 
     return new Promise((resolve, reject) => {
@@ -70,5 +71,133 @@ export function logout(request) {
         type: 'LOGOUT',
         payload: []
     };
+
+}
+
+export function subscribe(request) {
+
+	return new Promise((resolve, reject) => {
+
+		console.log("subscribe request", request)
+
+		if(!request.postingWif) {
+
+			reject({
+	    		payload: 'Something went wrong. Most likely not logged in.'
+	    	});
+
+  			return;
+		}
+
+		var json = JSON.stringify(
+		    ['follow', {
+		      	follower: request.username,
+		      	following: request.following,
+		      	what: ['blog']
+		    }]
+		);
+
+		steem.broadcast.customJson(
+		    request.postingWif,
+		    [],
+		    [request.username],
+		    'follow',
+		    json,
+		    (err, result) => {
+		      	console.log(err, result);
+
+		      	if(err) {
+
+	      			reject({
+			    		payload: err
+			    	});
+
+	      			return;
+	      			
+	      		}
+
+	      		resolve({
+	        		type: 'FOLLOW_SUCCESS',
+	        		payload: result
+	        	});
+
+		    }
+		);
+    	
+	});
+
+}
+
+export function unsubscribe(request) {
+
+	return new Promise((resolve, reject) => {
+
+		console.log("unsubscribe request", request)
+
+		if(!request.postingWif) {
+
+			reject({
+	    		payload: 'Something went wrong. Most likely not logged in.'
+	    	});
+
+  			return;
+		}
+
+		var json = JSON.stringify(
+		    ['follow', {
+		      	follower: request.username,
+		      	following: request.following,
+		      	what: []
+		    }]
+		);
+
+		steem.broadcast.customJson(
+		    request.postingWif,
+		    [],
+		    [request.username],
+		    'follow',
+		    json,
+		    (err, result) => {
+		      	console.log(err, result);
+
+		      	if(err) {
+
+	      			reject({
+			    		payload: err
+			    	});
+
+	      			return;
+	      			
+	      		}
+
+	      		resolve({
+	        		type: 'UNFOLLOW_SUCCESS',
+	        		payload: result
+	        	});
+
+		    }
+		);
+    	
+	});
+
+}
+
+
+export function getSubs(request) {   
+
+    return new Promise((resolve, reject) => {
+
+    	steem.api.getFollowing('sundaybaking', 0, 'blog', 10, (err, result) => {
+
+            resolve({
+        		type: 'GET_SUBS',
+        		payload: result
+        	});
+
+        });
+
+
+    	
+	});
 
 }

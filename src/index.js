@@ -18,6 +18,7 @@ import './sass/LeftSidebar.scss';
 import './sass/Item.scss';
 import './sass/Upload.scss';
 import './sass/Post.scss';
+import './sass/Channel.scss';
 
 
 // Components

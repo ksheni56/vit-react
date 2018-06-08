@@ -23,7 +23,7 @@ class Header extends Component {
     } 
 
     componentWillMount() {
-
+        
         if(this.props.app.username && this.props.app.publicWif) {
             this.setState({
                 authenticated: true

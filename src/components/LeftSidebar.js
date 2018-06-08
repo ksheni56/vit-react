@@ -22,7 +22,7 @@ class LeftSidebar extends Component {
     componentDidMount() {
 
         steem.api.getTrendingTags('life', 20, (err, result) => {
-
+            
             this.setState({
                 tags: result,
                 loading: false

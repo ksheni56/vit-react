@@ -1,7 +1,8 @@
 const initialState = {
     "username": null,
     "publicWif": null,
-    "authorized": false
+    "authorized": false,
+    "subs": []
 };
 
 export default function(state = initialState, action) {
@@ -40,6 +41,14 @@ export default function(state = initialState, action) {
 
             return Object.assign({}, state, {
                 user: UserObject
+            });
+
+        break;
+
+        case 'GET_SUBS':
+
+            return Object.assign({}, state, {
+                subs: state.subs.concat(action.payload)
             });
 
         break;
