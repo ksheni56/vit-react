@@ -16,7 +16,8 @@ class Login extends Component {
         this.state = {
             username: '',
             password: '',
-            submitting: false
+            submitting: false,
+            error: false
         }
 
         this.login = this.login.bind(this);
@@ -30,6 +31,12 @@ class Login extends Component {
     }
 
     login(form) {
+
+        if(this.state.error) {
+            this.setState({
+                error: false 
+            });
+        }
 
         this.props.loginUser({
 
@@ -46,7 +53,10 @@ class Login extends Component {
 
         }).catch(err => {
 
-            console.log("loginUser error", err)
+            console.log("loginUser error", err);
+            this.setState({
+               error: true 
+            });
 
         });
 
@@ -62,6 +72,19 @@ class Login extends Component {
         return (
             <div className="row w-100 h-100 justify-content-center align-items-center">
                 <div className="col-lg-3 col-md-5 col-10 align-self-center login-form">
+
+                    {
+                        this.state.error ? (
+
+                            <div className="alert alert-danger" role="alert">
+                                <strong>Error!</strong> Invalid username or/and password.
+                            </div>
+                            
+
+                        ) : null
+                    
+                    }
+
                     <Formsy 
                         onValidSubmit={this.login} 
                         ref="login_form" 

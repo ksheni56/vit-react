@@ -49,6 +49,10 @@ class Home extends Component {
 
     loadMoreContent() {
 
+        if(this.state.posts.length == 0) {
+            return;
+        }
+
         this.setState({
             'loading_more': true
         })
@@ -65,6 +69,17 @@ class Home extends Component {
         if(this.state.filter == 'trending') {
 
             steem.api.getDiscussionsByTrending(load_more_query, (err, result) => {
+
+                if(err) {
+                    console.log("Error:(", err)
+                    
+                    this.setState({
+                        posts: [],
+                        loading_more: false
+                    });
+
+                    return;
+                }
             
                 result.splice(0, 1);
                 let all_posts = this.state.posts.concat(result);
@@ -131,6 +146,16 @@ class Home extends Component {
         if(filter == 'trending') {
 
             steem.api.getDiscussionsByTrending(query, (err, result) => {
+
+                if(err) {
+                    
+                    this.setState({
+                        posts: [],
+                        loading: false
+                    });
+
+                    return;
+                }
             
                 this.setState({
                     posts: result,
@@ -142,7 +167,17 @@ class Home extends Component {
         } else if(filter == 'new') {
 
             steem.api.getDiscussionsByCreated(query, (err, result) => {
-            
+                
+                if(err) {
+                    
+                    this.setState({
+                        posts: [],
+                        loading: false
+                    });
+
+                    return;
+                }
+
                 this.setState({
                     posts: result,
                     loading: false
@@ -153,7 +188,17 @@ class Home extends Component {
         } else if(filter == 'hot') {
 
             steem.api.getDiscussionsByHot(query, (err, result) => {
-            
+                
+                if(err) {
+                    
+                    this.setState({
+                        posts: [],
+                        loading: false
+                    });
+
+                    return;
+                }
+
                 this.setState({
                     posts: result,
                     loading: false
@@ -164,7 +209,17 @@ class Home extends Component {
         } else if(filter == 'promoted') {
 
             steem.api.getDiscussionsByPromoted(query, (err, result) => {
-            
+                
+                if(err) {
+                    
+                    this.setState({
+                        posts: [],
+                        loading: false
+                    });
+
+                    return;
+                }
+
                 this.setState({
                     posts: result,
                     loading: false
@@ -188,17 +243,33 @@ class Home extends Component {
                 </div>
             )
         } else {
-            return (
-                <div className="row">
-                    { 
-                    this.state.posts.map(
 
-                        (Post) =>
-                            <Item key={ Post.id } ref={ Post.id } data={ Post } />
-                        ) 
-                    }
-                </div>
-            )
+            if(this.state.posts.length == 0) {
+
+                return (
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="no-results text-center my-5">No posts yet!</div>
+                        </div>
+                    </div>
+                )
+
+            } else {
+
+                return (
+                    <div className="row">
+                        { 
+                        this.state.posts.map(
+
+                            (Post) =>
+                                <Item key={ Post.id } ref={ Post.id } data={ Post } />
+                            ) 
+                        }
+                    </div>
+                )
+            }
+
+            
         }
     }
 
@@ -212,7 +283,7 @@ class Home extends Component {
                 {
                     !this.state.loading ? (
 
-                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more}>
+                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || this.state.posts.length == 0}>
 
                             {
                                 !this.state.loading_more ? (

@@ -56,10 +56,17 @@ class Channel extends Component {
 
         steem.api.getAccounts([this.state.author], (err, accounts) => {
 
-            if(accounts.length == 0) {
+            if(err || (accounts && accounts.length == 0)) {
                 
                 console.log("Invalid account!");
-                return; // Handle invalid account
+
+                this.setState({
+                    account_info: '',
+                    loading_account_info: false,
+                    loading: false
+                });
+
+                return false; // Handle invalid account
 
             }
 
@@ -204,31 +211,46 @@ class Channel extends Component {
 
         if(!this.state.loading_account_info) {
 
-            return (
-                <div className="row mt-3 video-info align-items-center mb-3">
-                    <div className="col-9">
-                        <div className="row align-items-center">
-                            <div className="col-md-2 col-12">
-                                <div className="d-flex justify-content-center w-100">
-                                    <div>
-                                        <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.account_info.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
-                                        <div className="username text-center">{this.state.account_info.name}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="col-md-10 col-12">
-                                <h2>{this.state.account_info.name}</h2>
-                                <div className="payout small">
-                                    Member since <span className="font-weight-bold">{ moment(this.state.account_info.created).format('MMMM YYYY') }</span> &middot; { this.state.account_info.post_count } Posts
-                                </div>
+            if(!this.state.account_info) {
+
+                return (
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="no-results my-5 text-center">
+                                Account not found!
                             </div>
                         </div>
                     </div>
-                    <div className="col-3 text-right">
-                        {this.getSubs()}
+                )
+
+            } else {
+
+                return (
+                    <div className="row mt-3 video-info align-items-center mb-3">
+                        <div className="col-9">
+                            <div className="row align-items-center">
+                                <div className="col-md-2 col-12">
+                                    <div className="d-flex justify-content-center w-100">
+                                        <div>
+                                            <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.account_info.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
+                                            <div className="username text-center">{this.state.account_info.name}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="col-md-10 col-12">
+                                    <h2>{this.state.account_info.name}</h2>
+                                    <div className="payout small">
+                                        Member since <span className="font-weight-bold">{ moment(this.state.account_info.created).format('MMMM YYYY') }</span> &middot; { this.state.account_info.post_count } Posts
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-3 text-right">
+                            {this.getSubs()}
+                        </div>
                     </div>
-                </div>
-            )
+                )
+            }
 
         } else {
             return null;
@@ -248,7 +270,7 @@ class Channel extends Component {
                 {
                     !this.state.loading ? (
 
-                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more}>
+                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || !this.state.account_info}>
                             {
                                 !this.state.loading_more ? (
                                     <strong>Load More</strong>

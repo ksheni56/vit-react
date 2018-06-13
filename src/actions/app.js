@@ -9,12 +9,22 @@ export function loginUser(request) {
     return new Promise((resolve, reject) => {
 
     	steem.api.getAccounts([request.username], (err, accounts) => {
+
+    		if(err) {
+
+    			reject({
+	        		type: 'INVALID_ACCOUNT',
+	        		payload: ["Account doesn't exist"]
+	        	})
+
+	            return false;
+    		}
 			
 	        if(accounts.length == 0) {
 
 	        	reject({
 	        		type: 'INVALID_ACCOUNT',
-	        		payload: ["Accont doesn't exist"]
+	        		payload: ["Account doesn't exist"]
 	        	})
 
 	            return false;

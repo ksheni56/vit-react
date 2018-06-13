@@ -184,7 +184,19 @@ class Post extends Component {
 
             let post = result;
 
-            console.log("post", post)
+            //console.log("post", post)
+
+            if(err) {
+
+                this.setState({
+                    loading_related: false,
+                    related: [],
+                    loading: false,
+                    post: ''
+                });
+
+                return false;
+            }
 
             steem.api.getDiscussionsByAuthorBeforeDate(author.replace('@',''), permalink, post.active, 5, (err, result) => {
                 
@@ -295,49 +307,71 @@ class Post extends Component {
         if(amount) return parseInt(amount.replace(' SBD','')).toFixed(2);
     }
 
+    renderVideoInfo() {
+
+        if(!this.state.post) {
+
+            return (
+                <div className="row">
+                    <div className="col-12">
+                        <div className="no-results my-5 text-center">
+                            Post not found!
+                        </div>
+                    </div>
+                </div>
+            )
+
+        } else {
+
+            return [
+
+                <Player
+                    playsInline
+                    key="video-player"
+                    src="https://media.w3.org/2010/05/sintel/trailer_hd.mp4">
+                    <BigPlayButton position="center" />
+                </Player>,
+
+                <div className="row mt-3 video-info align-items-center" key="video-info">
+                    <div className="col-9">
+                        <div className="row align-items-center">
+                            <div className="col-md-2 col-12">
+                                <div className="d-flex justify-content-center w-100">
+                                    <div>
+                                        <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.post.author_profile.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
+                                        <div className="username text-center">{ this.state.post.author }</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-md-10 col-12">
+                                <h2>{ this.state.post.title }</h2>
+                                    <div className="payout small">
+                                        Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span> &middot; { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() }
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="col-3 text-right">
+                        { this.getVotes(this.state.post.active_votes) }
+                    </div>
+                </div>
+            ]
+        }
+
+    }
+
     render() {
         
         return (
             <div className="row justify-content-center mt-3">
                 <div className="col-9 video-post">
 
-                    <Player
-                        playsInline
-                        src="https://media.w3.org/2010/05/sintel/trailer_hd.mp4">
-                        <BigPlayButton position="center" />
-                    </Player>
 
                     {
                         !this.state.loading ? (
 
-                            <span>
-                                <div className="row mt-3 video-info align-items-center">
-                                    <div className="col-9">
-                                        <div className="row align-items-center">
-                                            <div className="col-md-2 col-12">
-                                                <div className="d-flex justify-content-center w-100">
-                                                    <div>
-                                                        <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.post.author_profile.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
-                                                        <div className="username text-center">{ this.state.post.author }</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="col-md-10 col-12">
-                                                <h2>{ this.state.post.title }</h2>
-                                                    <div className="payout small">
-                                                        Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span> &middot; { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() }
-                                                    </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-3 text-right">
-                                        { this.getVotes(this.state.post.active_votes) }
-                                    </div>
-                                </div>
-
-                            </span>
+                            <span>{ this.renderVideoInfo() }</span>   
                             
-
                         ) : (
                             <div className="row w-100 h-100 justify-content-center mt-5">
                                 <div className="loader">Loading...</div>
@@ -346,45 +380,57 @@ class Post extends Component {
                     
                     }
 
-                    <div className="row my-4 comments">
+                    {
+                        this.state.post ? (
 
-                        <div className="col-12">
+                            <div className="row my-4 comments">
 
-                            <Formsy 
-                                onValidSubmit={this.submitComment} 
-                                ref="comment_form" 
-                                >
+                                <div className="col-12">
 
-                                <TextArea 
-                                    name="comment"
-                                    id="comment"
-                                    label="Your comment"
-                                    value={this.state.comment_text}
-                                    placeholder="Type here..." 
-                                    required />
+                                    <Formsy 
+                                        onValidSubmit={this.submitComment} 
+                                        ref="comment_form" 
+                                        >
 
-                                <button type="submit" className="btn btn-danger" disabled={this.state.submitting} disabled={this.state.commenting}>Submit</button>
+                                        <TextArea 
+                                            name="comment"
+                                            id="comment"
+                                            label="Your comment"
+                                            value={this.state.comment_text}
+                                            placeholder="Type here..." 
+                                            required />
 
-                            </Formsy>
+                                        <button type="submit" className="btn btn-danger" disabled={this.state.commenting || this.state.submitting}>Submit</button>
 
-                        </div>
+                                    </Formsy>
 
-                    </div>
+                                </div>
+
+                            </div>
+                        ) : null
+
+                    }
+
+                    
 
                     {
                         (!this.state.loading_comments && !this.state.loading) ? (
-
                             <span>
-                                
-                                <div className="row mt-3 comments mb-3">
-                                    <div className="col-12">
-                                        <h3 className="mb-4">Comments <span>({this.state.comments.length})</span></h3>
-                                    </div>
-                                    <div className="col-12">
-                                        { this.displayComments() }
-                                    </div>
-                                </div>
+                                {
+                                    this.state.post ? (
 
+                                        <div className="row mt-3 comments mb-3">
+                                            <div className="col-12">
+                                                <h3 className="mb-4">Comments <span>({this.state.comments.length})</span></h3>
+                                            </div>
+                                            <div className="col-12">
+                                                { this.displayComments() }
+                                            </div>
+                                        </div>
+
+                                    ) : null
+
+                                }   
                             </span>
                             
 

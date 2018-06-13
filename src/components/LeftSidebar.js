@@ -22,6 +22,20 @@ class LeftSidebar extends Component {
     componentDidMount() {
 
         steem.api.getTrendingTags('life', 20, (err, result) => {
+
+            if(err) {
+                console.log("Error!", err)
+                
+                this.setState({
+                    tags: [],
+                    loading: false
+                });
+
+                return;
+            }
+
+            console.log("getTrendingTags", result);
+            
             
             this.setState({
                 tags: result,
@@ -52,26 +66,38 @@ class LeftSidebar extends Component {
                 <div>Loading</div>
             )
         } else {
-            return [
-                <ul className="list-unstyled tag-list" ref="taglist" key="tag-list">
-                    { 
 
-                    this.state.tags.map(
+            if(this.state.tags.length == 0) {
 
-                        (Tag) =>
-                            <li key={ Tag.name } ref={ Tag.name }>
-    
-                                <Link className={ this.getActiveClass(Tag.name) } to={ '/' + Tag.name + '/trending' }>
-                                    { Tag.name } <span className="active-dot"><i className="fa fa-circle text-danger"></i></span>
-                                </Link>
-                            </li>
-                        ) 
+                return (                    
+                    <div className="no-results text-center my-5">No Categories:(</div>
+                )
 
-                    }
-                </ul>,
 
-                <button className="btn btn-dark btn-sm  btn-block" onClick={(e) => this.toggleTags(e)} key="tag-button-control">Expand</button>
-            ]
+            } else {
+
+                return [
+                    <ul className="list-unstyled tag-list" ref="taglist" key="tag-list">
+                        { 
+
+                        this.state.tags.map(
+
+                            (Tag) =>
+                                <li key={ Tag.name } ref={ Tag.name }>
+        
+                                    <Link className={ this.getActiveClass(Tag.name) } to={ '/' + Tag.name + '/trending' }>
+                                        { Tag.name } <span className="active-dot"><i className="fa fa-circle text-danger"></i></span>
+                                    </Link>
+                                </li>
+                            ) 
+
+                        }
+                    </ul>,
+
+                    <button className="btn btn-dark btn-sm  btn-block" onClick={(e) => this.toggleTags(e)} key="tag-button-control">Expand</button>
+                ]
+            }
+
         }
     }
 
