@@ -47,7 +47,7 @@ class FeaturedChannels extends Component {
 
                     }
                 </ul>
-                <button className="btn btn-dark btn-block btn-sm">Discover</button>
+                <button className="btn btn-dark btn-block btn-sm d-none">Discover</button>
             </div>
         )
         

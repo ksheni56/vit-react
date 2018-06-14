@@ -10,6 +10,7 @@ import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 import Select from 'react-select';
+import CreatableSelect from 'react-select/lib/Creatable';
 import './sass/Select.scss';
 
 class Upload extends Component {
@@ -70,8 +71,6 @@ class Upload extends Component {
     }
 
     upload(form_data) {
-
-        console.log("SSS", form_data.title, this.state)
 
         // todo: parse tags & cats
 
@@ -162,21 +161,24 @@ class Upload extends Component {
     }
 
     handleChangeCategory(category) {
-        console.log("selcted category", category);
+
         this.setState({
             selected_category: category
         })
     }
 
     handleChangeTags(tags) {
-        console.log("selected tags", tags);
-        this.setState({
-            selected_tags: tags
-        })
+
+        if( this.state.selected_tags.length < 10 ) {
+            this.setState({
+                selected_tags: tags
+            })
+        }
+        
     }
 
     handleDropRejected(file) {
-        console.log("rejected", file)
+        //console.log("rejected", file)
     }
 
     render() {
@@ -204,6 +206,7 @@ class Upload extends Component {
                                         placeholder="" 
                                         maxLength={100}
                                         required />
+                                    <small className="text-muted mb-2 d-block" style={{'margin-top': '-5px'}}>100 characters max</small>
 
                                     <label>Category</label>
                                     <Select
@@ -214,13 +217,14 @@ class Upload extends Component {
                                     />
 
                                     <label className="mt-3">Tags</label>
-                                    <Select
+
+                                    <CreatableSelect
                                         isMulti
                                         className="Select"
-                                        options={this.state.tags}
+                                        
                                         onChange={this.handleChangeTags}
                                     />
-
+                                    <small className="text-muted mb-2 d-block" style={{'margin-top': '11px'}}>Up to 10 tags</small>
                                 </div>
 
                                 {

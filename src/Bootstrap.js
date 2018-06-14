@@ -11,6 +11,9 @@ class Bootstrap extends Component {
     constructor(props) {
 
         super(props);
+        this.state = {
+            initializing: true
+        };  
 
         this.toggleLeftSidebarCallback = this.toggleLeftSidebarCallback.bind(this);
 
@@ -23,10 +26,22 @@ class Bootstrap extends Component {
             publicWif = localStorage.getItem("publicWif"),
             postingWif = localStorage.getItem("postingWif");
 
+        if(!username || !publicWif || !postingWif) {
+
+            // not logged in, nothing in Local Storage. Just show the UI
+
+            this.setState({
+                initializing: false
+            });
+
+            return;
+        }
+
         if(username && publicWif && !this.props.app.authorized) {
 
             // verify the creds against the blockchain
             steem.api.getAccounts([username], (err, accounts) => {
+
 
                 if(accounts.length == 0) {
                     
@@ -34,6 +49,11 @@ class Bootstrap extends Component {
                     localStorage.removeItem('username');
                     localStorage.removeItem('publicWif');
                     localStorage.removeItem('postingWif');
+
+                    this.setState({
+                        initializing: false
+                    });
+
                     return;
 
                 }
@@ -59,6 +79,10 @@ class Bootstrap extends Component {
 
                 }
 
+                this.setState({
+                    initializing: false
+                });
+
             });
 
         }
@@ -77,10 +101,27 @@ class Bootstrap extends Component {
         return [
             <Header key="header" toggle={ this.toggleLeftSidebarCallback }/>,
             <div className="row mx-0 content-wrapper h-100" key="content-wrapper" ref="content_wrapper">
-                <LeftSidebar { ...this.props } />
-                <div className="col content">
-                    { this.props.children }
-                </div>
+
+                {
+                    this.state.initializing ? (
+                        <div className="row w-100 h-100 justify-content-center align-items-center loader-wrapper">
+
+                            <div className="loader">Loading...</div>
+
+                        </div>
+                    ) : (
+
+                        <div className="row mx-0 h-100 w-100">
+                            <LeftSidebar { ...this.props } />
+                            <div className="col content">
+                                { this.props.children }
+                            </div> 
+                        </div>
+                        
+                    )
+                }
+
+                           
             </div>
         ]
 

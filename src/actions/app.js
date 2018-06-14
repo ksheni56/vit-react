@@ -197,7 +197,7 @@ export function getSubs(request) {
 
     return new Promise((resolve, reject) => {
 
-    	steem.api.getFollowing('sundaybaking', 0, 'blog', 10, (err, result) => {
+    	steem.api.getFollowing(request.username, 0, 'blog', request.amount, (err, result) => {
 
             resolve({
         		type: 'GET_SUBS',

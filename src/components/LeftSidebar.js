@@ -34,9 +34,7 @@ class LeftSidebar extends Component {
                 return;
             }
 
-            console.log("getTrendingTags", result);
-            
-            
+                    
             this.setState({
                 tags: result,
                 loading: false
@@ -107,7 +105,7 @@ class LeftSidebar extends Component {
             <div className="col left-sidebar">
                 <div className="d-flex justify-content-between align-items-center">
                     <h3>Categories</h3>
-                    <div>
+                    <div className="d-none">
                         <Link to="/categories">
                             <button type="button" className="btn btn-dark btn-sm">View All</button>
                         </Link>

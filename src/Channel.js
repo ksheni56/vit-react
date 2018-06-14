@@ -3,7 +3,14 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import Item from './components/Item';
 import moment from 'moment';
-import { subscribe } from './actions/app';
+import { subscribe, getSubs } from './actions/app';
+
+let account_data = {
+    posts: [],
+    account_info: {
+        wh: 123
+    }
+};
 
 class Channel extends Component {
 
@@ -30,7 +37,7 @@ class Channel extends Component {
 
     componentWillReceiveProps(nextProps) { 
 
-        
+        /*
         if(nextProps.match.params.filter != this.state.author) {
 
             this.setState({
@@ -38,12 +45,14 @@ class Channel extends Component {
                 loading: true
             },
             () => {
+                console.log("WTF")
                 this.loadContent();
                 this.getAccount();
             });
 
 
         }
+        */
 
     }
 
@@ -67,7 +76,7 @@ class Channel extends Component {
 
             }
 
-            let account_info = accounts[0]; console.log("account_info", account_info)
+            let account_info = accounts[0];
             account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
 
             
@@ -77,7 +86,7 @@ class Channel extends Component {
             });
             
 
-            /* Get followers */
+            // Get the followers
          
             var self = this;
             steem.api.getFollowCount(this.state.author, function(err, result) {
@@ -91,6 +100,29 @@ class Channel extends Component {
     }
 
     componentDidMount() {
+
+        console.log("account_data", account_data)
+
+        if(Object.keys(account_data.account_info).length === 0 && account_data.account_info.constructor === Object) {
+
+        } else {
+
+        }
+
+
+        this.props.getSubs({
+            username: this.props.app.username,
+            amount: 100
+        }).then( response => {
+
+            console.log("gotSubs success", response);
+
+
+        }).catch(err => {
+
+            console.log("gotSubs error", err);
+
+        });
 
         /*
         steem.api.getFollowing('sundaybaking', '', 'blog', 1000, function(err, result) {
@@ -109,6 +141,7 @@ class Channel extends Component {
 
 
     loadContent() {
+
 
         let query = {
             'tag': this.state.author,
@@ -135,6 +168,7 @@ class Channel extends Component {
 
         });
 
+
     }
 
     loadMoreContent() {
@@ -150,24 +184,29 @@ class Channel extends Component {
         var self = this;
         steem.api.getDiscussionsByBlog(load_more_query, (err, result) => {
             
+            if(err) {
+                return false; // add some sort of alert notifying about the end of the loop
+            }
+
             result.splice(0, 1);
+
             let all_posts = this.state.posts.concat(result);
 
-            /*
-            self.setState({
-                posts: all_posts,
-                loading: false
+            this.setState({
+                posts: all_posts
             });
-            */
 
         });
+
     }
 
     getSubs() {
 
+
         return (
             <button disabled={this.state.subscribing} onClick={() => this.sub()} className="btn btn-danger">Subscribe <span className="font-weight-bold">{ this.state.followers }</span></button>
         )
+
         
     }
 
@@ -205,6 +244,7 @@ class Channel extends Component {
 
     renderPosts() {
 
+
         if(this.state.loading) {
             return (
                 <div className="row w-100 h-100 justify-content-center mt-5">
@@ -227,9 +267,11 @@ class Channel extends Component {
             )
         }
 
+
     }
 
     renderChannelHeader() {
+
 
         if(!this.state.loading_account_info) {
 
@@ -278,9 +320,11 @@ class Channel extends Component {
             return null;
         }
 
+
     }
 
     render() {
+
 
         return [
             <div className="channel-view" key="video-post">
@@ -324,4 +368,4 @@ function mapStateToProps(state) {
 }
 
 
-export default connect(mapStateToProps, { subscribe })(Channel);
+export default connect(mapStateToProps, { subscribe, getSubs })(Channel);

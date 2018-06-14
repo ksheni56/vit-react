@@ -21,7 +21,10 @@ class Subscriptions extends Component {
 
     componentDidMount() {
 
-        this.props.getSubs().then( response => {
+        this.props.getSubs({
+            username: this.props.app.username,
+            amount: 3
+        }).then( response => {
 
             this.setState({
                 subscriptions: response.payload,
