@@ -8,6 +8,7 @@ import Formsy from 'formsy-react';
 import moment from 'moment';
 import TextArea from './components/forms/TextArea';
 
+
 class Post extends Component {
 
     constructor(props) {
@@ -339,7 +340,11 @@ class Post extends Component {
                                 <div className="d-flex justify-content-center w-100">
                                     <div>
                                         <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.post.author_profile.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
-                                        <div className="username text-center">{ this.state.post.author }</div>
+                                        <div className="username text-center">
+                                            <Link to={ "/@" + this.state.post.author }>
+                                                { this.state.post.author }
+                                            </Link>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

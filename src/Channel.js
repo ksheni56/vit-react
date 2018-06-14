@@ -28,29 +28,26 @@ class Channel extends Component {
 
     } 
 
-    shouldComponentUpdate(nextProps, nextState) {
+    componentWillReceiveProps(nextProps) { 
 
-        console.log("nextProps", nextProps)
-        console.log("nextState", nextState)
-        console.log("--------------")
-
-        return true
         
+        if(nextProps.match.params.filter != this.state.author) {
+
+            this.setState({
+                author: nextProps.match.params.filter.replace('@',''),
+                loading: true
+            },
+            () => {
+                this.loadContent();
+                this.getAccount();
+            });
+
+
+        }
+
     }
 
-    componentDidMount() {
-
-        /*
-        steem.api.getFollowing('sundaybaking', '', 'blog', 1000, function(err, result) {
-            console.log("x",err, result);
-        });
-        */
-
-        //let obj = this.props.app.subs.find(o => o.following === this.state.author);
-
-        //console.log("AM I FOLLOWING", obj)
-
-        this.loadContent();
+    getAccount() {
 
         /* Get account info */
 
@@ -73,24 +70,40 @@ class Channel extends Component {
             let account_info = accounts[0]; console.log("account_info", account_info)
             account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
 
-            /*
+            
             this.setState({
                 account_info: account_info,
                 loading_account_info: false
             });
-            */
+            
 
             /* Get followers */
-            /*
+         
             var self = this;
             steem.api.getFollowCount(this.state.author, function(err, result) {
                 self.setState({
                     followers: result.follower_count,
                 });
             });
-            */
 
         });
+
+    }
+
+    componentDidMount() {
+
+        /*
+        steem.api.getFollowing('sundaybaking', '', 'blog', 1000, function(err, result) {
+            //console.log("x",err, result);
+        });
+        */
+
+        //let following = this.props.app.subs.find(o => o.following === this.state.author);
+
+        //console.log("AM I FOLLOWING", following)
+
+        this.loadContent();
+        this.getAccount();
 
     }
 
@@ -104,12 +117,21 @@ class Channel extends Component {
 
         steem.api.getDiscussionsByBlog(query, (err, result) => {
 
-            /*
+            if(err) {
+
+                this.setState({
+                    posts: [],
+                    loading: false
+                });
+
+                return;
+            }
+
+            
             this.setState({
                 posts: result,
                 loading: false
             });
-            */
 
         });
 
