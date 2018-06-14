@@ -23,7 +23,7 @@ class Subscriptions extends Component {
 
         this.props.getSubs({
             username: this.props.app.username,
-            amount: 3
+            amount: 30
         }).then( response => {
 
             this.setState({
@@ -33,7 +33,7 @@ class Subscriptions extends Component {
 
         }).catch(err => {
 
-            console.log("castVote error", err);
+            console.log("getSubs error", err);
 
         });
 

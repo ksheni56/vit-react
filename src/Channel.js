@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import Item from './components/Item';
 import moment from 'moment';
-import { subscribe, getSubs } from './actions/app';
+import { subscribe, unsubscribe, getSubs } from './actions/app';
 
 let account_data = {
     posts: [],
@@ -32,27 +32,27 @@ class Channel extends Component {
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
         this.sub = this.sub.bind(this);
+        this.unsub = this.unsub.bind(this);
+
 
     } 
 
-    componentWillReceiveProps(nextProps) { 
-
-        /*
-        if(nextProps.match.params.filter != this.state.author) {
+    componentWillReceiveProps(nextProps, prevProps) { 
+        
+        if(nextProps.match.params.filter.replace('@','') != this.state.author) {
 
             this.setState({
                 author: nextProps.match.params.filter.replace('@',''),
                 loading: true
             },
             () => {
-                console.log("WTF")
                 this.loadContent();
                 this.getAccount();
+                this.checkIfSubbed();
             });
 
 
         }
-        */
 
     }
 
@@ -101,41 +101,42 @@ class Channel extends Component {
 
     componentDidMount() {
 
-        console.log("account_data", account_data)
-
-        if(Object.keys(account_data.account_info).length === 0 && account_data.account_info.constructor === Object) {
-
-        } else {
-
-        }
-
-
-        this.props.getSubs({
-            username: this.props.app.username,
-            amount: 100
-        }).then( response => {
-
-            console.log("gotSubs success", response);
-
-
-        }).catch(err => {
-
-            console.log("gotSubs error", err);
-
-        });
-
-        /*
-        steem.api.getFollowing('sundaybaking', '', 'blog', 1000, function(err, result) {
-            //console.log("x",err, result);
-        });
-        */
-
         //let following = this.props.app.subs.find(o => o.following === this.state.author);
 
         //console.log("AM I FOLLOWING", following)
 
         this.loadContent();
         this.getAccount();
+        this.checkIfSubbed();
+
+    }
+
+    checkIfSubbed() {
+
+        console.log("checkIfSubbed is called")
+
+        if(!this.props.app.username) return;
+
+        this.props.getSubs({
+            username: this.props.app.username,
+            amount: 1000
+        }).then( response => {
+
+            let following = this.props.app.subs.find(o => o.following === this.state.author);
+
+            if(following) {
+                this.setState({
+                    is_subbed: true
+                });
+            }
+
+           
+
+        }).catch(err => {
+
+            console.log("gotSubs error", err);
+
+        });
 
     }
 
@@ -202,15 +203,65 @@ class Channel extends Component {
 
     getSubs() {
 
-
-        return (
-            <button disabled={this.state.subscribing} onClick={() => this.sub()} className="btn btn-danger">Subscribe <span className="font-weight-bold">{ this.state.followers }</span></button>
-        )
+        if(this.state.is_subbed) {
+            return (    
+                <button disabled={this.state.subscribing} onClick={() => this.unsub()} className="btn btn-danger">Subscribed <span className="font-weight-bold">{ this.state.followers }</span></button>
+            )
+        } else {
+            return (    
+                <button disabled={this.state.subscribing} onClick={() => this.sub()} className="btn btn-danger">Subscribe <span className="font-weight-bold">{ this.state.followers }</span></button>
+            )
+        }
+        
 
         
     }
 
+    unsub() {
+
+        if(!this.props.app.authorized) {
+            this.props.history.push("/login");
+            return false;
+        }
+
+        this.setState({
+            subscribing: true
+        })
+
+        this.props.unsubscribe({
+
+            postingWif: this.props.app.postingWif,
+            username: this.props.app.username, 
+            following: this.state.author
+
+        }).then( response => {
+
+            console.log("unSubbed success", response);
+
+            this.setState({
+                subscribing: false,
+                is_subbed: false,
+                followers: this.state.followers - 1
+            })
+
+        }).catch(err => {
+
+            console.log("unSubbed error", err)
+
+            this.setState({
+                subscribing: false
+            })
+
+        });
+
+    }
+
     sub() {
+
+        if(!this.props.app.authorized) {
+            this.props.history.push("/login");
+            return false;
+        }
 
         this.setState({
             subscribing: true
@@ -227,7 +278,9 @@ class Channel extends Component {
             console.log("subSuccess success", response);
 
             this.setState({
-                subscribing: false
+                subscribing: false,
+                is_subbed: true,
+                followers: this.state.followers + 1
             })
 
         }).catch(err => {
@@ -368,4 +421,4 @@ function mapStateToProps(state) {
 }
 
 
-export default connect(mapStateToProps, { subscribe, getSubs })(Channel);
+export default connect(mapStateToProps, { subscribe, unsubscribe, getSubs })(Channel);
