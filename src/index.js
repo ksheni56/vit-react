@@ -32,17 +32,15 @@ import Upload from './Upload';
 import Categories from './Categories';
 
 // Add Steem
-steem.api.setOptions({ url: 'https://api.steemit.com'});
+// steem.api.setOptions({ url: 'https://api.steemit.com'});
 
 // Connect to Vit Testnet
 
-/*
 steem.api.setOptions({
-    url: 'http://testapi.vit.tube/ws',
+    url: 'https://testapi.vit.tube/ws',
     address_prefix: "TVT",
     chain_id: "0fd7b6506d0d4b25dab0333cbd58391b0139119dfe585f372dc952687e7a6f86"
 });
-*/
 
 ReactDOM.render((
     <Provider store={reducers}>

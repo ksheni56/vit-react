@@ -20,11 +20,10 @@ class LeftSidebar extends Component {
     } 
 
     componentDidMount() {
-
-        steem.api.getTrendingTags('life', 20, (err, result) => {
+        
+        steem.api.getTrendingTags('', 20, (err, result) => {
 
             if(err) {
-                console.log("Error!", err)
                 
                 this.setState({
                     tags: [],
@@ -68,7 +67,7 @@ class LeftSidebar extends Component {
             if(this.state.tags.length == 0) {
 
                 return (                    
-                    <div className="no-results text-center my-5">No Categories:(</div>
+                    <div className="no-results text-center mt-3 mb-5">No Categories:(</div>
                 )
 
 

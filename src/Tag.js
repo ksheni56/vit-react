@@ -122,8 +122,6 @@ class Tag extends Component {
 
     loadContent(tag, filter) {
 
-        console.log("loadContent called", tag, filter)
-
         let query = {
             'tag': tag,
             'limit': 30,
@@ -143,6 +141,8 @@ class Tag extends Component {
         } else if(filter == 'new') {
 
             steem.api.getDiscussionsByCreated(query, (err, result) => {
+
+                console.log("err, result", err, result)
             
                 this.setState({
                     posts: result,
@@ -190,17 +190,32 @@ class Tag extends Component {
                 </div>
             )
         } else {
-            return (
-                <div className="row">
-                    { 
-                    this.state.posts.map(
 
-                        (Post) =>
-                            <Item key={ Post.id } ref={ Post.id } data={ Post } />
-                        ) 
-                    }
-                </div>
-            )
+            if(this.state.posts.length == 0) {
+
+                return (
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="no-results text-center my-5">No posts yet!</div>
+                        </div>
+                    </div>
+                )
+
+            } else {
+
+                return (
+                    <div className="row">
+                        { 
+                        this.state.posts.map(
+
+                            (Post) =>
+                                <Item key={ Post.id } ref={ Post.id } data={ Post } />
+                            ) 
+                        }
+                    </div>
+                )
+            }
+
         }
 
     }
@@ -216,7 +231,7 @@ class Tag extends Component {
                 {
                     !this.state.loading ? (
 
-                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more}>
+                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || this.state.posts.length == 0}>
                             {
                                 !this.state.loading_more ? (
                                     <strong>Load More</strong>
