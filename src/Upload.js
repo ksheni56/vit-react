@@ -49,7 +49,7 @@ class Upload extends Component {
     componentDidMount() {
 
         // TODO: change 'life'
-        steem.api.getTrendingTags('life', 20, (err, result) => {
+        steem.api.getTrendingTags('', 20, (err, result) => {
 
             let categories = [];
             for(var i in result) {
@@ -206,7 +206,7 @@ class Upload extends Component {
                                         placeholder="" 
                                         maxLength={100}
                                         required />
-                                    <small className="text-muted mb-2 d-block" style={{'margin-top': '-5px'}}>100 characters max</small>
+                                    <small className="text-muted mb-2 d-block" style={{'marginTop': '-5px'}}>100 characters max</small>
 
                                     <label>Category</label>
                                     <Select
@@ -224,7 +224,7 @@ class Upload extends Component {
                                         
                                         onChange={this.handleChangeTags}
                                     />
-                                    <small className="text-muted mb-2 d-block" style={{'margin-top': '11px'}}>Up to 10 tags</small>
+                                    <small className="text-muted mb-2 d-block" style={{'marginTop': '11px'}}>Up to 10 tags</small>
                                 </div>
 
                                 {

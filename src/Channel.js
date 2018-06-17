@@ -349,7 +349,21 @@ class Channel extends Component {
                                 <div className="col-md-2 col-12">
                                     <div className="d-flex justify-content-center w-100">
                                         <div>
-                                            <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.account_info.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
+
+                                            {
+                                                this.state.account_info.json_metadata.profile ? (
+
+                                                    <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.account_info.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
+                                                
+                                                ) : (
+
+                                                    <div className="avatar"></div>
+
+                                                )
+
+                                            }
+
+                                            
                                             <div className="username text-center">{this.state.account_info.name}</div>
                                         </div>
                                     </div>

@@ -132,6 +132,8 @@ class Home extends Component {
 
             });
 
+        } else {
+
         }
 
     }
@@ -228,7 +230,10 @@ class Home extends Component {
             });
 
         } else {
-
+            this.setState({
+                posts: [],
+                loading: false
+            });
         }
 
     }

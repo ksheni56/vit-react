@@ -172,8 +172,6 @@ class Post extends Component {
 
             }
 
-            console.log("Got comments", result)
-
             this.setState({
                 loading_comments: false,
                 comments: result
@@ -184,8 +182,6 @@ class Post extends Component {
         steem.api.getContent(author, permalink, (err, result) => {
 
             let post = result;
-
-            //console.log("post", post)
 
             if(err) {
 
@@ -198,6 +194,10 @@ class Post extends Component {
 
                 return false;
             }
+
+            
+            post.json_metadata = JSON.parse(result.json_metadata);
+            console.log("Post parsed", post)
 
             steem.api.getDiscussionsByAuthorBeforeDate(author.replace('@',''), permalink, post.active, 5, (err, result) => {
                 
@@ -308,6 +308,37 @@ class Post extends Component {
         if(amount) return parseInt(amount.replace(' SBD','')).toFixed(2);
     }
 
+    renderVideoPlayer() {
+
+        if(this.state.post.json_metadata.vit_data.Hash) {
+
+            let hash = this.state.post.json_metadata.vit_data.Hash;
+            let filename = this.state.post.json_metadata.vit_data.Name;
+
+            return (
+                <Player
+                    playsInline
+                    src={ "http://138.197.166.131:5000/uploads/" + hash + "/" + filename }>
+                    <BigPlayButton position="center" />
+                </Player>
+            )
+        
+        } else {
+
+            return (
+                <div className="row">
+                    <div className="col-12">
+                        <div className="no-results my-5 text-center">
+                            This is not a VIT post!
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+
+        
+    }  
+
     renderVideoInfo() {
 
         if(!this.state.post) {
@@ -326,12 +357,7 @@ class Post extends Component {
 
             return [
 
-                <Player
-                    playsInline
-                    key="video-player"
-                    src="https://media.w3.org/2010/05/sintel/trailer_hd.mp4">
-                    <BigPlayButton position="center" />
-                </Player>,
+                <div key="video-player">{ this.renderVideoPlayer() }</div>,
 
                 <div className="row mt-3 video-info align-items-center" key="video-info">
                     <div className="col-9">
@@ -339,7 +365,21 @@ class Post extends Component {
                             <div className="col-md-2 col-12">
                                 <div className="d-flex justify-content-center w-100">
                                     <div>
-                                        <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.post.author_profile.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
+                                        
+                                        {
+                                            this.state.post.author_profile.json_metadata.profile ? (
+
+                                                <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.post.author_profile.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
+                                            
+                                            ) : (
+
+                                                <div className="avatar"></div>
+
+                                            )
+
+                                        }
+                                        
+
                                         <div className="username text-center">
                                             <Link to={ "/@" + this.state.post.author }>
                                                 { this.state.post.author }

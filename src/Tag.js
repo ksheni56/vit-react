@@ -175,6 +175,11 @@ class Tag extends Component {
 
         } else {
 
+            this.setState({
+                posts: [],
+                loading: false
+            });
+
         }
 
     }
