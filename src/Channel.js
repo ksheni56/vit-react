@@ -113,8 +113,6 @@ class Channel extends Component {
 
     checkIfSubbed() {
 
-        console.log("checkIfSubbed is called")
-
         if(!this.props.app.username) return;
 
         this.props.getSubs({
