@@ -114,7 +114,7 @@ class Wallet extends Component {
                     return;
                 }
 
-                console.log(result);
+                console.log("Transfer results", result);
 
                 this.setState({
                     transfer_success: true,
@@ -194,13 +194,19 @@ class Wallet extends Component {
                                         maxLength={100}
                                         required />
 
+
                                     <TextField 
                                         name="amount"
                                         id="amount"
                                         label="Amount:"
                                         value={this.state.amount}
-                                        placeholder="Enter amount" 
-                                        maxLength={100}
+                                        placeholder="Enter amount"
+                                        validations={{
+                                            matchRegexp: /^[0-9]+\.[0-9]{3,3}$/
+                                        }}
+                                        validationErrors={{
+                                            matchRegexp: 'Incorrect amount. Please enter X.YYY. eg. 1.000 or 0.005',
+                                        }} 
                                         required />
 
                                     <TextField 

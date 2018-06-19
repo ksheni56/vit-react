@@ -15,8 +15,8 @@ class TextField extends Component {
     render() {
 
         const inputSize = this.props.size ? 'form-control-' + this.props.size : ''
-        const className = ( ( this.props.showError() && this.props.isFormSubmitted() ) || ( this.props.showRequired() && this.props.isFormSubmitted() ) ) ? 'form-control is-invalid' : 'form-control';
-
+        const className = ( ( this.props.showError() && this.props.isFormSubmitted() ) || ( this.props.showRequired() && this.props.isFormSubmitted() ) || ( !this.props.isValid() && this.props.isFormSubmitted()) ) ? 'form-control is-invalid' : 'form-control';
+        
         // An error message is returned ONLY if the component is invalid
         // or the server has returned an error message
         const errorMessage = this.props.getErrorMessage();
