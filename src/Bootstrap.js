@@ -42,6 +42,8 @@ class Bootstrap extends Component {
             // verify the creds against the blockchain
             steem.api.getAccounts([username], (err, accounts) => {
 
+                console.log("accounts", accounts)
+
 
                 if(accounts.length == 0) {
                     

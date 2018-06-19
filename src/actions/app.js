@@ -199,6 +199,7 @@ export function getSubs(request) {
 
     	steem.api.getFollowing(request.username, 0, 'blog', 100, (err, result) => {
 
+
     		if(err) {
     			reject({
 			    	payload: err

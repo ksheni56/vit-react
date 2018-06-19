@@ -60,6 +60,18 @@
         .media-body span {
             font-size:14px;
         }
+
+        .comment-meta {
+            margin-top:5px;
+            .btn {
+                position:relative;
+                left:2px;
+                font-size:13px;
+                top:1px;
+                color:#C41502;
+                font-weight:600;
+            }
+        }
     }
 
     .video-meta {

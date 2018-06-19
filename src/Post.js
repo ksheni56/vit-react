@@ -62,13 +62,13 @@ class Post extends Component {
 
         if(votes) {
             return (
-                <button disabled={this.state.voting} onClick={() => this.castVote()} className="btn btn-danger">Like <span className="votes font-weight-bold">{votes.length}</span></button>
+                <button disabled={this.state.voting} onClick={() => this.castVote(this.props.match.params.permalink, this.props.match.params.author)} className="btn btn-danger">Like <span className="votes font-weight-bold">{votes.length}</span></button>
             )
         }
         
     }
 
-    castVote() {
+    castVote(permalink, author) {
 
         if(!this.props.app.authorized) {
             this.props.history.push("/login");
@@ -83,8 +83,8 @@ class Post extends Component {
 
             postingWif: this.props.app.postingWif,
             username: this.props.app.username, 
-            author: this.props.match.params.author,
-            permalink: this.props.match.params.permalink,
+            author: author,
+            permalink: permalink,
             weight: 10000
 
         }).then( response => {
@@ -231,6 +231,8 @@ class Post extends Component {
 
         if(this.state.comments.length > 0) {
 
+            console.log("this.state.comments", this.state.comments)
+
             return (
                 <ul className="list-unstyled">
                     { 
@@ -244,8 +246,13 @@ class Post extends Component {
 
                                 <div className="media-body">
                                     <h5 className="mt-0 mb-1">{ Comment.author }</h5>
+
+                                    
+                                    
                                     <span>{ Comment.body }</span>
-                                    <div className="text-muted small">{ moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() }</div>
+                                    <div className="text-muted small d-flex align-items-center comment-meta"> 
+                                        { moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button disabled={this.state.voting} onClick={() => this.castVote(Comment.permlink, Comment.author)} className="btn btn-link btn-sm px-0">Like</button>
+                                    </div>
                                 </div>
                                 
 

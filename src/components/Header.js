@@ -78,8 +78,9 @@ class Header extends Component {
                         {
                             this.state.authenticated ? (
                                 <span>
-                                    <button type="button" className="btn btn-light mx-3" onClick={this.logout}>Logout</button>
-                                    <Link to="/upload" className="btn btn-danger"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
+                                    <Link to="/wallet" className="btn btn-danger">Wallet</Link> 
+                                    <Link to="/upload" className="btn btn-danger mx-3"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
+                                    <button type="button" className="btn btn-light" onClick={this.logout}>Logout</button>
                                 </span>
 
                             ) : (
