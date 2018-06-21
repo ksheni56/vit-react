@@ -47,7 +47,7 @@ ReactDOM.render((
         <Router>
             <Switch>
 
-                <Route exact path="/login" component={ Login } /> 
+                <Route exact path="/login/:username?" component={ Login } /> 
                 
             	<Bootstrap>
             

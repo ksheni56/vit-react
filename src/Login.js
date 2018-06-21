@@ -65,6 +65,12 @@ class Login extends Component {
 
     componentDidMount() {
 
+        if(this.props.match.params.username) {
+            this.setState({
+                username: this.props.match.params.username
+            })
+        }
+
     }
 
     render() {
