@@ -126,7 +126,7 @@ class Upload extends Component {
                 slug: slug, // slug
                 title: form_data.title, // title
                 body: '...', // body,
-                tags: tags,
+                tags: [],
                 vit_data: response.data
 
             }).then( response => {
@@ -216,8 +216,8 @@ class Upload extends Component {
                                         options={this.state.categories}
                                     />
 
-                                    <label className="mt-3">Tags</label>
-
+                                    {/*<label className="mt-3">Tags</label>
+                                    
                                     <CreatableSelect
                                         isMulti
                                         className="Select"
@@ -225,6 +225,7 @@ class Upload extends Component {
                                         onChange={this.handleChangeTags}
                                     />
                                     <small className="text-muted mb-2 d-block" style={{'marginTop': '11px'}}>Up to 10 tags</small>
+                                    */}
                                 </div>
 
                                 {

@@ -201,6 +201,10 @@ class Channel extends Component {
 
     getSubs() {
 
+        if(this.props.app.authorized && this.props.app.username == this.state.author) {
+            return null;
+        }
+
         if(this.state.is_subbed) {
             return (    
                 <button disabled={this.state.subscribing} onClick={() => this.unsub()} className="btn btn-danger">Subscribed <span className="font-weight-bold">{ this.state.followers }</span></button>
