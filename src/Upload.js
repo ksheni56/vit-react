@@ -52,8 +52,12 @@ class Upload extends Component {
         steem.api.getTrendingTags('', 20, (err, result) => {
 
             let categories = [];
+
+            console.log("result", result)
             for(var i in result) {
-                categories.push({ value: result[i]['name'], label: result[i]['name']})
+                if(result[i]['name'] !== '') {
+                    categories.push({ value: result[i]['name'], label: result[i]['name']})
+                }
             }
             
             this.setState({

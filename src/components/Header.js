@@ -5,6 +5,7 @@ import { NavLink, Link } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import FeaturedChannels from './FeaturedChannels';
 import { logout } from './../actions/app';
+import { ButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
 
 class Header extends Component {
@@ -14,13 +15,20 @@ class Header extends Component {
         super(props);
 
         this.state = {
-            "authenticated": false
+            "authenticated": false,
+            dropdownOpen: false
         }   
-
+        this.toggle = this.toggle.bind(this);
         this.logout = this.logout.bind(this);
         this.toggleLeftSidebar = this.toggleLeftSidebar.bind(this);
 
     } 
+
+    toggle() {
+        this.setState({
+            dropdownOpen: !this.state.dropdownOpen
+        });
+    }
 
     componentWillMount() {
         
@@ -66,7 +74,7 @@ class Header extends Component {
                     </button>
                     <img src="/images/logo.png" className="logo"/>
                 </div>
-                <div className="col search-wrapper">
+                <div className="col search-wrapper d-none">
                     <div className="form-group my-0">
                         <i className="fa fa-search"></i>
                         <input type="email" className="form-control" placeholder="Search something..." />
@@ -78,9 +86,19 @@ class Header extends Component {
                         {
                             this.state.authenticated ? (
                                 <span>
-                                    <Link to="/wallet" className="btn btn-danger">Wallet</Link> 
+
+                                    <ButtonDropdown isOpen={this.state.dropdownOpen} toggle={this.toggle}>
+                                        <DropdownToggle caret>
+                                            {this.props.app.username}
+                                        </DropdownToggle>
+                                        <DropdownMenu>
+                                            <Link to="/wallet" className="dropdown-item">Wallet</Link> 
+                                            <DropdownItem onClick={this.logout}>Logout</DropdownItem>
+                                        </DropdownMenu>
+                                    </ButtonDropdown>
+                                
                                     <Link to="/upload" className="btn btn-danger mx-3"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
-                                    <button type="button" className="btn btn-light" onClick={this.logout}>Logout</button>
+
                                 </span>
 
                             ) : (
