@@ -29,13 +29,19 @@ class Wallet extends Component {
             to: '',
             amount: '',
             memo: '',
-            kets: ''
-        }
-
-        console.log(this.props.app)
+            kets: '',
+            power_to: this.props.app.username,
+            power_amount: '',
+            power_error_text: '',
+            power_error: false,
+            power_success:false,
+            powering: false
+        };
 
         this.transfer = this.transfer.bind(this);
         this.displayKeys = this.displayKeys.bind(this);
+        this.powerUp = this.powerUp.bind(this);
+
 
     } 
 
@@ -75,13 +81,74 @@ class Wallet extends Component {
         if(confirmation) {
 
             let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"]);
-            console.log("keys", keys)
             this.setState({
                 keys: keys
             })
         } else {
             // maybe next time
         }
+    }
+
+    powerUp(form_data) {
+
+        // use owner key
+
+        this.setState({
+            power_error_text: 'Something went wrong',
+            power_error: false,
+            powering: true,
+            power_success: false
+        });
+
+        let amount = form_data.power_amount + " TVIT",
+        confirmation = prompt("Please enter your VIT password to confirm this action", "");
+
+        console.log("form_data", form_data)
+
+         if(confirmation) {
+
+            let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
+
+            steem.broadcast.transferToVesting(keys.owner, this.props.app.username, form_data.power_to, amount, (err, result) => {
+
+                console.log(err, result)
+
+                if(err) {
+
+                    this.setState({
+                        power_error_text: 'Cannot complete this transaction. Reason: ' + err.data.message,
+                        power_error: true,
+                        powering: false,
+                        power_success: false
+                    });
+
+                    return;
+                }
+
+                this.setState({
+                    power_success: true,
+                    powering: false
+                });
+
+                // Update balance
+
+                steem.api.getAccounts([this.props.app.username], (err, accounts) => {
+
+                    let account_info = accounts[0];
+                    account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+
+                    console.log("Account has been loaded", account_info);
+                    this.setState({
+                        account: account_info
+                    })
+
+
+                });
+
+            });
+
+        }
+
     }
 
 
@@ -233,7 +300,7 @@ class Wallet extends Component {
                                 {
                                     this.state.transfer_success ? (
                                         <div className="alert alert-success mt-4" role="alert">
-                                            <strong>Success!</strong> You transaction is now completed.
+                                            <strong>Success!</strong> Your transaction is now completed.
                                         </div>
                                     ) : null
                                 }
@@ -241,13 +308,83 @@ class Wallet extends Component {
 
                                 <button 
                                     type="submit"
-                                    className="btn btn-danger mt-4" 
+                                    className="btn btn-danger mt-2" 
                                     disabled={this.state.transferring}
                                 >Trasnfer</button>
 
                             </Formsy>
 
                         </div>
+                    </div>
+
+                    <div className="upload-wrapper mb-4">
+
+                        <div>
+
+                            <h3 className="mb-1">Power Up</h3>
+                            <p className="mb-4 text-muted">Influence tokens which give you more control over post payouts and allow you to earn on curation rewards.</p>
+
+                            <Formsy 
+                                onValidSubmit={this.powerUp} 
+                                ref="powerup_form" 
+                                >
+
+                                <div className="col-8 px-0">
+
+                                    <TextField 
+                                        name="power_to"
+                                        id="power_to"
+                                        label="To:"
+                                        value={this.state.power_to}
+                                        placeholder="Enter VIT username" 
+                                        maxLength={100}
+                                        required />
+
+
+                                    <TextField 
+                                        name="power_amount"
+                                        id="power_amount"
+                                        label="Amount:"
+                                        value={this.state.power_amount}
+                                        placeholder="Enter amount"
+                                        validations={{
+                                            matchRegexp: /^[0-9]+\.[0-9]{3,3}$/
+                                        }}
+                                        validationErrors={{
+                                            matchRegexp: 'Incorrect amount. Please enter X.YYY. eg. 1.000 or 0.005',
+                                        }} 
+                                        required />
+
+                                </div>
+                                {
+                                    this.state.power_error ? (
+                                        <div className="alert alert-danger mt-4" role="alert">
+                                            <strong>Error!</strong> { this.state.power_error_text }
+                                        </div>
+                                    ) : null
+                                }
+
+                                {
+                                    this.state.power_success ? (
+                                        <div className="alert alert-success mt-4" role="alert">
+                                            <strong>Success!</strong> Power has been upped!
+                                        </div>
+                                    ) : null
+                                }
+                               
+
+                                <button 
+                                    type="submit"
+                                    className="btn btn-danger mt-2" 
+                                    disabled={this.state.powering}
+                                >Power Up</button>
+
+                            </Formsy>
+
+                        </div>
+
+                       
+                        
                     </div>
 
                     <div className="upload-wrapper mb-4">
