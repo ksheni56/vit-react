@@ -31,16 +31,19 @@ import Channel from './Channel';
 import Upload from './Upload';
 import Categories from './Categories';
 import Wallet from './Wallet';
+import Profile from './Profile';
 
 // Add Steem
-// steem.api.setOptions({ url: 'https://api.steemit.com'});
+//steem.api.setOptions({ url: 'https://api.steemit.com'});
 
 // Connect to Vit Testnet
+
 steem.api.setOptions({
     url: 'https://testapi.vit.tube/ws',
     address_prefix: "TVT",
     chain_id: "0fd7b6506d0d4b25dab0333cbd58391b0139119dfe585f372dc952687e7a6f86"
 });
+
 
 ReactDOM.render((
     <Provider store={reducers}>
@@ -63,6 +66,7 @@ ReactDOM.render((
                             if(test_if_home) return <Home {...props} /> 
                             else if(props.location.pathname == '/upload') return <Upload {...props} />
                             else if(props.location.pathname == '/wallet') return <Wallet {...props} />
+                            else if(props.location.pathname == '/profile') return <Profile {...props} />
                             else if(props.location.pathname == '/categories') return <Categories {...props} />
                             else if(test_if_channel) return <Channel {...props} />
                             else return <Redirect to="/trending/"/>

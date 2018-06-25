@@ -93,6 +93,7 @@ class Header extends Component {
                                         </DropdownToggle>
                                         <DropdownMenu>
                                             <Link to="/wallet" className="dropdown-item">Wallet</Link> 
+                                            <Link to="/profile" className="dropdown-item">Profile</Link> 
                                             <DropdownItem onClick={this.logout}>Logout</DropdownItem>
                                         </DropdownMenu>
                                     </ButtonDropdown>
@@ -105,7 +106,7 @@ class Header extends Component {
 
                                 <span>
                                     <Link to="/login" className="btn btn-light">Login</Link>
-                                    <Link to="/signup" className="btn btn-light mx-3">Signup</Link>
+                                    <a href="https://signup.vit.tube/" className="btn btn-light mx-3">Signup</a>
                                     <Link to="/login" className="btn btn-danger"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
                                 </span>
 
