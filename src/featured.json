@@ -1,13 +1,17 @@
 [{
     "name": "Channel 1",
-    "url": "featured-channel-1"
+    "url": "featured-channel-1",
+    "avatar": "https://steemitimages.com/30x30/http://images.vit.tube/uploads/Qmf6qiPegSEjoBNTuKkkym2LoomrfeJcPxRcvMwNsA7nCd/logo-alt.png"
 },{
     "name": "Channel 2",
-    "url": "featured-channel-2"
+    "url": "featured-channel-2",
+    "avatar": "https://steemitimages.com/30x30/http://images.vit.tube/uploads/Qmf6qiPegSEjoBNTuKkkym2LoomrfeJcPxRcvMwNsA7nCd/logo-alt.png"
 },{
     "name": "Channel 3",
-    "url": "featured-channel-3"
+    "url": "featured-channel-3",
+    "avatar": "https://steemitimages.com/30x30/http://images.vit.tube/uploads/Qmf6qiPegSEjoBNTuKkkym2LoomrfeJcPxRcvMwNsA7nCd/logo-alt.png"
 },{
     "name": "Channel 4",
-    "url": "featured-channel-4"
+    "url": "featured-channel-4",
+    "avatar": "https://steemitimages.com/30x30/http://images.vit.tube/uploads/Qmf6qiPegSEjoBNTuKkkym2LoomrfeJcPxRcvMwNsA7nCd/logo-alt.png"
 }]

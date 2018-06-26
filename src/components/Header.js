@@ -72,7 +72,7 @@ class Header extends Component {
                     <button type="button" className="btn btn-light mr-2 left-sidebar-toggle" onClick={(e) => this.toggleLeftSidebar(e)} >
                         <i className="fas fa-bars"></i>
                     </button>
-                    <img src="/images/logo.png" className="logo"/>
+                    <img src="/images/logo.png" className="logo d-none"/>
                 </div>
                 <div className="col search-wrapper d-none">
                     <div className="form-group my-0">

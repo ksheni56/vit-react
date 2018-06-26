@@ -23,7 +23,7 @@ class FeaturedChannels extends Component {
         
         return (
             <div>
-                <h3>Featured Channels</h3>
+                <h3>Featured Users</h3>
                 <ul className="list-unstyled featured-channels-list">
                     { 
 
@@ -35,7 +35,7 @@ class FeaturedChannels extends Component {
                                 <NavLink to={ '/@' + Channel.url }>
                                     <div className="d-flex featured-channel-item">
                                         <div className="avatar-holder">
-                                            <img src="http://via.placeholder.com/30x30"/>
+                                            <img src={Channel.avatar} />
                                         </div>
                                         <div className="data-holder">
                                             { Channel.name }
