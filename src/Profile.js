@@ -38,13 +38,16 @@ class Profile extends Component {
             ready_to_upload: false,
             upload_error_text: 'Something went wrong',
             upload_error: false,
-            upload_success: false
+            upload_success: false,
+            suggested_password: '',
+            new_password: ''
         };  
 
         this.upload = this.upload.bind(this);
         this.update = this.update.bind(this);
         this.handleDrop = this.handleDrop.bind(this);
-
+        this.generatePassword = this.generatePassword.bind(this);
+        this.updatePassword = this.updatePassword.bind(this);
 
     } 
 
@@ -54,7 +57,6 @@ class Profile extends Component {
             this.props.history.push("/login");
             return false;
         }
-
 
         steem.api.getAccounts([this.props.app.username], (err, accounts) => {
 
@@ -108,10 +110,10 @@ class Profile extends Component {
                 }
             }).then(response => {
 
-                console.log("Avatar upload response", response)
-                let avatar_path = "http://images.vit.tube/uploads/" + response.data.Hash + "/" + response.data.Name;
+                console.log("Avatar upload response", response);
 
-                let jsonMetadata = { profile: { profile_image: avatar_path } };
+                let avatar_path = "http://images.vit.tube/uploads/" + response.data.Hash + "/" + response.data.Name,
+                jsonMetadata = { profile: { profile_image: avatar_path } };
 
                 if(this.state.account.json_metadata.profile && (this.state.account.json_metadata.profile.name || this.state.account.json_metadata.profile.about) ) {
                     jsonMetadata = { profile: { name: this.state.account.json_metadata.profile.name, about: this.state.account.json_metadata.profile.about, profile_image: avatar_path } };
@@ -119,7 +121,6 @@ class Profile extends Component {
 
                 // get the keys
                 let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
-
                 var self = this;
 
                 steem.broadcast.accountUpdate(
@@ -135,11 +136,10 @@ class Profile extends Component {
                         if(err) {
                             console.log(err)
                             self.setState({
-                                upload_error_text: 'Cannot complete this action. Reason: ' + err.data.message,
-                                upload_error: true,
-                                upload_success: false,
                                 uploading: false
                             });
+
+                            toast.error('Cannot complete this action. Reason: ' + err.data.message);
 
                             return;
                         }
@@ -147,7 +147,6 @@ class Profile extends Component {
                         console.log("Avatar update", result);
 
                         self.setState({
-                            upload_error: false,
                             uploading: false
                         });
 
@@ -160,9 +159,7 @@ class Profile extends Component {
 
                 console.log("File err", err)
 
-                this.setState({
-                    error: true
-                });
+                toast.error('Something went wrong!');
 
             });
 
@@ -224,11 +221,10 @@ class Profile extends Component {
                     if(err) {
                         console.log(err)
                         self.setState({
-                            error_text: 'Cannot complete this action. Reason: ' + err.data.message,
-                            error: true,
-                            success: false,
                             saving: false
                         });
+
+                        toast.error('Cannot complete this action. Reason: ' + err.data.message);
 
                         return;
                     }
@@ -236,7 +232,6 @@ class Profile extends Component {
                     console.log("Profile update", result);
 
                     self.setState({
-                        error: false,
                         saving: false
                     });
 
@@ -247,14 +242,62 @@ class Profile extends Component {
     
 
         } else {
+
+            toast.error('Please enter your VIT password to complete this action!');
+
             this.setState({
-                error_text: 'Please enter your VIT password to complete this action.',
-                error: true,
-                success: false,
                 saving: false
             });
+
         }
         
+    }
+
+    generatePassword() {
+
+        var password = steem.formatter.createSuggestedPassword();
+        this.setState({
+            suggested_password: password
+        });
+
+    }
+
+    updatePassword(form_data) {
+
+        if(!this.props.app.authorized) {
+            this.props.history.push("/login");
+            return false;
+        }
+
+        var confirmation = prompt("Please enter your current VIT password to proceed", "");
+
+        if(confirmation) {
+
+            // get the keys
+            let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
+
+            var publicKeys = steem.auth.generateKeys(this.props.app.username, form_data.new_password, ['owner', 'active', 'posting', 'memo']);
+            var owner = { weight_threshold: 1, account_auths: [], key_auths: [[publicKeys.owner, 1]] };
+            var active = { weight_threshold: 1, account_auths: [], key_auths: [[publicKeys.active, 1]] };
+            var posting = { weight_threshold: 1, account_auths: [], key_auths: [[publicKeys.posting, 1]] };
+
+            var self = this;
+
+            steem.broadcast.accountUpdate(
+                keys.active,
+                this.props.app.username,
+                owner,
+                active,
+                posting,
+                keys.memoPubkey,
+                '',
+                function (err,  result) {
+                    console.log(err, result);
+                }
+            );
+
+        }
+
     }
 
     renderAvatar() {
@@ -289,13 +332,17 @@ class Profile extends Component {
 
                             {
                                 !this.state.loading ? (
-                                     <Dropzone 
+                                   
+                                    <Dropzone 
                                         className="dropzone-avatar" 
+                                        accept="image/jpeg, image/png"
                                         onDrop={ this.handleDrop }
                                         multiple={ false }     
                                     >
                                         {this.renderAvatar()}
                                     </Dropzone>
+                                        
+                                    
                                 ) : null
                             }
 
@@ -308,73 +355,121 @@ class Profile extends Component {
                                 disabled={!this.state.ready_to_upload || this.state.uploading}
                             >Upload</button>
 
-                            {
-                                this.state.upload_error ? (
-                                    <div className="alert alert-danger mt-4" role="alert">
-                                        <strong>Error!</strong> { this.state.upload_error_text }
-                                    </div>
-                                ) : null
-                            }
 
                         </div>
                     </div>
 
                     <div className="upload-wrapper mb-4">
 
-                        <div>
+                        <h3 className="mb-1">Your Account Info</h3>
+                        <p className="mb-4 text-muted">Change your personal information.</p>
 
-                            <h3 className="mb-1">Your Account Info</h3>
-                            <p className="mb-4 text-muted">Change your personal information.</p>
+                        <Formsy 
+                            onValidSubmit={this.update} 
+                            ref="powerup_form" 
+                            >
 
-                            <Formsy 
-                                onValidSubmit={this.update} 
-                                ref="powerup_form" 
-                                >
+                            <div className="col-8 px-0">
 
-                                <div className="col-8 px-0">
-
-                                    <TextField 
-                                        name="name"
-                                        id="name"
-                                        label="Display Name:"
-                                        value={this.state.display_name}
-                                        placeholder="eg. Joe" 
-                                        maxLength={100}
-                                        required />
+                                <TextField 
+                                    name="name"
+                                    id="name"
+                                    label="Display Name:"
+                                    value={this.state.display_name}
+                                    placeholder="eg. Joe" 
+                                    maxLength={100}
+                                    required />
 
 
-                                    <TextField 
-                                        name="about"
-                                        id="about"
-                                        label="About:"
-                                        value={this.state.about}
-                                        placeholder="Introduce yourself..." 
-                                        maxLength={300}
-                                        required />
+                                <TextField 
+                                    name="about"
+                                    id="about"
+                                    label="About:"
+                                    value={this.state.about}
+                                    placeholder="Introduce yourself..." 
+                                    maxLength={300}
+                                    required />
 
-                                </div>
-                                
-                               
+                            </div>
+                            
+                           
 
-                                <button 
-                                    type="submit"
-                                    className="btn btn-danger mt-2" 
-                                    disabled={this.state.saving}
-                                >Save</button>
+                            <button 
+                                type="submit"
+                                className="btn btn-danger mt-2" 
+                                disabled={this.state.saving}
+                            >Save</button>
 
-                                {
-                                    this.state.error ? (
-                                        <div className="alert alert-danger mt-4" role="alert">
-                                            <strong>Error!</strong> { this.state.error_text }
-                                        </div>
-                                    ) : null
-                                }
+                            {
+                                this.state.error ? (
+                                    <div className="alert alert-danger mt-4" role="alert">
+                                        <strong>Error!</strong> { this.state.error_text }
+                                    </div>
+                                ) : null
+                            }
 
-                            </Formsy>
+                        </Formsy>
+
+    
+
+                       
+                        
+                    </div>
+
+                    <div className="upload-wrapper mb-4 d-none">
+
+                        <h3 className="mb-1">Password</h3>
+                        <p className="mb-4 text-muted">Here you can update your password.</p>
+
+                        <button 
+                            onClick={this.generatePassword}
+                            className="btn btn-danger mb-4" 
+                        >Generate New Password</button>
+
+                        <div className="col-8 px-0">
+
+                            <div className="form-group">
+                                <label>Suggested Password</label>
+                                <input type="text" className="form-control" disabled value={ this.state.suggested_password }/>
+                            </div>
 
                         </div>
 
-                       
+
+                        <Formsy 
+                            onValidSubmit={this.updatePassword} 
+                            ref="password_form" 
+                            >
+
+                            <div className="col-8 px-0">
+
+                                <TextField 
+                                    name="name"
+                                    id="name"
+                                    label="Enter New Password:"
+                                    value={this.state.new_password}
+                                    placeholder="" 
+                                    maxLength={100}
+                                    required />
+
+                            </div>
+
+                            <button 
+                                type="submit"
+                                className="btn btn-danger mt-2" 
+                                disabled={this.state.saving}
+                            >Update</button>
+
+                            {
+                                this.state.error ? (
+                                    <div className="alert alert-danger mt-4" role="alert">
+                                        <strong>Error!</strong> { this.state.error_text }
+                                    </div>
+                                ) : null
+                            }
+
+                        </Formsy>
+
                         
                     </div>
 
