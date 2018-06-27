@@ -14,9 +14,6 @@ import CreatableSelect from 'react-select/lib/Creatable';
 
 import { ToastContainer, toast } from 'react-toastify';
 
-
-//P5JhSgMrKbzfivPVPWqHeCZmZuKeXrLCUFXCVZUdyJyqgTKVM4J6
-
 class Profile extends Component {
 
     constructor(props) {
@@ -40,7 +37,10 @@ class Profile extends Component {
             upload_error: false,
             upload_success: false,
             suggested_password: '',
-            new_password: ''
+            new_password: '',
+            updating: false,
+            isRule1Checked: false,
+            isRule2Checked: false
         };  
 
         this.upload = this.upload.bind(this);
@@ -48,6 +48,8 @@ class Profile extends Component {
         this.handleDrop = this.handleDrop.bind(this);
         this.generatePassword = this.generatePassword.bind(this);
         this.updatePassword = this.updatePassword.bind(this);
+        this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
+
 
     } 
 
@@ -84,6 +86,17 @@ class Profile extends Component {
             })
 
         });
+    }
+
+    handleCheckboxChange(event) {
+        const target = event.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+
+        this.setState({
+            [name]: value
+        });
+
     }
 
     
@@ -264,35 +277,62 @@ class Profile extends Component {
 
     updatePassword(form_data) {
 
+
         if(!this.props.app.authorized) {
             this.props.history.push("/login");
             return false;
         }
 
-        var confirmation = prompt("Please enter your current VIT password to proceed", "");
+        var confirmation = prompt("Please enter your CURRENT VIT password (NOT New Password) to proceed.", "");
 
         if(confirmation) {
 
-            // get the keys
-            let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
+            // get the old keys to sign the transaction
+            let oldKeys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
 
-            var publicKeys = steem.auth.generateKeys(this.props.app.username, form_data.new_password, ['owner', 'active', 'posting', 'memo']);
-            var owner = { weight_threshold: 1, account_auths: [], key_auths: [[publicKeys.owner, 1]] };
-            var active = { weight_threshold: 1, account_auths: [], key_auths: [[publicKeys.active, 1]] };
-            var posting = { weight_threshold: 1, account_auths: [], key_auths: [[publicKeys.posting, 1]] };
+            // prep the new keys to update the system with
+            let publicKeys = steem.auth.generateKeys(this.props.app.username, form_data.new_password, ['owner', 'active', 'posting', 'memo']),
+                owner = { weight_threshold: 1, account_auths: [], key_auths: [[publicKeys.owner, 1]] },
+                active = { weight_threshold: 1, account_auths: [], key_auths: [[publicKeys.active, 1]] },
+                posting = { weight_threshold: 1, account_auths: [], key_auths: [[publicKeys.posting, 1]] },
+                self = this;           
 
-            var self = this;
+            this.setState({
+                updating: true
+            });
 
             steem.broadcast.accountUpdate(
-                keys.active,
+                oldKeys.owner,
                 this.props.app.username,
                 owner,
                 active,
                 posting,
-                keys.memoPubkey,
+                publicKeys.memo,
                 '',
                 function (err,  result) {
+
                     console.log(err, result);
+
+                    if(err) {
+
+                        self.setState({
+                            updating: false
+                        });
+
+                        toast.error('Cannot complete this action. Reason: ' + err.data.message);
+
+                        return false;
+
+                    }
+
+                    // clean up localStorage
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('publicWif');
+                    localStorage.removeItem('postingWif');
+
+                    // logout
+                    self.props.history.push("/login");
+
                 }
             );
 
@@ -377,8 +417,8 @@ class Profile extends Component {
                                     label="Display Name:"
                                     value={this.state.display_name}
                                     placeholder="eg. Joe" 
-                                    maxLength={100}
-                                    required />
+                                    maxLength={20}
+                                     />
 
 
                                 <TextField 
@@ -388,7 +428,7 @@ class Profile extends Component {
                                     value={this.state.about}
                                     placeholder="Introduce yourself..." 
                                     maxLength={300}
-                                    required />
+                                     />
 
                             </div>
                             
@@ -416,7 +456,7 @@ class Profile extends Component {
                         
                     </div>
 
-                    <div className="upload-wrapper mb-4 d-none">
+                    <div className="upload-wrapper mb-4">
 
                         <h3 className="mb-1">Password</h3>
                         <p className="mb-4 text-muted">Here you can update your password.</p>
@@ -444,29 +484,36 @@ class Profile extends Component {
                             <div className="col-8 px-0">
 
                                 <TextField 
-                                    name="name"
-                                    id="name"
-                                    label="Enter New Password:"
+                                    name="new_password"
+                                    id="new_password"
+                                    label="Enter Suggested Password:"
                                     value={this.state.new_password}
                                     placeholder="" 
+                                    memo="Make sure you back it up in a safe place! Alternatively, you can use your own password."
                                     maxLength={100}
                                     required />
+
+                                <div className="form-check">
+                                    <input className="form-check-input" type="checkbox" name="isRule1Checked" value="" id="rule1" checked={this.state.isRule1Checked} onChange={this.handleCheckboxChange}/>
+                                    <label className="form-check-label text-danger" name="rule1" htmlFor="rule1">
+                                        I understand that VIT cannot recover lost passwords
+                                    </label>
+                                </div>
+
+                                <div className="form-check">
+                                    <input className="form-check-input" type="checkbox" name="isRule2Checked" value="" id="rule2" checked={this.state.isRule2Checked} onChange={this.handleCheckboxChange}/>
+                                    <label className="form-check-label text-danger" name="rule2" htmlFor="rule2">
+                                        I have securely saved my new password
+                                    </label>
+                                </div>
 
                             </div>
 
                             <button 
                                 type="submit"
-                                className="btn btn-danger mt-2" 
-                                disabled={this.state.saving}
+                                className="btn btn-danger mt-4" 
+                                disabled={this.state.updating || !this.state.isRule1Checked || !this.state.isRule2Checked}
                             >Update</button>
-
-                            {
-                                this.state.error ? (
-                                    <div className="alert alert-danger mt-4" role="alert">
-                                        <strong>Error!</strong> { this.state.error_text }
-                                    </div>
-                                ) : null
-                            }
 
                         </Formsy>
 

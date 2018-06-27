@@ -33,6 +33,7 @@ class TextField extends Component {
                     value={this.props.getValue()} 
                     maxLength={this.props.maxLength}
                     placeholder={this.props.placeholder}/>
+                <small className="text-muted">{this.props.memo}</small>
                 <div className='invalid-feedback'>{ this.props.getErrorMessage() ? this.props.getErrorMessage() : null }</div>
                 <div className='invalid-feedback'>{ this.props.showRequired() ? 'This field is required' : null }</div>
             </div>
