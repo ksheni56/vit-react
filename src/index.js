@@ -20,6 +20,8 @@ import './sass/Upload.scss';
 import './sass/Post.scss';
 import './sass/Channel.scss';
 
+import 'react-toastify/dist/ReactToastify.css';
+
 
 // Components
 import Bootstrap from './Bootstrap';

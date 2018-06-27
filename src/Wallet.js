@@ -12,6 +12,7 @@ import TextField from './components/forms/TextField';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/lib/Creatable';
 import './sass/Select.scss';
+import { ToastContainer, toast } from 'react-toastify';
 
 class Wallet extends Component {
 
@@ -65,6 +66,7 @@ class Wallet extends Component {
 
             let account_info = accounts[0];
             account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+            account_info.vesting_shares = parseInt(account_info.vesting_shares)/1000000
 
             console.log("Account has been loaded", account_info);
             this.setState({
@@ -91,21 +93,19 @@ class Wallet extends Component {
 
     powerUp(form_data) {
 
-        // use owner key
+        // use owner key 
 
         this.setState({
-            power_error_text: 'Something went wrong',
-            power_error: false,
+            //power_error_text: 'Something went wrong',
+            //power_error: false,
             powering: true,
-            power_success: false
+            //power_success: false
         });
 
         let amount = form_data.power_amount + " TVIT",
         confirmation = prompt("Please enter your VIT password to confirm this action", "");
 
-        console.log("form_data", form_data)
-
-         if(confirmation) {
+        if(confirmation) {
 
             let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
 
@@ -115,20 +115,24 @@ class Wallet extends Component {
 
                 if(err) {
 
+                    toast.error('Cannot complete this transaction. Reason: ' + err.data.message);
+
                     this.setState({
-                        power_error_text: 'Cannot complete this transaction. Reason: ' + err.data.message,
-                        power_error: true,
+                        //power_error_text: 'Cannot complete this transaction. Reason: ' + err.data.message,
+                        //power_error: true,
                         powering: false,
-                        power_success: false
+                        //power_success: false
                     });
 
                     return;
                 }
 
                 this.setState({
-                    power_success: true,
+                    //power_success: true,
                     powering: false
                 });
+
+                toast.success("Power is now upped!");
 
                 // Update balance
 
@@ -136,6 +140,7 @@ class Wallet extends Component {
 
                     let account_info = accounts[0];
                     account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                    account_info.vesting_shares = parseInt(account_info.vesting_shares)/1000000;
 
                     console.log("Account has been loaded", account_info);
                     this.setState({
@@ -157,8 +162,8 @@ class Wallet extends Component {
         var confirmation = prompt("Please enter your VIT password to confirm this transaction", "");
 
         this.setState({
-            error_text: 'Something went wrong',
-            transfer_error: false,
+            //error_text: 'Something went wrong',
+            //transfer_error: false,
             transferring: true
         });
 
@@ -172,19 +177,23 @@ class Wallet extends Component {
                 if(err) {
                     console.log(err)
                     this.setState({
-                        error_text: 'Cannot complete this transaction. Reason: ' + err.data.message,
-                        transfer_error: true,
-                        transfer_success: false,
+                        //error_text: 'Cannot complete this transaction. Reason: ' + err.data.message,
+                        //transfer_error: true,
+                        //transfer_success: false,
                         transferring: false
                     });
+
+                    toast.error('Cannot complete this transaction. Reason: ' + err.data.message);
 
                     return;
                 }
 
                 console.log("Transfer results", result);
 
+                toast.success("Your transaction is now completed!");
+
                 this.setState({
-                    transfer_success: true,
+                    //transfer_success: true,
                     transferring: false
                 });
 
@@ -194,6 +203,7 @@ class Wallet extends Component {
 
                     let account_info = accounts[0];
                     account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                    account_info.vesting_shares = parseInt(account_info.vesting_shares)/1000000;
 
                     console.log("Account has been loaded", account_info);
                     this.setState({
@@ -206,9 +216,12 @@ class Wallet extends Component {
             });
 
         } else {
+
+            toast.error('Please enter your VIT password to complete this transaction!');
+
             this.setState({
-                error_text: 'Please enter your VIT password to complete this transaction.',
-                transfer_error: true,
+                //error_text: 'Please enter your VIT password to complete this transaction.',
+                //transfer_error: true,
                 transferring: false
             });
         }
@@ -219,6 +232,9 @@ class Wallet extends Component {
         
         return (
             <div className="row justify-content-center">
+
+                <ToastContainer />
+
                 <div className="col-8 mt-4">
 
                     <div className="upload-wrapper mb-4">
@@ -231,7 +247,8 @@ class Wallet extends Component {
                                     <div>
                                         <h3 className="mb-2">Your VIT Balance: <span className="text-danger">{ this.state.account.balance }</span></h3>
                                         <h3 className="mb-2">Your VBD Balance: <span className="text-danger">{ this.state.account.sbd_balance }</span></h3>
-                                        <h3 className="">Your VESTS Balance: <span className="text-danger">{ this.state.account.delegated_vesting_shares }</span></h3>
+                                        <h3 className="mb-2">Your VESTS Balance: <span className="text-danger">{ this.state.account.delegated_vesting_shares }</span></h3>
+                                        <h3 className="">Your VESTS Power: <span className="text-danger">{ this.state.account.vesting_shares }</span></h3>
                                     </div>
                                 )
                             }
