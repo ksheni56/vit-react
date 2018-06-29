@@ -144,6 +144,35 @@ html, body {
   	background: transparent;
 }
 
+/* Wallet */
+
+.balance-wrapper {
+    .balance-tile {
+        h4 {
+            margin:0 0 8px 0;
+            font-size:13px;
+            color:#6D7174;
+            text-transform:uppercase;
+            font-weight:500;
+        }
+
+        span {
+          font-weight:600;
+          font-size:18px;
+          line-height:15px;
+        }
+    }
+
+    .balance-action-links {
+
+        margin-top:20px;
+        font-size:12px;
+        a {
+          text-decoration:underline;
+        }
+    }
+}
+
 /* Pre Wrap */
 
 code {

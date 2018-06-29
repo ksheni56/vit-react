@@ -30,7 +30,8 @@ class Wallet extends Component {
             to: '',
             amount: '',
             memo: '',
-            kets: '',
+            keys: '',
+            keys_revealed: false,
             power_to: this.props.app.username,
             power_amount: '',
             power_error_text: '',
@@ -53,6 +54,10 @@ class Wallet extends Component {
             return false;
         }
 
+        steem.api.getAccountHistory(this.props.app.username, -1, 100, (err, result) => {
+            let transfers = result.filter( tx => tx[1].op[0] === 'transfer' )
+            console.log(transfers)
+        });
 
         steem.api.getAccounts([this.props.app.username], (err, accounts) => {
 
@@ -84,7 +89,8 @@ class Wallet extends Component {
 
             let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"]);
             this.setState({
-                keys: keys
+                keys: keys,
+                keys_revealed: true
             })
         } else {
             // maybe next time
@@ -177,9 +183,6 @@ class Wallet extends Component {
                 if(err) {
                     console.log(err)
                     this.setState({
-                        //error_text: 'Cannot complete this transaction. Reason: ' + err.data.message,
-                        //transfer_error: true,
-                        //transfer_success: false,
                         transferring: false
                     });
 
@@ -244,11 +247,46 @@ class Wallet extends Component {
                                 this.state.loadung ? (
                                     <h3>Loading your balance...</h3>
                                 ) : (
-                                    <div>
-                                        <h3 className="mb-2">Your VIT Balance: <span className="text-danger">{ this.state.account.balance }</span></h3>
-                                        <h3 className="mb-2">Your VBD Balance: <span className="text-danger">{ this.state.account.sbd_balance }</span></h3>
-                                        <h3 className="mb-2">Your VESTS Balance: <span className="text-danger">{ this.state.account.delegated_vesting_shares }</span></h3>
-                                        <h3 className="">Your VESTS Power: <span className="text-danger">{ this.state.account.vesting_shares }</span></h3>
+                                    <div className="balance-wrapper">
+
+                                        <div className="row">
+
+                                            <div className="col-3">
+                                                <div className="balance-tile"> 
+                                                    <h4>VIT Balance:</h4>
+                                                    <span className="text-danger">{ this.state.account.balance }</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="col-3">
+                                                <div className="balance-tile"> 
+                                                    <h4>VBD Balance:</h4>
+                                                    <span className="text-danger">{ this.state.account.sbd_balance }</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="col-3">
+                                                <div className="balance-tile"> 
+                                                    <h4>VESTS Balance:</h4>
+                                                    <span className="text-danger">{ this.state.account.delegated_vesting_shares }</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="col-3">
+                                                <div className="balance-tile"> 
+                                                    <h4>VESTS Power:</h4>
+                                                    <span className="text-danger">{ this.state.account.vesting_shares }</span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div className="row">
+                                            <div className="col-12 balance-action-links">
+                                                <Link className="text-danger" to="/transfers">View Transfers History</Link>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 )
                             }
@@ -299,35 +337,21 @@ class Wallet extends Component {
                                         label="Memo:"
                                         value={this.state.memo}
                                         placeholder="This memo is public" 
-                                        maxLength={200}
+                                        maxLength={100}
                                     />
 
                                     <small className="mb-2 d-none" style={{'marginTop': '-5px'}}><a href="#" className="text-danger">Transfer all balance</a></small>
                                     
 
                                 </div>
-                                {
-                                    this.state.transfer_error ? (
-                                        <div className="alert alert-danger mt-4" role="alert">
-                                            <strong>Error!</strong> { this.state.error_text }
-                                        </div>
-                                    ) : null
-                                }
-
-                                {
-                                    this.state.transfer_success ? (
-                                        <div className="alert alert-success mt-4" role="alert">
-                                            <strong>Success!</strong> Your transaction is now completed.
-                                        </div>
-                                    ) : null
-                                }
+                                
                                
 
                                 <button 
                                     type="submit"
                                     className="btn btn-danger mt-2" 
                                     disabled={this.state.transferring}
-                                >Trasnfer</button>
+                                >Transfer</button>
 
                             </Formsy>
 
@@ -373,21 +397,7 @@ class Wallet extends Component {
                                         required />
 
                                 </div>
-                                {
-                                    this.state.power_error ? (
-                                        <div className="alert alert-danger mt-4" role="alert">
-                                            <strong>Error!</strong> { this.state.power_error_text }
-                                        </div>
-                                    ) : null
-                                }
-
-                                {
-                                    this.state.power_success ? (
-                                        <div className="alert alert-success mt-4" role="alert">
-                                            <strong>Success!</strong> Power has been upped!
-                                        </div>
-                                    ) : null
-                                }
+                                
                                
 
                                 <button 
@@ -406,9 +416,67 @@ class Wallet extends Component {
 
                     <div className="upload-wrapper mb-4">
                         <button className="btn btn-danger px-3" onClick={ this.displayKeys }>Display your private & public keys</button>
-                        <code>
-                            { JSON.stringify(this.state.keys) }
-                        </code>
+
+                        {
+                            this.state.keys_revealed ? (
+                                <div className="table-responsive">
+                                    <table className="table table-dark small mt-3">
+
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" style={{width:'30%'}}>Type</th>
+                                                <th scope="col" style={{width:'70%'}}>Key</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th style={{width:'30%'}}>Owner</th>
+                                                <td style={{width:'70%'}}>{this.state.keys['owner']}</td>
+                                            </tr>
+
+                                            <tr>
+                                                <th style={{width:'30%'}}>ownerPubkey</th>
+                                                <td style={{width:'70%'}}>{this.state.keys['ownerPubkey']}</td>
+                                            </tr>
+
+                                            <tr>
+                                                <th style={{width:'30%'}}>memo</th>
+                                                <td style={{width:'70%'}}>{this.state.keys['memo']}</td>
+                                            </tr>
+
+                                            <tr>
+                                                <th style={{width:'30%'}}>memoPubkey</th>
+                                                <td style={{width:'70%'}}>{this.state.keys['memoPubkey']}</td>
+                                            </tr>
+
+                                            <tr>
+                                                <th style={{width:'30%'}}>active</th>
+                                                <td style={{width:'70%'}}>{this.state.keys['active']}</td>
+                                            </tr>
+
+                                            <tr>
+                                                <th style={{width:'30%'}}>activePubkey</th>
+                                                <td style={{width:'70%'}}>{this.state.keys['activePubkey']}</td>
+                                            </tr>
+
+                                            <tr>
+                                                <th style={{width:'30%'}}>posting</th>
+                                                <td style={{width:'70%'}}>{this.state.keys['posting']}</td>
+                                            </tr>
+
+                                            <tr>
+                                                <th style={{width:'30%'}}>postingPubkey</th>
+                                                <td style={{width:'70%'}}>{this.state.keys['postingPubkey']}</td>
+                                            </tr>
+
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : null
+                        }
+                        
+
                     </div>
 
                 </div>

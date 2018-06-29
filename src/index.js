@@ -34,6 +34,7 @@ import Upload from './Upload';
 import Categories from './Categories';
 import Wallet from './Wallet';
 import Profile from './Profile';
+import Transfers from './Transfers';
 
 // Add Steem
 //steem.api.setOptions({ url: 'https://api.steemit.com'});
@@ -68,6 +69,7 @@ ReactDOM.render((
                             if(test_if_home) return <Home {...props} /> 
                             else if(props.location.pathname == '/upload') return <Upload {...props} />
                             else if(props.location.pathname == '/wallet') return <Wallet {...props} />
+                            else if(props.location.pathname == '/transfers') return <Transfers {...props} />
                             else if(props.location.pathname == '/profile') return <Profile {...props} />
                             else if(props.location.pathname == '/categories') return <Categories {...props} />
                             else if(test_if_channel) return <Channel {...props} />
