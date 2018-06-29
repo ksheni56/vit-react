@@ -297,7 +297,7 @@ class Wallet extends Component {
                     <div className="upload-wrapper mb-4">
                         <div>
 
-                            <h3 className="mb-1">Trasnfer Your Funds</h3>
+                            <h3 className="mb-1">Transfer Your Funds</h3>
                             <p className="mb-4 text-muted">Move funds to another VIT account.</p>
 
                             <Formsy 
