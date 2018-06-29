@@ -25,10 +25,6 @@ class Transfers extends Component {
             transfers: []
         };
 
-        //this.transfer = this.transfer.bind(this);
-        //this.displayKeys = this.displayKeys.bind(this);
-        //this.powerUp = this.powerUp.bind(this);
-
 
     } 
 
@@ -49,32 +45,17 @@ class Transfers extends Component {
             console.log(transfers)
         });
 
-        /*
-        steem.api.getAccounts([this.props.app.username], (err, accounts) => {
-
-            if(err || (accounts && accounts.length == 0)) {
-                
-                console.log("Invalid account!");
-
-                return false; // Handle invalid account
-
-            }
-
-            let account_info = accounts[0];
-            account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
-            account_info.vesting_shares = parseInt(account_info.vesting_shares)/1000000
-
-            console.log("Account has been loaded", account_info);
-            this.setState({
-                loading: false,
-                account: account_info
-            })
-
-        });
-        */
     }
 
     displayHistory() {
+
+        if(this.state.transfers.length == 0) {
+            return (
+                <div className="text-left" role="alert">
+                    <strong>You don't have any transactions to display yet...</strong>
+                </div>
+            )
+        } 
 
         return (
             <div className="table-responsive">
