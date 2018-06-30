@@ -121,13 +121,12 @@ class Wallet extends Component {
 
                 if(err) {
 
-                    toast.error('Cannot complete this transaction. Reason: ' + err.data.message);
+                    let error_message = this.parseError(err);
+
+                    toast.error(error_message);
 
                     this.setState({
-                        //power_error_text: 'Cannot complete this transaction. Reason: ' + err.data.message,
-                        //power_error: true,
                         powering: false,
-                        //power_success: false
                     });
 
                     return;
@@ -167,14 +166,11 @@ class Wallet extends Component {
 
         var confirmation = prompt("Please enter your VIT password to confirm this transaction", "");
 
-        this.setState({
-            //error_text: 'Something went wrong',
-            //transfer_error: false,
-            transferring: true
-        });
-
         if(confirmation) {
-            // try and send the funds
+
+            this.setState({
+                transferring: true
+            });
 
             let amount = form_data.amount + " TVIT",
             keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
@@ -186,7 +182,10 @@ class Wallet extends Component {
                         transferring: false
                     });
 
-                    toast.error('Cannot complete this transaction. Reason: ' + err.data.message);
+                    let error_message = this.parseError(err);
+                    console.log("error_message",error_message)
+
+                    toast.error(error_message);
 
                     return;
                 }
@@ -196,7 +195,6 @@ class Wallet extends Component {
                 toast.success("Your transaction is now completed!");
 
                 this.setState({
-                    //transfer_success: true,
                     transferring: false
                 });
 
@@ -220,14 +218,28 @@ class Wallet extends Component {
 
         } else {
 
-            toast.error('Please enter your VIT password to complete this transaction!');
-
-            this.setState({
-                //error_text: 'Please enter your VIT password to complete this transaction.',
-                //transfer_error: true,
-                transferring: false
-            });
+            
         }
+        
+    }
+
+    parseError(err) {
+        console.log("parseError called", err)
+
+        // Parse some common errors
+
+        if(err.data.name == 'tx_missing_active_auth') {
+            // Invalid key
+            return "Error! The VIT password you've provided is incorrect.";
+        } else if ( (err.data.name == 'assert_exception' && err.data.stack[0].context.method == 'validate_account_name') || (err.data.message == 'unknown key' && err.data.stack[0].context.method == 'get_account') ) {
+            // Invalid recipient
+            return "Error! The recipient's name you've provided is incorrect.";
+        } else if ( err.data.name == 'assert_exception' && err.data.stack[0].format == '_db.get_balance( from_account, o.amount.symbol ) >= o.amount: Account does not have sufficient funds for transfer.') {
+            // Not enough funds:(
+            return "Error! You don't have sufficient funds to complete this transaction.";
+        }
+
+        return err.data.message;
         
     }
 
