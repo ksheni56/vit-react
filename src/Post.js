@@ -7,6 +7,7 @@ import { vote, comment } from './actions/post';
 import Formsy from 'formsy-react';
 import moment from 'moment';
 import TextArea from './components/forms/TextArea';
+import HLSSource from './HLS';
 
 
 class Post extends Component {
@@ -32,6 +33,7 @@ class Post extends Component {
         this.castVote = this.castVote.bind(this);
         this.submitComment = this.submitComment.bind(this);
 
+
     } 
 
 
@@ -54,7 +56,7 @@ class Post extends Component {
 
     componentDidMount() {
 
-        this.loadContent(this.props.match.params.author, this.props.match.params.permalink)
+        this.loadContent(this.props.match.params.author, this.props.match.params.permalink);
 
     }
 
@@ -190,6 +192,8 @@ class Post extends Component {
             let post = result;
 
             if(err) {
+
+                // || result.json_metadata == ''
 
                 this.setState({
                     loading_related: false,
@@ -327,11 +331,15 @@ class Post extends Component {
             let filename = this.state.post.json_metadata.vit_data.Name;
 
             return (
-                <Player
-                    playsInline
-                    src={ "http://138.197.166.131:5000/uploads/" + hash + "/" + filename }>
+
+                <Player playsInline>
+                    <HLSSource
+                        isVideoChild
+                        src={ "http://138.197.166.131:5000/uploads/" + hash + "/" + filename }
+                    />
                     <BigPlayButton position="center" />
                 </Player>
+
             )
         
         } else {

@@ -6,7 +6,7 @@ import ReactDOM from 'react-dom';
 import FeaturedChannels from './FeaturedChannels';
 import { logout } from './../actions/app';
 import { ButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-
+import { withRouter } from 'react-router'
 
 class Header extends Component {
 
@@ -62,6 +62,8 @@ class Header extends Component {
         })
 
         this.props.logout();
+
+        this.props.history.push("/trending");
     }
 
     render() {
@@ -131,4 +133,4 @@ function mapStateToProps(state) {
     
 }
 
-export default connect(mapStateToProps, { logout })(Header);
+export default withRouter(connect(mapStateToProps, { logout })(Header));

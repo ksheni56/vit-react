@@ -101,7 +101,7 @@ class Bootstrap extends Component {
     render() {
 
         return [
-            <Header key="header" toggle={ this.toggleLeftSidebarCallback }/>,
+            <Header {...this.props} key="header" toggle={ this.toggleLeftSidebarCallback }/>,
             <div className="row mx-0 content-wrapper h-100" key="content-wrapper" ref="content_wrapper">
 
                 {

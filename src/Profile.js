@@ -107,7 +107,7 @@ class Profile extends Component {
             return false;
         }
 
-        var confirmation = prompt("Please enter your VIT password to confirm this transaction", "");
+        var confirmation = prompt("Please enter your VIT password to update your account.", "");
 
         if(confirmation) {
 
@@ -136,6 +136,8 @@ class Profile extends Component {
                 let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
                 var self = this;
 
+                console.log("jsonMetadata on Upload", jsonMetadata)
+
                 steem.broadcast.accountUpdate(
                     keys.active,
                     this.props.app.username,
@@ -159,8 +161,20 @@ class Profile extends Component {
 
                         console.log("Avatar update", result);
 
-                        self.setState({
-                            uploading: false
+                        // get the most recent profile
+                        steem.api.getAccounts([self.props.app.username], (err, accounts) => {
+
+                            let account_info = accounts[0];
+                            account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+
+                            self.setState({
+                                uploading: false,
+                                account: account_info,
+                                display_name: (account_info.json_metadata.profile && account_info.json_metadata.profile.name) ? account_info.json_metadata.profile.name : '',
+                                about: (account_info.json_metadata.profile && account_info.json_metadata.profile.about) ? account_info.json_metadata.profile.about : '',
+                                profile_image: (account_info.json_metadata.profile && account_info.json_metadata.profile.profile_image) ? "https://steemitimages.com/100x100/" + account_info.json_metadata.profile.profile_image : '',
+                            })
+
                         });
 
                         toast.success("Your new avatar has been uploaded!");
@@ -198,7 +212,7 @@ class Profile extends Component {
             return false;
         }
 
-        var confirmation = prompt("Please enter your VIT password to confirm this transaction", "");
+        var confirmation = prompt("Please enter your VIT password to update your account", "");
 
         this.setState({
             error_text: 'Something went wrong',
@@ -218,7 +232,7 @@ class Profile extends Component {
             if(this.state.account.json_metadata.profile && this.state.account.json_metadata.profile.profile_image) {
                 jsonMetadata = { profile: { name: form_data.name, about: form_data.about, profile_image: this.state.account.json_metadata.profile.profile_image } };
             }
-            
+
             var self = this;
 
             steem.broadcast.accountUpdate(
@@ -244,8 +258,20 @@ class Profile extends Component {
 
                     console.log("Profile update", result);
 
-                    self.setState({
-                        saving: false
+                    // get the most recent profile
+                    steem.api.getAccounts([self.props.app.username], (err, accounts) => {
+
+                        let account_info = accounts[0];
+                        account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+
+                        self.setState({
+                            saving: false,
+                            account: account_info,
+                            display_name: (account_info.json_metadata.profile && account_info.json_metadata.profile.name) ? account_info.json_metadata.profile.name : '',
+                            about: (account_info.json_metadata.profile && account_info.json_metadata.profile.about) ? account_info.json_metadata.profile.about : '',
+                            profile_image: (account_info.json_metadata.profile && account_info.json_metadata.profile.profile_image) ? "https://steemitimages.com/100x100/" + account_info.json_metadata.profile.profile_image : '',
+                        })
+
                     });
 
                     toast.success("Your account information has been updated!");
