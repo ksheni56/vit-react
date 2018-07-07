@@ -10,16 +10,14 @@ class Item extends Component {
     } 
 
     renderThumbnail() {
-
-        /*
+        
         let json_metadata = JSON.parse(this.props.data.json_metadata);
-        if(json_metadata.image) {
-            let src = json_metadata.image[0];
-            return <img src={ src } />
-        } else {
-            return <img src="http://via.placeholder.com/300x180" className="img-fluid"/>
+        //console.log("Thumb", json_metadata.vit_data)
+
+        if(json_metadata && json_metadata.vit_data && json_metadata.vit_data.Hash) {
+            //console.log("URL", "http://images.vit.tube/playback/" + json_metadata.vit_data.Hash + "/thumbnail-01.jpg")
         }
-        */
+        
 
         return <img src="/images/thumbnail.jpg" className="img-fluid"/>
         

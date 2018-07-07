@@ -42,11 +42,18 @@ import Transfers from './Transfers';
 // Connect to Vit Testnet
 
 steem.api.setOptions({
+    url: 'https://peer.vit.tube/',
+    address_prefix: "VIT",
+    chain_id: "73f14dd4b7b07a8663be9d84300de0f65ef2ee7e27aae32bbe911c548c08f000"
+});
+
+/*
+steem.api.setOptions({
     url: 'https://testapi.vit.tube/ws',
     address_prefix: "TVT",
     chain_id: "0fd7b6506d0d4b25dab0333cbd58391b0139119dfe585f372dc952687e7a6f86"
 });
-
+*/
 
 ReactDOM.render((
     <Provider store={reducers}>

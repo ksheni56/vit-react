@@ -12,6 +12,7 @@ import TextField from './components/forms/TextField';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/lib/Creatable';
 import './sass/Select.scss';
+import { ToastContainer, toast } from 'react-toastify';
 
 class Upload extends Component {
 
@@ -23,6 +24,9 @@ class Upload extends Component {
             'uploading': false,
             'files': [],
             'error': false,
+            'error_type': 'generic',
+            'generic_error_text': 'Could not upload your file. Please try again!',
+            'custom_error_text': '',
             'success': false,
             'ready_to_upload': false,
             'uploading': false,
@@ -30,18 +34,17 @@ class Upload extends Component {
             'selected_category': [],
             'categories': [],
             'loading_categories': true,
-            'tags': [
-                { value: 'Tag1', label: 'Tag1' },
-                { value: 'Tag2', label: 'Tag2' },
-                { value: 'Tag3', label: 'Tag3' }
-            ],
-            'selected_tags': []
+            'tags': [],
+            'selected_tags': [],
+            'processing': false,
+            'processed': false,
+            'permlink': ''
         }
 
         this.handleDrop = this.handleDrop.bind(this);
         this.handleDropRejected = this.handleDropRejected.bind(this);
         this.handleChangeCategory = this.handleChangeCategory.bind(this);
-        this.handleChangeTags = this.handleChangeTags.bind(this);
+        //this.handleChangeTags = this.handleChangeTags.bind(this);
         this.upload = this.upload.bind(this);
 
     } 
@@ -49,11 +52,10 @@ class Upload extends Component {
     componentDidMount() {
 
         // TODO: change 'life'
-        steem.api.getTrendingTags('', 20, (err, result) => {
+        steem.api.getTrendingTags('', 60, (err, result) => {
 
             let categories = [];
 
-            console.log("result", result)
             for(var i in result) {
                 if(result[i]['name'] !== '') {
                     categories.push({ value: result[i]['name'], label: result[i]['name']})
@@ -83,65 +85,139 @@ class Upload extends Component {
             return false;
         }
 
-        let tags = [],
-        category = this.state.selected_category.value;
-
-        if(!category) {
-            alert("Please select a category!");
+        let categories = [];
+        
+        /*
+        if(this.state.selected_category.length > 0 ) {
+       
+            for(var i in this.state.selected_category) {
+                if(i < 5) categories.push(this.state.selected_category[i]['value']);
+            }
+        
+        } else {
+            toast.error("Please select at least 1 category!");
             return false;
         }
-
-        if(this.state.selected_tags.length > 0) {
-            for(var i in this.state.selected_tags) {
-                tags.push(this.state.selected_tags[i]['value']);
-            }
-        }
-
-        var slug = form_data.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
+        */
 
         this.setState({
             success: false,
-            error: false
+            error: false,
+            uploading: true
         });
 
         let formData = new FormData();
         formData.append('file', this.state.files[0]);
-        axios.post("http://138.197.166.131:5000", formData, {
+        axios.post("https://media.vit.tube/upload/video", formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
         }).then(response => {
 
-            console.log("File upload response", response)
+            console.log("File upload response", response);
 
             this.setState({
                 success: true,
+                processing: true,
+                processed: false,
                 files: '',
                 ready_to_upload: false
             });
 
-            let slug = form_data.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
+            var self = this;
 
-            this.props.post({
 
-                postingWif: this.props.app.postingWif, 
-                category: category, // category
-                username: this.props.app.username, 
-                slug: slug, // slug
-                title: form_data.title, // title
-                body: '...', // body,
-                tags: [],
-                vit_data: response.data
+            if(!response.data.Complete) {
+                let redirect_url = response.request.responseURL;
 
-            }).then( response => {
+                var refreshInterval = setInterval(function() {
 
-                console.log("post blockchain success", response);
+                    axios.get(redirect_url).then(response => {
 
-            }).catch(err => {
+                        console.log("Is it done yet?", response.data.Complete)
 
-                console.log("post error", err)
+                        if(response.data.Complete) {
 
-            });
+                            console.log("Done!", response.data)
+
+                            clearInterval(refreshInterval);
+
+                            let slug = form_data.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
+
+                            self.props.post({
+
+                                postingWif: self.props.app.postingWif, 
+                                //category: categories[0], // category
+                                category: "genesis",
+                                username: self.props.app.username, 
+                                slug: slug, // slug
+                                title: form_data.title, // title
+                                body: '...', // body,
+                                tags: ["Big Ass", "Big Dick", "Big Tits", "Blonde", "Blowjob"],
+                                //tags: categories,
+                                vit_data: response.data
+
+                            }).then( response => {
+
+                                console.log("post blockchain success", response);
+
+                                self.setState({
+                                    processing: false,
+                                    processed: true,
+                                    permlink: response.payload.operations[0][1].permlink,
+                                    uploading: false
+                                });
+
+                            }).catch(err => {
+
+                                console.log("post error", err)
+
+                                if(err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
+                                    
+                                    self.setState({
+                                        processing: false,
+                                        processed: false,
+                                        error: true,
+                                        error_type: 'timeout',
+                                        custom_error_text: 'You may only post once every 5 minutes.',
+                                        uploading: false
+                                    });
+
+                                } else {
+
+                                    self.setState({
+                                        processing: false,
+                                        processed: false,
+                                        error: true,
+                                        error_type: 'other',
+                                        uploading: false,
+                                        custom_error_text: err.payload.data.stack[0].format
+                                    });
+
+                                }
+
+                                
+
+                            });
+
+                        }
+
+                    }).catch(err => {
+
+                        console.log("err GET", response);
+
+                        self.setState({
+                            processing: false,
+                            processed: false,
+                            error: true,
+                            error_type: 'generic',
+                            uploading: false
+                        });
+                    });
+
+                }, 2000);
+
+            }
 
         }).catch(err => {
 
@@ -168,9 +244,10 @@ class Upload extends Component {
 
         this.setState({
             selected_category: category
-        })
+        });
     }
 
+    /*
     handleChangeTags(tags) {
 
         if( this.state.selected_tags.length < 10 ) {
@@ -180,15 +257,62 @@ class Upload extends Component {
         }
         
     }
+    */
+
+    showProgress() {
+
+        if(this.state.success && this.state.processing && !this.state.processed) {
+
+            return (
+                <div className="alert alert-warning mt-4" role="alert">
+                    <strong>Please stand by!</strong> Your video is currently being processed. Do not close/leave this page!
+                </div>
+            )
+
+
+        } else if(this.state.success && !this.state.processing && this.state.processed) {
+
+            return (
+                <div className="alert alert-success mt-4" role="alert">
+                    <strong>Success!</strong> Your video is now processed and available <strong><Link to={ "/@" + this.props.app.username + "/" + this.state.permlink }>here</Link></strong>
+                </div>
+            )
+
+        }
+
+    }
+
+    handleErrors() {
+
+        if(this.state.error_type == 'generic') {
+
+            return (
+                <span><strong>Error!</strong> Could not upload your file. Please try again!</span>
+            )
+
+        } else {
+
+            return (
+                <span><strong>Error!</strong> {this.state.custom_error_text }</span>
+            )
+
+        }
+
+    }
 
     handleDropRejected(file) {
-        //console.log("rejected", file)
+        
+        toast.error("Error! Cannnot upload this type of file.");
+
     }
 
     render() {
         
         return (
             <div className="row justify-content-center">
+
+                <ToastContainer />
+
                 <div className="col-8 mt-4">
                     <div className="upload-wrapper">
                         <div>
@@ -214,6 +338,7 @@ class Upload extends Component {
 
                                     <label>Category</label>
                                     <Select
+                                        isMulti
                                         name="category"
                                         className="Select"
                                         onChange={this.handleChangeCategory}
@@ -235,16 +360,16 @@ class Upload extends Component {
                                 {
                                     this.state.error ? (
                                         <div className="alert alert-danger mt-4" role="alert">
-                                            <strong>Error!</strong> Something went wrong. Please try again!
+                                            { this.handleErrors() }
                                         </div>
                                     ) : null
                                 }
 
                                 {
                                     this.state.success ? (
-                                        <div className="alert alert-success mt-4" role="alert">
-                                            <strong>Success!</strong> Your video is currently being processed.
-                                        </div>
+                                        <span>
+                                            { this.showProgress() }
+                                        </span>
                                     ) : null
                                 }
 
@@ -254,13 +379,15 @@ class Upload extends Component {
                                     onDrop={ this.handleDrop }
                                     multiple={ false } 
                                     onDropRejected={this.handleDropRejected }
+                                    accept="video/mp4, video/avi, video/x-matroska, video/quicktime"
+                                    disabled={ this.state.uploading }
                                 >
-                                    <div>
-                                        Drag a file here or click to upload.
+                                    <div className="w-100 text-center">
+                                        Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span>
 
                                         {
                                             this.state.files.length > 0 ? (
-                                                <small className="d-block text-white text-center">You are ready to upload <strong>{this.state.files[0].name}</strong></small>
+                                                <small className="d-block text-white text-center mt-2">You are ready to upload <strong>{this.state.files[0].name}</strong></small>
                                             ) : null
                                         }
                                     </div>
@@ -269,7 +396,7 @@ class Upload extends Component {
                                 <button 
                                     type="submit"
                                     className="btn btn-danger mt-4" 
-                                    disabled={!this.state.ready_to_upload}
+                                    disabled={!this.state.ready_to_upload || this.state.uploading}
                                 >Upload</button>
 
                             </Formsy>

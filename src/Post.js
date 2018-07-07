@@ -43,6 +43,10 @@ class Post extends Component {
 
         if(nextProps.match.params.permalink != this.state.permalink) {
 
+            this.setState({
+                loading: true
+            })
+
             this.loadContent(nextProps.match.params.author, nextProps.match.params.permalink)
 
         }
@@ -189,11 +193,11 @@ class Post extends Component {
 
         steem.api.getContent(author, permalink, (err, result) => {
 
+            console.log("getContent response", err, result)
+
             let post = result;
 
-            if(err) {
-
-                // || result.json_metadata == ''
+            if(err || post.author == '') {
 
                 this.setState({
                     loading_related: false,
@@ -204,7 +208,6 @@ class Post extends Component {
 
                 return false;
             }
-
             
             post.json_metadata = JSON.parse(result.json_metadata);
             console.log("Post parsed", post)
@@ -222,6 +225,8 @@ class Post extends Component {
             });
 
             steem.api.getAccounts([post.author], (err, result) => {
+
+                console.log(">>>", err, result)
 
                 post.author_profile = result[0];
                 post.author_profile.json_metadata = JSON.parse(result[0].json_metadata);
@@ -327,15 +332,16 @@ class Post extends Component {
 
         if(this.state.post.json_metadata.vit_data) {
 
-            let hash = this.state.post.json_metadata.vit_data.Hash;
-            let filename = this.state.post.json_metadata.vit_data.Name;
+            //let hash = this.state.post.json_metadata.vit_data.Hash;
+            //let filename = this.state.post.json_metadata.vit_data.Name;
+            let playlist = this.state.post.json_metadata.vit_data.Playlist
 
             return (
 
                 <Player playsInline>
                     <HLSSource
                         isVideoChild
-                        src={ "http://138.197.166.131:5000/uploads/" + hash + "/" + filename }
+                        src={ "http://images.vit.tube/playback/" + playlist }
                     />
                     <BigPlayButton position="center" />
                 </Player>

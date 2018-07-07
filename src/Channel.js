@@ -101,10 +101,6 @@ class Channel extends Component {
 
     componentDidMount() {
 
-        //let following = this.props.app.subs.find(o => o.following === this.state.author);
-
-        //console.log("AM I FOLLOWING", following)
-
         this.loadContent();
         this.getAccount();
         this.checkIfSubbed();
@@ -148,6 +144,8 @@ class Channel extends Component {
         };
 
         steem.api.getDiscussionsByBlog(query, (err, result) => {
+
+            console.log("getDiscussionsByBlog", err, result);
 
             if(err) {
 
@@ -405,7 +403,7 @@ class Channel extends Component {
                 {
                     !this.state.loading ? (
 
-                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || !this.state.account_info}>
+                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || !this.state.account_info || this.state.posts.length == 0}>
                             {
                                 !this.state.loading_more ? (
                                     <strong>Load More</strong>
