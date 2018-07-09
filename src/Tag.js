@@ -46,7 +46,7 @@ class Tag extends Component {
 
     }
 
-    loadMoreContent() {
+    loadMoreContent() { 
 
         this.setState({
             'loading_more': true
@@ -58,8 +58,6 @@ class Tag extends Component {
             'start_author': this.state.posts[this.state.posts.length - 1].author,
             'start_permlink': this.state.posts[this.state.posts.length - 1].permlink
         }
-
-        // TODO: refactore the code below
 
         if(this.state.filter == 'trending') {
 
@@ -78,14 +76,16 @@ class Tag extends Component {
         } else if(this.state.filter == 'new') {
 
             steem.api.getDiscussionsByCreated(load_more_query, (err, result) => {
-            
+
                 result.splice(0, 1);
                 let all_posts = this.state.posts.concat(result);
 
                 this.setState({
                     posts: all_posts,
                     'loading_more': false
-                })
+                });
+
+
             });
 
         } else if(this.state.filter == 'hot') {

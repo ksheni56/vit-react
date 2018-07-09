@@ -80,7 +80,7 @@ ReactDOM.render((
                             else if(props.location.pathname == '/profile') return <Profile {...props} />
                             else if(props.location.pathname == '/categories') return <Categories {...props} />
                             else if(test_if_channel) return <Channel {...props} />
-                            else return <Redirect to="/trending/"/>
+                            else return <Redirect to="/new/"/>
 
                         } } 
                     />

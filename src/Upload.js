@@ -87,7 +87,7 @@ class Upload extends Component {
 
         let categories = [];
         
-        /*
+        
         if(this.state.selected_category.length > 0 ) {
        
             for(var i in this.state.selected_category) {
@@ -98,7 +98,7 @@ class Upload extends Component {
             toast.error("Please select at least 1 category!");
             return false;
         }
-        */
+        
 
         this.setState({
             success: false,
@@ -129,6 +129,7 @@ class Upload extends Component {
 
             if(!response.data.Complete) {
                 let redirect_url = response.request.responseURL;
+                console.log("redirect_url", redirect_url)
 
                 var refreshInterval = setInterval(function() {
 
@@ -147,14 +148,12 @@ class Upload extends Component {
                             self.props.post({
 
                                 postingWif: self.props.app.postingWif, 
-                                //category: categories[0], // category
-                                category: "genesis",
+                                category: categories[0], // category
                                 username: self.props.app.username, 
                                 slug: slug, // slug
                                 title: form_data.title, // title
                                 body: '...', // body,
-                                tags: ["Big Ass", "Big Dick", "Big Tits", "Blonde", "Blowjob"],
-                                //tags: categories,
+                                tags: categories,
                                 vit_data: response.data
 
                             }).then( response => {
@@ -172,7 +171,7 @@ class Upload extends Component {
 
                                 console.log("post error", err)
 
-                                if(err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
+                                if(err.payload.data && err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
                                     
                                     self.setState({
                                         processing: false,

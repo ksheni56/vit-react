@@ -416,7 +416,7 @@ class Post extends Component {
                             <div className="col-md-10 col-12">
                                 <h2>{ this.state.post.title }</h2>
                                     <div className="payout small">
-                                        Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span> &middot; { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() }
+                                        Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span> &middot; { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
                                     </div>
                             </div>
                         </div>

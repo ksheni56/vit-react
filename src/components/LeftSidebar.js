@@ -21,7 +21,7 @@ class LeftSidebar extends Component {
 
     componentDidMount() {
         
-        steem.api.getTrendingTags('', 20, (err, result) => {
+        steem.api.getTrendingTags('', 60, (err, result) => {
 
             if(err) {
                 
@@ -82,7 +82,7 @@ class LeftSidebar extends Component {
                             (Tag) =>
                                 <li key={ Tag.name } ref={ Tag.name }>
         
-                                    <Link className={ this.getActiveClass(Tag.name) } to={ '/' + Tag.name + '/trending' }>
+                                    <Link className={ this.getActiveClass(Tag.name) } to={ '/' + Tag.name + '/new' }>
                                         { Tag.name } <span className="active-dot"><i className="fa fa-circle text-danger"></i></span>
                                     </Link>
                                 </li>
