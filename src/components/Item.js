@@ -15,7 +15,7 @@ class Item extends Component {
         //console.log("Thumb", json_metadata.vit_data)
 
         if(json_metadata && json_metadata.vit_data && json_metadata.vit_data.Hash) {
-            //console.log("URL", "http://images.vit.tube/playback/" + json_metadata.vit_data.Hash + "/thumbnail-01.jpg")
+            console.log("URL", "https://media.vit.tube/playback/" + json_metadata.vit_data.Hash + "/thumbnail-01.jpg")
         }
         
 

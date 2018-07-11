@@ -79,6 +79,10 @@ class Login extends Component {
             <div className="row w-100 h-100 justify-content-center align-items-center">
                 <div className="col-lg-3 col-md-5 col-10 align-self-center login-form">
 
+                    <div className="col-12 text-center mb-4">
+                        <img src="/images/logo.png" className="logo"/>
+                    </div>
+
                     {
                         this.state.error ? (
 
