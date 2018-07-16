@@ -8,6 +8,7 @@ import Formsy from 'formsy-react';
 import moment from 'moment';
 import TextArea from './components/forms/TextArea';
 import HLSSource from './HLS';
+import Item from './components/Item';
 
 
 class Post extends Component {
@@ -301,10 +302,8 @@ class Post extends Component {
                         (Related) =>
                             <li key={ Related.id } ref={ Related.id }>
 
-                                <Link to={ '/@' + Related.author + '/' + Related.permlink }>
-                                    <h4>{ Related.title }</h4>
-                                    <img src="/images/thumbnail.jpg" className="img-fluid"/>
-                                </Link>
+                                <Item key={ Related.id } ref={ Related.id } data={ Related } />
+
                             </li>
                         ) 
 
