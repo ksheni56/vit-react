@@ -341,7 +341,7 @@ class Post extends Component {
                 <Player playsInline>
                     <HLSSource
                         isVideoChild
-                        src={ "http://images.vit.tube/playback/" + playlist }
+                        src={ "https://media.vit.tube/playback/" + playlist }
                     />
                     <BigPlayButton position="center" />
                 </Player>

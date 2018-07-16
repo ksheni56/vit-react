@@ -125,7 +125,7 @@ class Profile extends Component {
 
                 console.log("Avatar upload response", response);
 
-                let avatar_path = "http://images.vit.tube/uploads/" + response.data.Hash + "/" + response.data.Name,
+                let avatar_path = "https://media.vit.tube/uploads/" + response.data.Hash + "/" + response.data.Name,
                 jsonMetadata = { profile: { profile_image: avatar_path } };
 
                 if(this.state.account.json_metadata.profile && (this.state.account.json_metadata.profile.name || this.state.account.json_metadata.profile.about) ) {
