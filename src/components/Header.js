@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
-import { NavLink, Link } from 'react-router-dom';
-import ReactDOM from 'react-dom';
-import FeaturedChannels from './FeaturedChannels';
+import { Link } from 'react-router-dom';
 import { logout } from './../actions/app';
 import { ButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import { withRouter } from 'react-router'
@@ -74,7 +71,7 @@ class Header extends Component {
                     <button type="button" className="btn btn-light mr-2 left-sidebar-toggle" onClick={(e) => this.toggleLeftSidebar(e)} >
                         <i className="fas fa-bars"></i>
                     </button>
-                    <Link to="/"><img src="/images/logo.png" className="logo"/></Link>
+                    <Link to="/"><img src="/images/logo.png" className="logo" alt="Logo" /></Link>
                 </div>
                 <div className="col search-wrapper d-none">
                     <div className="form-group my-0">

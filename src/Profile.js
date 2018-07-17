@@ -1,16 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from 'steem';
-import { Link } from 'react-router-dom';
-import moment from 'moment';
-import Header from './components/Header';
 import Dropzone from 'react-dropzone';
 import axios from 'axios';
 import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
-import Select from 'react-select';
-import CreatableSelect from 'react-select/lib/Creatable';
 
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -62,7 +57,7 @@ class Profile extends Component {
 
         steem.api.getAccounts([this.props.app.username], (err, accounts) => {
 
-            if(err || (accounts && accounts.length == 0)) {
+            if(err || (accounts && accounts.length === 0)) {
                 
                 console.log("Invalid account!");
 
@@ -367,10 +362,10 @@ class Profile extends Component {
     }
 
     renderAvatar() {
-        if(this.state.profile_image != '' ) {
+        if(this.state.profile_image !== '' ) {
             return (
                 <div className="avatar">
-                    <img src={ this.state.profile_image }/>
+                    <img alt="Avatar" src={ this.state.profile_image }/>
                 </div>
             )
         } else if( (this.state.account.json_metadata.profile && !this.state.account.json_metadata.profile.profile_image) || !this.state.account.json_metadata.profile ) {

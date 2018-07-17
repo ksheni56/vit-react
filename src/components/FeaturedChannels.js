@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
 import { NavLink } from 'react-router-dom';
-import ReactDOM from 'react-dom';
 import List from './../featured.json'
 
 class FeaturedChannels extends Component {
@@ -35,7 +33,7 @@ class FeaturedChannels extends Component {
                                 <NavLink to={ '/@' + Channel.url }>
                                     <div className="d-flex featured-channel-item">
                                         <div className="avatar-holder">
-                                            <img src={Channel.avatar} />
+                                            <img src={Channel.avatar} alt="Avatar" />
                                         </div>
                                         <div className="data-holder">
                                             { Channel.name }

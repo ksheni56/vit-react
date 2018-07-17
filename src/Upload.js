@@ -2,15 +2,12 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from 'steem';
 import { Link } from 'react-router-dom';
-import moment from 'moment';
-import Header from './components/Header';
 import Dropzone from 'react-dropzone';
 import axios from 'axios';
 import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 import Select from 'react-select';
-import CreatableSelect from 'react-select/lib/Creatable';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -29,7 +26,6 @@ class Upload extends Component {
             'custom_error_text': '',
             'success': false,
             'ready_to_upload': false,
-            'uploading': false,
             'title': '',
             'selected_category': [],
             'categories': [],
@@ -283,7 +279,7 @@ class Upload extends Component {
 
     handleErrors() {
 
-        if(this.state.error_type == 'generic') {
+        if(this.state.error_type === 'generic') {
 
             return (
                 <span><strong>Error!</strong> Could not upload your file. Please try again!</span>

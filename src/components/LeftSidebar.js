@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from 'steem';
-import { NavLink, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import FeaturedChannels from './FeaturedChannels';
 import Subscriptions from './Subscriptions';
@@ -52,7 +52,7 @@ class LeftSidebar extends Component {
 
     getActiveClass(current_tag) {
 
-        if(this.props.location.pathname.split("/")[1] == current_tag) {
+        if(this.props.location.pathname.split("/")[1] === current_tag) {
             return "active";
         } else return null;
     }
@@ -64,7 +64,7 @@ class LeftSidebar extends Component {
             )
         } else {
 
-            if(this.state.tags.length == 0) {
+            if(this.state.tags.length === 0) {
 
                 return (                    
                     <div className="no-results text-center mt-3 mb-5">No Categories:(</div>
