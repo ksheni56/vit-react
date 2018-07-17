@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
 import { loginUser } from './actions/app';
-import { Link } from 'react-router-dom';
 import Formsy from 'formsy-react';
-import moment from 'moment';
 import TextField from './components/forms/TextField';
 
 class Login extends Component {
@@ -80,7 +77,7 @@ class Login extends Component {
                 <div className="col-lg-3 col-md-5 col-10 align-self-center login-form">
 
                     <div className="col-12 text-center mb-4">
-                        <img src="/images/logo.png" className="logo"/>
+                        <img src="/images/logo.png" className="logo" alt="Logo" />
                     </div>
 
                     {

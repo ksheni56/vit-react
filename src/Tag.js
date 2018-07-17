@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from 'steem';
-import { Link } from 'react-router-dom';
-import moment from 'moment'
 import FilterBar from './components/FilterBar';
 import Item from './components/Item';
 
@@ -32,7 +30,7 @@ class Tag extends Component {
 
     componentWillReceiveProps(nextProps) {        
 
-        if( nextProps.match.params.tag != this.state.tag || nextProps.match.params.filter != this.state.filter ) {
+        if( nextProps.match.params.tag !== this.state.tag || nextProps.match.params.filter !== this.state.filter ) {
             this.setState({
                 tag: nextProps.match.params.tag,
                 filter: nextProps.match.params.filter,
@@ -59,7 +57,7 @@ class Tag extends Component {
             'start_permlink': this.state.posts[this.state.posts.length - 1].permlink
         }
 
-        if(this.state.filter == 'trending') {
+        if(this.state.filter === 'trending') {
 
             steem.api.getDiscussionsByTrending(load_more_query, (err, result) => {
             
@@ -73,7 +71,7 @@ class Tag extends Component {
 
             });
 
-        } else if(this.state.filter == 'new') {
+        } else if(this.state.filter === 'new') {
 
             steem.api.getDiscussionsByCreated(load_more_query, (err, result) => {
 
@@ -88,7 +86,7 @@ class Tag extends Component {
 
             });
 
-        } else if(this.state.filter == 'hot') {
+        } else if(this.state.filter === 'hot') {
 
             steem.api.getDiscussionsByHot(load_more_query, (err, result) => {
             
@@ -102,7 +100,7 @@ class Tag extends Component {
 
             });
             
-        } else if(this.state.filter == 'promoted') {
+        } else if(this.state.filter === 'promoted') {
 
             steem.api.getDiscussionsByPromoted(load_more_query, (err, result) => {
             
@@ -127,7 +125,7 @@ class Tag extends Component {
             'limit': 30,
         }
 
-        if(filter == 'trending') {
+        if(filter === 'trending') {
 
             steem.api.getDiscussionsByTrending(query, (err, result) => {
             
@@ -138,7 +136,7 @@ class Tag extends Component {
 
             });
 
-        } else if(filter == 'new') {
+        } else if(filter === 'new') {
 
             steem.api.getDiscussionsByCreated(query, (err, result) => {
 
@@ -151,7 +149,7 @@ class Tag extends Component {
 
             });
 
-        } else if(filter == 'hot') {
+        } else if(filter === 'hot') {
 
             steem.api.getDiscussionsByHot(query, (err, result) => {
             
@@ -162,7 +160,7 @@ class Tag extends Component {
 
             });
             
-        } else if(filter == 'promoted') {
+        } else if(filter === 'promoted') {
 
             steem.api.getDiscussionsByPromoted(query, (err, result) => {
             
@@ -196,7 +194,7 @@ class Tag extends Component {
             )
         } else {
 
-            if(this.state.posts.length == 0) {
+            if(this.state.posts.length === 0) {
 
                 return (
                     <div className="row">
@@ -236,7 +234,7 @@ class Tag extends Component {
                 {
                     !this.state.loading ? (
 
-                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || this.state.posts.length == 0}>
+                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || this.state.posts.length === 0}>
                             {
                                 !this.state.loading_more ? (
                                     <strong>Load More</strong>

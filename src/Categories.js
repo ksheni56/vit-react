@@ -1,8 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
-import { Link } from 'react-router-dom';
-import moment from 'moment';
 
 class Categories extends Component {
 

@@ -3,16 +3,9 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-import Header from './components/Header';
-import Dropzone from 'react-dropzone';
-import axios from 'axios';
 import { post } from './actions/post';
-import Formsy from 'formsy-react';
-import TextField from './components/forms/TextField';
-import Select from 'react-select';
-import CreatableSelect from 'react-select/lib/Creatable';
 import './sass/Select.scss';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 
 class Transfers extends Component {
 
@@ -49,7 +42,7 @@ class Transfers extends Component {
 
     displayHistory() {
 
-        if(this.state.transfers.length == 0) {
+        if(this.state.transfers.length === 0) {
             return (
                 <div className="text-left" role="alert">
                     <strong>You don't have any transactions to display yet...</strong>

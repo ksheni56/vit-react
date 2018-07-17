@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
 import { NavLink } from 'react-router-dom';
-import ReactDOM from 'react-dom';
-import List from './../featured.json'
 import { getSubs } from './../actions/app';
 
 class Subscriptions extends Component {

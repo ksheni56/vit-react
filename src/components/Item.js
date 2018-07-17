@@ -4,13 +4,7 @@ import { Link } from 'react-router-dom';
 import moment from 'moment'
 
 class Item extends Component {
-
-    constructor(props) {
-        super(props);
-    } 
-
     renderThumbnail() {
-        
         let json_metadata = JSON.parse(this.props.data.json_metadata);
         //console.log("Thumb", json_metadata.vit_data)
 
@@ -20,12 +14,10 @@ class Item extends Component {
             return <img
               onError={ e => {e.target.src="/images/thumbnail.jpg" }}
               src={ URL } className="img-fluid"
+              alt="video thumbnail"
             />
         }
-        
-
-        return <img src="/images/thumbnail.jpg" className="img-fluid"/>
-        
+        return <img src="/images/thumbnail.jpg" className="img-fluid" alt="video thumbnail"/>
     }
 
     truncateTitle(title) {
@@ -33,11 +25,10 @@ class Item extends Component {
     }
 
     displayPayoutAmount(amount) {
-        return parseInt(amount.replace(' SBD','')).toFixed(2);
+        return parseInt(amount.replace(' SBD',''), 10).toFixed(2);
     }
 
     render() {
-        
         return (
             <div className="col-lg-3 col-md-4 item-wrapper mb-3" key={ this.props.data.id } ref={ this.props.data.id }>
                 <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>
@@ -56,17 +47,13 @@ class Item extends Component {
                 </div>
             </div>
         )
-        
     }
-
 }
 
 function mapStateToProps(state) {
-
     return { 
         app: state.app
     };
-    
 }
 
 export default connect(mapStateToProps, {})(Item);

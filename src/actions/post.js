@@ -1,5 +1,3 @@
-import axios from 'axios';
-import store from './../reducers';
 import steem from 'steem';
 
 export function vote(request) {

@@ -1,5 +1,3 @@
-import axios from 'axios';
-import store from './../reducers';
 import steem from 'steem';
 //import Config from './../config.json';
 
@@ -20,7 +18,7 @@ export function loginUser(request) {
 	            return false;
     		}
 			
-	        if(accounts.length == 0) {
+	        if(accounts.length === 0) {
 
 	        	reject({
 	        		type: 'INVALID_ACCOUNT',
@@ -36,7 +34,7 @@ export function loginUser(request) {
 	            postingWif = wif;
 
 
-	        if(posting_key == publicWif) {
+	        if(posting_key === publicWif) {
 
 	            resolve({
 	        		type: 'LOGIN_USER',

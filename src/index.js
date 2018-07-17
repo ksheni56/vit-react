@@ -5,7 +5,6 @@ import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-d
 import 'moment-timezone';
 import steem from 'steem';
 
-import axios from 'axios';
 import reducers from './reducers';
 
 // Styling
@@ -74,11 +73,11 @@ ReactDOM.render((
                             var test_if_channel = /@/.test(props.location.pathname);
  
                             if(test_if_home) return <Home {...props} /> 
-                            else if(props.location.pathname == '/upload') return <Upload {...props} />
-                            else if(props.location.pathname == '/wallet') return <Wallet {...props} />
-                            else if(props.location.pathname == '/transfers') return <Transfers {...props} />
-                            else if(props.location.pathname == '/profile') return <Profile {...props} />
-                            else if(props.location.pathname == '/categories') return <Categories {...props} />
+                            else if(props.location.pathname === '/upload') return <Upload {...props} />
+                            else if(props.location.pathname === '/wallet') return <Wallet {...props} />
+                            else if(props.location.pathname === '/transfers') return <Transfers {...props} />
+                            else if(props.location.pathname === '/profile') return <Profile {...props} />
+                            else if(props.location.pathname === '/categories') return <Categories {...props} />
                             else if(test_if_channel) return <Channel {...props} />
                             else return <Redirect to="/new/"/>
 

@@ -18,8 +18,6 @@ export default function(state = initialState, action) {
                 "authorized": true
             });
 
-        break;
-
         case 'LOGOUT':
 
             return Object.assign({}, state, {
@@ -27,8 +25,6 @@ export default function(state = initialState, action) {
                 "publicWif": null,
                 "authorized": false
             });
-
-        break;
 
         case 'UPDATE_USER':
 
@@ -43,16 +39,11 @@ export default function(state = initialState, action) {
                 user: UserObject
             });
 
-        break;
-
         case 'GET_SUBS':
 
             return Object.assign({}, state, {
                 subs: state.subs.concat(action.payload)
             });
-
-        break;
-
 
         default:
             return state;

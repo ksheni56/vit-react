@@ -18,7 +18,7 @@ class TextArea extends Component {
 
         // An error message is returned ONLY if the component is invalid
         // or the server has returned an error message
-        const errorMessage = this.props.getErrorMessage();
+        // const errorMessage = this.props.getErrorMessage();
 
         return (
             <div className="form-group">

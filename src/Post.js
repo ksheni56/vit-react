@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from 'steem';
 import { Player, BigPlayButton } from 'video-react';
-import { NavLink, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { vote, comment } from './actions/post';
 import Formsy from 'formsy-react';
 import moment from 'moment';
@@ -42,7 +42,7 @@ class Post extends Component {
     componentWillReceiveProps(nextProps) { 
 
 
-        if(nextProps.match.params.permalink != this.state.permalink) {
+        if(nextProps.match.params.permalink !== this.state.permalink) {
 
             this.setState({
                 loading: true
@@ -100,7 +100,7 @@ class Post extends Component {
 
             console.log("castVote success", response);
 
-            if(type == "post") 
+            if(type === "post") 
                 this.state.post.active_votes.push({'dummy': 'data'})
             else {
                 console.log("Upvoting comment")
@@ -198,7 +198,7 @@ class Post extends Component {
 
             let post = result;
 
-            if(err || post.author == '') {
+            if(err || post.author === '') {
 
                 this.setState({
                     loading_related: false,
@@ -324,7 +324,7 @@ class Post extends Component {
     }
 
     displayPayoutAmount(amount) {
-        if(amount) return parseInt(amount.replace(' SBD','')).toFixed(2);
+        if(amount) return parseInt(amount.replace(' SBD',''), 10).toFixed(2);
     }
 
     renderVideoPlayer() {
@@ -333,11 +333,12 @@ class Post extends Component {
 
             //let hash = this.state.post.json_metadata.vit_data.Hash;
             //let filename = this.state.post.json_metadata.vit_data.Name;
-            let playlist = this.state.post.json_metadata.vit_data.Playlist
+            let playlist = this.state.post.json_metadata.vit_data.Playlist;
 
             return (
 
                 <Player playsInline>
+                {/*<PosterImage poster={ "https://media.vit.tube/playback/" +  thumbnail } />*/}
                     <HLSSource
                         isVideoChild
                         src={ "https://media.vit.tube/playback/" + playlist }

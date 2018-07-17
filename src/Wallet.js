@@ -2,15 +2,9 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from 'steem';
 import { Link } from 'react-router-dom';
-import moment from 'moment';
-import Header from './components/Header';
-import Dropzone from 'react-dropzone';
-import axios from 'axios';
 import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
-import Select from 'react-select';
-import CreatableSelect from 'react-select/lib/Creatable';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -61,7 +55,7 @@ class Wallet extends Component {
 
         steem.api.getAccounts([this.props.app.username], (err, accounts) => {
 
-            if(err || (accounts && accounts.length == 0)) {
+            if(err || (accounts && accounts.length === 0)) {
                 
                 console.log("Invalid account!");
 
@@ -71,7 +65,7 @@ class Wallet extends Component {
 
             let account_info = accounts[0];
             account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
-            account_info.vesting_shares = parseInt(account_info.vesting_shares)/1000000
+            account_info.vesting_shares = parseInt(account_info.vesting_shares,10)/1000000
 
             console.log("Account has been loaded", account_info);
             this.setState({
@@ -145,7 +139,7 @@ class Wallet extends Component {
 
                     let account_info = accounts[0];
                     account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
-                    account_info.vesting_shares = parseInt(account_info.vesting_shares)/1000000;
+                    account_info.vesting_shares = parseInt(account_info.vesting_shares, 10)/1000000;
 
                     console.log("Account has been loaded", account_info);
                     this.setState({
@@ -204,7 +198,7 @@ class Wallet extends Component {
 
                     let account_info = accounts[0];
                     account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
-                    account_info.vesting_shares = parseInt(account_info.vesting_shares)/1000000;
+                    account_info.vesting_shares = parseInt(account_info.vesting_shares, 10)/1000000;
 
                     console.log("Account has been loaded", account_info);
                     this.setState({
@@ -228,13 +222,13 @@ class Wallet extends Component {
 
         // Parse some common errors
 
-        if(err.data.name == 'tx_missing_active_auth') {
+        if(err.data.name === 'tx_missing_active_auth') {
             // Invalid key
             return "Error! The VIT password you've provided is incorrect.";
-        } else if ( (err.data.name == 'assert_exception' && err.data.stack[0].context.method == 'validate_account_name') || (err.data.message == 'unknown key' && err.data.stack[0].context.method == 'get_account') ) {
+        } else if ( (err.data.name === 'assert_exception' && err.data.stack[0].context.method === 'validate_account_name') || (err.data.message === 'unknown key' && err.data.stack[0].context.method === 'get_account') ) {
             // Invalid recipient
             return "Error! The recipient's name you've provided is incorrect.";
-        } else if ( err.data.name == 'assert_exception' && err.data.stack[0].format == '_db.get_balance( from_account, o.amount.symbol ) >= o.amount: Account does not have sufficient funds for transfer.') {
+        } else if ( err.data.name === 'assert_exception' && err.data.stack[0].format === '_db.get_balance( from_account, o.amount.symbol ) >= o.amount: Account does not have sufficient funds for transfer.') {
             // Not enough funds:(
             return "Error! You don't have sufficient funds to complete this transaction.";
         }

@@ -5,13 +5,6 @@ import Item from './components/Item';
 import moment from 'moment';
 import { subscribe, unsubscribe, getSubs } from './actions/app';
 
-let account_data = {
-    posts: [],
-    account_info: {
-        wh: 123
-    }
-};
-
 class Channel extends Component {
 
     constructor(props) {
@@ -39,7 +32,7 @@ class Channel extends Component {
 
     componentWillReceiveProps(nextProps, prevProps) { 
         
-        if(nextProps.match.params.filter.replace('@','') != this.state.author) {
+        if(nextProps.match.params.filter.replace('@','') !== this.state.author) {
 
             this.setState({
                 author: nextProps.match.params.filter.replace('@',''),
@@ -62,7 +55,7 @@ class Channel extends Component {
 
         steem.api.getAccounts([this.state.author], (err, accounts) => {
 
-            if(err || (accounts && accounts.length == 0)) {
+            if(err || (accounts && accounts.length === 0)) {
                 
                 console.log("Invalid account!");
 
@@ -178,9 +171,7 @@ class Channel extends Component {
         };
 
 
-        var self = this;
         steem.api.getDiscussionsByBlog(load_more_query, (err, result) => {
-            
             if(err) {
                 return false; // add some sort of alert notifying about the end of the loop
             }
@@ -192,17 +183,13 @@ class Channel extends Component {
             this.setState({
                 posts: all_posts
             });
-
         });
-
     }
 
     getSubs() {
-
-        if(this.props.app.authorized && this.props.app.username == this.state.author) {
+        if(this.props.app.authorized && this.props.app.username === this.state.author) {
             return null;
         }
-
         if(this.state.is_subbed) {
             return (    
                 <button disabled={this.state.subscribing} onClick={() => this.unsub()} className="btn btn-danger">Subscribed <span className="font-weight-bold">{ this.state.followers }</span></button>
@@ -212,13 +199,9 @@ class Channel extends Component {
                 <button disabled={this.state.subscribing} onClick={() => this.sub()} className="btn btn-danger">Subscribe <span className="font-weight-bold">{ this.state.followers }</span></button>
             )
         }
-        
-
-        
     }
 
     unsub() {
-
         if(!this.props.app.authorized) {
             this.props.history.push("/login");
             return false;
@@ -229,13 +212,10 @@ class Channel extends Component {
         })
 
         this.props.unsubscribe({
-
             postingWif: this.props.app.postingWif,
             username: this.props.app.username, 
             following: this.state.author
-
         }).then( response => {
-
             console.log("unSubbed success", response);
 
             this.setState({
@@ -243,21 +223,16 @@ class Channel extends Component {
                 is_subbed: false,
                 followers: this.state.followers - 1
             })
-
         }).catch(err => {
-
             console.log("unSubbed error", err)
 
             this.setState({
                 subscribing: false
             })
-
         });
-
     }
 
     sub() {
-
         if(!this.props.app.authorized) {
             this.props.history.push("/login");
             return false;
@@ -268,13 +243,10 @@ class Channel extends Component {
         })
 
         this.props.subscribe({
-
             postingWif: this.props.app.postingWif,
             username: this.props.app.username, 
             following: this.state.author
-
         }).then( response => {
-
             console.log("subSuccess success", response);
 
             this.setState({
@@ -282,22 +254,15 @@ class Channel extends Component {
                 is_subbed: true,
                 followers: this.state.followers + 1
             })
-
         }).catch(err => {
-
             console.log("subSuccess error", err)
-
             this.setState({
                 subscribing: false
             })
-
         });
-
     }
 
     renderPosts() {
-
-
         if(this.state.loading) {
             return (
                 <div className="row w-100 h-100 justify-content-center mt-5">
@@ -319,17 +284,11 @@ class Channel extends Component {
                 </div>
             )
         }
-
-
     }
 
     renderChannelHeader() {
-
-
         if(!this.state.loading_account_info) {
-
             if(!this.state.account_info) {
-
                 return (
                     <div className="row">
                         <div className="col-12">
@@ -339,9 +298,7 @@ class Channel extends Component {
                         </div>
                     </div>
                 )
-
             } else {
-
                 return (
                     <div className="row mt-3 video-info align-items-center mb-3">
                         <div className="col-9">
@@ -349,21 +306,13 @@ class Channel extends Component {
                                 <div className="col-md-2 col-12">
                                     <div className="d-flex justify-content-center w-100">
                                         <div>
-
                                             {
                                                 this.state.account_info.json_metadata.profile ? (
-
                                                     <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.account_info.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
-                                                
                                                 ) : (
-
                                                     <div className="avatar"></div>
-
                                                 )
-
                                             }
-
-                                            
                                             <div className="username text-center">{this.state.account_info.name}</div>
                                         </div>
                                     </div>
@@ -386,24 +335,18 @@ class Channel extends Component {
         } else {
             return null;
         }
-
-
     }
 
     render() {
-
-
         return [
             <div className="channel-view" key="video-post">
                 { this.renderChannelHeader() }
             </div>,
             <div key="posts">{ this.renderPosts() }</div>,
             <div className="mb-4 mt-1 text-center" key="load-more">
-
                 {
                     !this.state.loading ? (
-
-                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || !this.state.account_info || this.state.posts.length == 0}>
+                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || !this.state.account_info || this.state.posts.length === 0}>
                             {
                                 !this.state.loading_more ? (
                                     <strong>Load More</strong>
@@ -412,27 +355,19 @@ class Channel extends Component {
                                 )
                             }
                         </button>  
-
                     ) : (
-
                         null
-
                     )
                 }
             </div>
         ]
-        
     }
-
 }
 
 function mapStateToProps(state) {
-
     return { 
         app: state.app
     };
-    
 }
-
 
 export default connect(mapStateToProps, { subscribe, unsubscribe, getSubs })(Channel);

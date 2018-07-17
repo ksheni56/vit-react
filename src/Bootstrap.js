@@ -45,7 +45,7 @@ class Bootstrap extends Component {
                 console.log("accounts", accounts)
 
 
-                if(accounts.length == 0) {
+                if(accounts.length === 0) {
                     
                     // Invalid account name. Clean up local storage
                     localStorage.removeItem('username');
@@ -63,7 +63,7 @@ class Bootstrap extends Component {
                 // Verify publicWif against posting_key
                 let posting_key = accounts[0]['posting'].key_auths[0][0];
 
-                if(posting_key == publicWif) {
+                if(posting_key === publicWif) {
 
                     // saved creds are valid. Restore the session
                     this.props.restoreLogin({
