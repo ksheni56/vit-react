@@ -34,6 +34,7 @@ class Upload extends Component {
             'selected_tags': [],
             'processing': false,
             'processed': false,
+            'progress': null,
             'permlink': ''
         }
 
@@ -107,6 +108,13 @@ class Upload extends Component {
         axios.post("https://media.vit.tube/upload/video", formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
+            },
+            onUploadProgress: (e) => {
+              var completed = Math.round((e.loaded * 100) / e.total);
+              this.setState({
+                progress: completed,
+              });
+              // console.log("Completed ", completed, e);
             }
         }).then(response => {
 
@@ -117,7 +125,8 @@ class Upload extends Component {
                 processing: true,
                 processed: false,
                 files: '',
-                ready_to_upload: false
+                ready_to_upload: false,
+                progress: null
             });
 
             var self = this;
@@ -255,8 +264,13 @@ class Upload extends Component {
     */
 
     showProgress() {
-
-        if(this.state.success && this.state.processing && !this.state.processed) {
+        if(this.state.uploading && this.state.progress) {
+            return (
+                <div className="alert alert-warning mt-4" role="alert">
+                    <strong>Uploading, { this.state.progress }%</strong> complete. Do not close/leave this page!
+                </div>
+            )
+        } else if(this.state.success && this.state.processing && !this.state.processed) {
 
             return (
                 <div className="alert alert-warning mt-4" role="alert">
@@ -361,7 +375,7 @@ class Upload extends Component {
                                 }
 
                                 {
-                                    this.state.success ? (
+                                    this.state.success || this.state.uploading ? (
                                         <span>
                                             { this.showProgress() }
                                         </span>
