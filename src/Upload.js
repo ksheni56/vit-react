@@ -105,7 +105,7 @@ class Upload extends Component {
 
         let formData = new FormData();
         formData.append('file', this.state.files[0]);
-        axios.post("https://media.vit.tube/upload/video", formData, {
+        axios.post("http://localhost:5000/upload/video", formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
@@ -142,7 +142,11 @@ class Upload extends Component {
 
                         console.log("Is it done yet?", response.data.Complete)
 
-                        if(response.data.Complete) {
+                        if(!response.data.Complete) {
+
+                            console.log("Percentage Complete:", response.data.PercentComplete)
+
+                        } else {
 
                             console.log("Done!", response.data)
 
@@ -150,59 +154,59 @@ class Upload extends Component {
 
                             let slug = form_data.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
 
-                            self.props.post({
+                            // self.props.post({
 
-                                postingWif: self.props.app.postingWif, 
-                                category: categories[0], // category
-                                username: self.props.app.username, 
-                                slug: slug, // slug
-                                title: form_data.title, // title
-                                body: '...', // body,
-                                tags: categories,
-                                vit_data: response.data
+                            //     postingWif: self.props.app.postingWif, 
+                            //     category: categories[0], // category
+                            //     username: self.props.app.username, 
+                            //     slug: slug, // slug
+                            //     title: form_data.title, // title
+                            //     body: '...', // body,
+                            //     tags: categories,
+                            //     vit_data: response.data
 
-                            }).then( response => {
+                            // }).then( response => {
 
-                                console.log("post blockchain success", response);
+                            //     console.log("post blockchain success", response);
 
-                                self.setState({
-                                    processing: false,
-                                    processed: true,
-                                    permlink: response.payload.operations[0][1].permlink,
-                                    uploading: false
-                                });
+                            //     self.setState({
+                            //         processing: false,
+                            //         processed: true,
+                            //         permlink: response.payload.operations[0][1].permlink,
+                            //         uploading: false
+                            //     });
 
-                            }).catch(err => {
+                            // }).catch(err => {
 
-                                console.log("post error", err)
+                            //     console.log("post error", err)
 
-                                if(err.payload.data && err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
+                            //     if(err.payload.data && err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
                                     
-                                    self.setState({
-                                        processing: false,
-                                        processed: false,
-                                        error: true,
-                                        error_type: 'timeout',
-                                        custom_error_text: 'You may only post once every 5 minutes.',
-                                        uploading: false
-                                    });
+                            //         self.setState({
+                            //             processing: false,
+                            //             processed: false,
+                            //             error: true,
+                            //             error_type: 'timeout',
+                            //             custom_error_text: 'You may only post once every 5 minutes.',
+                            //             uploading: false
+                            //         });
 
-                                } else {
+                            //     } else {
 
-                                    self.setState({
-                                        processing: false,
-                                        processed: false,
-                                        error: true,
-                                        error_type: 'other',
-                                        uploading: false,
-                                        custom_error_text: err.payload.data.stack[0].format
-                                    });
+                            //         self.setState({
+                            //             processing: false,
+                            //             processed: false,
+                            //             error: true,
+                            //             error_type: 'other',
+                            //             uploading: false,
+                            //             custom_error_text: err.payload.data.stack[0].format
+                            //         });
 
-                                }
+                            //     }
 
                                 
 
-                            });
+                            // });
 
                         }
 
