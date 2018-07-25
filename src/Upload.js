@@ -10,6 +10,7 @@ import TextField from './components/forms/TextField';
 import Select from 'react-select';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
+import { Line } from 'rc-progress';
 
 class Upload extends Component {
 
@@ -35,7 +36,9 @@ class Upload extends Component {
             'processing': false,
             'processed': false,
             'progress': null,
-            'permlink': ''
+            'permlink': '',
+            'transcoding': false,
+            'transcode_progress': 0
         }
 
         this.handleDrop = this.handleDrop.bind(this);
@@ -105,7 +108,7 @@ class Upload extends Component {
 
         let formData = new FormData();
         formData.append('file', this.state.files[0]);
-        axios.post("http://localhost:5000/upload/video", formData, {
+        axios.post("https://media.vit.tube/upload/video", formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
@@ -113,6 +116,7 @@ class Upload extends Component {
               var completed = Math.round((e.loaded * 100) / e.total);
               this.setState({
                 progress: completed,
+                uploading: completed !== 100
               });
               // console.log("Completed ", completed, e);
             }
@@ -131,7 +135,6 @@ class Upload extends Component {
 
             var self = this;
 
-
             if(!response.data.Complete) {
                 let redirect_url = response.request.responseURL;
                 console.log("redirect_url", redirect_url)
@@ -144,9 +147,21 @@ class Upload extends Component {
 
                         if(!response.data.Complete) {
 
-                            console.log("Percentage Complete:", response.data.PercentComplete)
+                            self.setState({
+                                processing: true,
+                                processed: false,
+                                transcode_progress: response.data.PercentComplete,
+                                transcoding: response.data.PercentComplete > 0 ? true : false,
+                            })
+
+                            console.log("Transcode Progress:", response.data.PercentComplete)
 
                         } else {
+
+                            self.setState({
+                                transcode_progress: 100,
+                                transcoding: false,
+                            })
 
                             console.log("Done!", response.data)
 
@@ -154,59 +169,59 @@ class Upload extends Component {
 
                             let slug = form_data.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
 
-                            // self.props.post({
+                            self.props.post({
 
-                            //     postingWif: self.props.app.postingWif, 
-                            //     category: categories[0], // category
-                            //     username: self.props.app.username, 
-                            //     slug: slug, // slug
-                            //     title: form_data.title, // title
-                            //     body: '...', // body,
-                            //     tags: categories,
-                            //     vit_data: response.data
+                                postingWif: self.props.app.postingWif, 
+                                category: categories[0], // category
+                                username: self.props.app.username, 
+                                slug: slug, // slug
+                                title: form_data.title, // title
+                                body: '...', // body,
+                                tags: categories,
+                                vit_data: response.data
 
-                            // }).then( response => {
+                            }).then( response => {
 
-                            //     console.log("post blockchain success", response);
+                                console.log("post blockchain success", response);
 
-                            //     self.setState({
-                            //         processing: false,
-                            //         processed: true,
-                            //         permlink: response.payload.operations[0][1].permlink,
-                            //         uploading: false
-                            //     });
+                                self.setState({
+                                    processing: false,
+                                    processed: true,
+                                    permlink: response.payload.operations[0][1].permlink,
+                                    uploading: false
+                                });
 
-                            // }).catch(err => {
+                            }).catch(err => {
 
-                            //     console.log("post error", err)
+                                console.log("post error", err)
 
-                            //     if(err.payload.data && err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
+                                if(err.payload.data && err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
                                     
-                            //         self.setState({
-                            //             processing: false,
-                            //             processed: false,
-                            //             error: true,
-                            //             error_type: 'timeout',
-                            //             custom_error_text: 'You may only post once every 5 minutes.',
-                            //             uploading: false
-                            //         });
+                                    self.setState({
+                                        processing: false,
+                                        processed: false,
+                                        error: true,
+                                        error_type: 'timeout',
+                                        custom_error_text: 'You may only post once every 5 minutes.',
+                                        uploading: false
+                                    });
 
-                            //     } else {
+                                } else {
 
-                            //         self.setState({
-                            //             processing: false,
-                            //             processed: false,
-                            //             error: true,
-                            //             error_type: 'other',
-                            //             uploading: false,
-                            //             custom_error_text: err.payload.data.stack[0].format
-                            //         });
+                                    self.setState({
+                                        processing: false,
+                                        processed: false,
+                                        error: true,
+                                        error_type: 'other',
+                                        uploading: false,
+                                        custom_error_text: err.payload.data.stack[0].format
+                                    });
 
-                            //     }
+                                }
 
                                 
 
-                            // });
+                            });
 
                         }
 
@@ -293,6 +308,17 @@ class Upload extends Component {
 
         }
 
+    }
+
+    showTranscoding() {
+        if(!this.state.uploading && this.state.transcoding) {
+            return (
+                <div className="alert alert-warning mt-4" role="alert">
+                    <strong>Transcoding progress:</strong> {this.state.transcode_progress}% complete
+                    <Line percent={ this.state.transcode_progress } strokeWidth="4" strokeColor="#D3D3D3" />
+                </div>
+            )
+        }
     }
 
     handleErrors() {
@@ -386,7 +412,14 @@ class Upload extends Component {
                                     ) : null
                                 }
 
-                            
+                                {
+                                    this.state.success || this.state.transcoding ? (
+                                        <span>
+                                            { this.showTranscoding() }
+                                        </span>
+                                    ) : null
+                                }
+
                                 <Dropzone 
                                     className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
                                     onDrop={ this.handleDrop }
