@@ -303,7 +303,7 @@ class Channel extends Component {
                     <div className="row mt-3 video-info align-items-center mb-3">
                         <div className="col-9">
                             <div className="row align-items-center">
-                                <div className="col-md-2 col-12">
+                                <div className="col-md-2 col-3">
                                     <div className="d-flex justify-content-center w-100">
                                         <div>
                                             {
@@ -317,7 +317,7 @@ class Channel extends Component {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="col-md-10 col-12">
+                                <div className="col-md-10 col-9">
                                     <h2>{this.state.account_info.name}</h2>
                                     <div className="payout small">
                                         Member since <span className="font-weight-bold">{ moment(this.state.account_info.created).format('MMMM YYYY') }</span> &middot; { this.state.account_info.post_count } Posts

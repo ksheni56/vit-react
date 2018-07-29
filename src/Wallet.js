@@ -233,7 +233,7 @@ class Wallet extends Component {
 
                 <ToastContainer />
 
-                <div className="col-8 mt-4">
+                <div className="col-md-8 col-sm-12 mt-4">
 
                     <div className="upload-wrapper mb-4">
                         <div>
@@ -246,7 +246,7 @@ class Wallet extends Component {
 
                                         <div className="row">
 
-                                            <div className="col-4">
+                                            <div className="col-md-4 col-sm-12">
                                                 <div className="balance-tile"> 
                                                     <h4>VIT Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.balance }</span>
@@ -260,14 +260,14 @@ class Wallet extends Component {
                                                 </div>
                                             </div> */}
 
-                                            <div className="col-4">
+                                            <div className="col-md-4 col-sm-12">
                                                 <div className="balance-tile"> 
                                                     <h4>VESTS Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.delegated_vesting_shares }</span>
                                                 </div>
                                             </div>
 
-                                            <div className="col-4">
+                                            <div className="col-md-4 col-sm-12">
                                                 <div className="balance-tile"> 
                                                     <h4>VIT Power:</h4>
                                                     <span className="text-danger">{ this.state.account.vesting_shares }</span>
@@ -300,7 +300,7 @@ class Wallet extends Component {
                                 ref="upload_form" 
                                 >
 
-                                <div className="col-8 px-0">
+                                <div className="col-md-8 col-sm-12 px-0">
 
                                     <TextField 
                                         name="to"
@@ -365,7 +365,7 @@ class Wallet extends Component {
                                 ref="powerup_form" 
                                 >
 
-                                <div className="col-8 px-0">
+                                <div className="col-md-8 col-sm-12 px-0">
 
                                     <TextField 
                                         name="power_to"
