@@ -8,6 +8,8 @@ import TextField from './components/forms/TextField';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 
+export const LIQUID_TOKEN = 'VIT';
+
 class Wallet extends Component {
 
     constructor(props) {
@@ -53,28 +55,43 @@ class Wallet extends Component {
             console.log(transfers)
         });
 
-        steem.api.getAccounts([this.props.app.username], (err, accounts) => {
+        this.updateAccountBalance();
+    }
 
-            if(err || (accounts && accounts.length === 0)) {
-                
-                console.log("Invalid account!");
+    updateAccountBalance () {
+        steem.api.getDynamicGlobalProperties((err, gprops) => {
+            steem.api.getAccounts([this.props.app.username], (err, accounts) => {
 
-                return false; // Handle invalid account
-
-            }
-
-            let account_info = accounts[0];
-            account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
-            account_info.vesting_shares = parseInt(account_info.vesting_shares,10)/1000000
-
-            console.log("Account has been loaded", account_info);
-            this.setState({
-                loading: false,
-                account: account_info
-            })
-
-
+                if(err || (accounts && accounts.length === 0)) {
+                    console.log("Invalid account!");
+                    return false; // Handle invalid account
+                }
+    
+                let account_info = accounts[0];
+                account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                account_info.balance = account_info.balance.split(' ')[0] + ' ' + LIQUID_TOKEN;
+                account_info.vesting_shares = this.numberWithCommas(this.vestingSteem(account_info, gprops).toFixed(3)) + ' ' + LIQUID_TOKEN;
+                console.log("Account has been loaded", account_info);
+                this.setState({
+                    loading: false,
+                    account: account_info
+                })
+            });
         });
+    }
+
+    /* Format values with commas */
+    numberWithCommas = x => x.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    /* Calculate VIT power, formula taken from condenser */
+    vestingSteem(account, gprops) {
+        const vests = parseFloat(account.vesting_shares.split(' ')[0]);
+        const total_vests = parseFloat(gprops.total_vesting_shares.split(' ')[0]);
+        const total_vest_steem = parseFloat(
+            gprops.total_vesting_fund_steem.split(' ')[0]
+        );
+        const vesting_steemf = total_vest_steem * (vests / total_vests);
+        return vesting_steemf;
     }
 
     displayKeys() {
@@ -134,27 +151,13 @@ class Wallet extends Component {
                 toast.success("Power is now upped!");
 
                 // Update balance
-
-                steem.api.getAccounts([this.props.app.username], (err, accounts) => {
-
-                    let account_info = accounts[0];
-                    account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
-                    account_info.vesting_shares = parseInt(account_info.vesting_shares, 10)/1000000;
-
-                    console.log("Account has been loaded", account_info);
-                    this.setState({
-                        account: account_info
-                    })
-
-
-                });
+                this.updateAccountBalance();
 
             });
 
         }
 
     }
-
 
     transfer(form_data) {
 
@@ -193,21 +196,7 @@ class Wallet extends Component {
                 });
 
                 // Update balance
-
-                steem.api.getAccounts([this.props.app.username], (err, accounts) => {
-
-                    let account_info = accounts[0];
-                    account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
-                    account_info.vesting_shares = parseInt(account_info.vesting_shares, 10)/1000000;
-
-                    console.log("Account has been loaded", account_info);
-                    this.setState({
-                        account: account_info
-                    })
-
-
-                });
-
+                this.updateAccountBalance();
             });
 
         } else {
@@ -257,30 +246,30 @@ class Wallet extends Component {
 
                                         <div className="row">
 
-                                            <div className="col-3">
+                                            <div className="col-4">
                                                 <div className="balance-tile"> 
                                                     <h4>VIT Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.balance }</span>
                                                 </div>
                                             </div>
 
-                                            <div className="col-3">
+                                            {/* <div className="col-3">
                                                 <div className="balance-tile"> 
                                                     <h4>VBD Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.sbd_balance }</span>
                                                 </div>
-                                            </div>
+                                            </div> */}
 
-                                            <div className="col-3">
+                                            <div className="col-4">
                                                 <div className="balance-tile"> 
                                                     <h4>VESTS Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.delegated_vesting_shares }</span>
                                                 </div>
                                             </div>
 
-                                            <div className="col-3">
+                                            <div className="col-4">
                                                 <div className="balance-tile"> 
-                                                    <h4>VESTS Power:</h4>
+                                                    <h4>VIT Power:</h4>
                                                     <span className="text-danger">{ this.state.account.vesting_shares }</span>
                                                 </div>
                                             </div>
