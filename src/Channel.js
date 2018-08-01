@@ -70,8 +70,11 @@ class Channel extends Component {
             }
 
             let account_info = accounts[0];
-            account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
-
+            try {
+                account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+            } catch (error) {
+                // in case meta data is empty or malformed
+            }
             
             this.setState({
                 account_info: account_info,
@@ -116,8 +119,8 @@ class Channel extends Component {
                     is_subbed: true
                 });
             }
-
            
+
 
         }).catch(err => {
 
@@ -192,11 +195,11 @@ class Channel extends Component {
         }
         if(this.state.is_subbed) {
             return (    
-                <button disabled={this.state.subscribing} onClick={() => this.unsub()} className="btn btn-danger">Subscribed <span className="font-weight-bold">{ this.state.followers }</span></button>
+                <button disabled={this.state.subscribing} onClick={() => this.unsub()} className="btn btn-secondary">Unfollow</button>
             )
         } else {
             return (    
-                <button disabled={this.state.subscribing} onClick={() => this.sub()} className="btn btn-danger">Subscribe <span className="font-weight-bold">{ this.state.followers }</span></button>
+                <button disabled={this.state.subscribing} onClick={() => this.sub()} className="btn btn-danger">Follow</button>
             )
         }
     }
@@ -217,6 +220,8 @@ class Channel extends Component {
             following: this.state.author
         }).then( response => {
             console.log("unSubbed success", response);
+
+            this.checkIfSubbed(); // refresh following list
 
             this.setState({
                 subscribing: false,
@@ -248,6 +253,8 @@ class Channel extends Component {
             following: this.state.author
         }).then( response => {
             console.log("subSuccess success", response);
+
+            this.checkIfSubbed(); // refresh following list
 
             this.setState({
                 subscribing: false,
@@ -286,6 +293,14 @@ class Channel extends Component {
         }
     }
 
+    getFollowerCount () {
+        if (this.state.followers > 0) {
+            return (<small className="payout"><em>{this.state.followers} {this.state.followers > 1 ? "followers" : "follower"}</em></small>);
+        } else {
+            return;
+        }
+    }
+
     renderChannelHeader() {
         if(!this.state.loading_account_info) {
             if(!this.state.account_info) {
@@ -300,10 +315,10 @@ class Channel extends Component {
                 )
             } else {
                 return (
-                    <div className="row mt-3 video-info align-items-center mb-3">
-                        <div className="col-9">
-                            <div className="row align-items-center">
-                                <div className="col-md-2 col-12">
+                    <div className="row mt-3 video-info align-items-center mb-3 no-gutters">
+                        <div className="col-8 col-sm-9">
+                            <div className="row align-items-center no-gutters">
+                                <div className="col-md-2 col-4">
                                     <div className="d-flex justify-content-center w-100">
                                         <div>
                                             {
@@ -317,15 +332,16 @@ class Channel extends Component {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="col-md-10 col-12">
+                                <div className="col-md-10 col-8">
                                     <h2>{this.state.account_info.name}</h2>
-                                    <div className="payout small">
-                                        Member since <span className="font-weight-bold">{ moment(this.state.account_info.created).format('MMMM YYYY') }</span> &middot; { this.state.account_info.post_count } Posts
+                                    {this.getFollowerCount()}
+                                    <div className="payout small row no-gutters">
+                                        <div className="col-sm-auto col-12">Member since <span className="font-weight-bold">{ moment(this.state.account_info.created).format('MMMM YYYY') }</span></div><div className="col-sm-auto d-none d-sm-block px-1">&middot;</div><div className="col-sm-auto col-12">{ this.state.account_info.post_count } Posts</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="col-3 text-right">
+                        <div className="col-4 col-sm-3 text-right pr-3">
                             {this.getSubs()}
                         </div>
                     </div>

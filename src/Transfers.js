@@ -97,7 +97,7 @@ class Transfers extends Component {
 
                 <ToastContainer />
 
-                <div className="col-8 mt-4">
+                <div className="col-md-8 col-sm-12 mt-4">
 
                     <div className="upload-wrapper mb-4">
                         <Link to="/wallet" className="btn btn-danger px-3">Go Back</Link>

@@ -369,7 +369,7 @@ class Upload extends Component {
 
                 <ToastContainer />
 
-                <div className="col-8 mt-4">
+                <div className="col-md-8 col-sm-12 mt-4">
                     <div className="upload-wrapper">
                         <div>
 
@@ -380,7 +380,7 @@ class Upload extends Component {
                                 ref="upload_form" 
                                 >
 
-                                <div className="col-8 px-0">
+                                <div className="col-md-8 col-sm-12 px-0">
 
                                     <TextField 
                                         name="title"

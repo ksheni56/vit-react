@@ -18,6 +18,7 @@ import './sass/Item.scss';
 import './sass/Upload.scss';
 import './sass/Post.scss';
 import './sass/Channel.scss';
+import './sass/Responsive.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
 

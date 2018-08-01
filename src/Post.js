@@ -69,7 +69,7 @@ class Post extends Component {
 
         if(votes) {
             return (
-                <button disabled={this.state.voting} onClick={() => this.castVote(this.props.match.params.permalink, this.props.match.params.author, "post")} className="btn btn-danger">Like <span className="votes font-weight-bold">{votes.length}</span></button>
+                <button disabled={this.state.voting} onClick={() => this.castVote(this.props.match.params.permalink, this.props.match.params.author, "post")} className="btn btn-danger btn-sm">Like <span className="votes font-weight-bold">{votes.length}</span></button>
             )
         }
         
@@ -210,8 +210,11 @@ class Post extends Component {
                 return false;
             }
             
-            post.json_metadata = JSON.parse(result.json_metadata);
-            console.log("Post parsed", post)
+            try {
+                post.json_metadata = JSON.parse(result.json_metadata);
+            } catch (error) {
+                // in case meta data is empty or malformed
+            }
 
             steem.api.getDiscussionsByAuthorBeforeDate(author.replace('@',''), permalink, post.active, 5, (err, result) => {
                 
@@ -230,7 +233,11 @@ class Post extends Component {
                 console.log(">>>", err, result)
 
                 post.author_profile = result[0];
-                post.author_profile.json_metadata = JSON.parse(result[0].json_metadata);
+                try {
+                    post.author_profile.json_metadata = JSON.parse(result[0].json_metadata);
+                } catch (error) {
+                    // in case meta data is empty or malformed
+                }
 
                 this.setState({
                     loading: false,
@@ -387,8 +394,8 @@ class Post extends Component {
                 <div className="row mt-3 video-info align-items-center" key="video-info">
                     <div className="col-9">
                         <div className="row align-items-center">
-                            <div className="col-md-2 col-12">
-                                <div className="d-flex justify-content-center w-100">
+                            <div className="col-3 col-md-2">
+                                <div>
                                     <div>
                                         
                                         {
@@ -413,10 +420,10 @@ class Post extends Component {
                                     </div>
                                 </div>
                             </div>
-                            <div className="col-md-10 col-12">
+                            <div className="col-9 col-md-10">
                                 <h2>{ this.state.post.title }</h2>
                                     <div className="payout small">
-                                        Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span> &middot; { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
+                                        Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
                                     </div>
                             </div>
                         </div>
@@ -434,7 +441,7 @@ class Post extends Component {
         
         return (
             <div className="row justify-content-center mt-3">
-                <div className="col-9 video-post">
+                <div className="col-lg-9 col-md-12 video-post">
 
 
                     {
@@ -515,7 +522,7 @@ class Post extends Component {
                     
 
                 </div>
-                <div className="col-3 related-videos pl-0">
+                <div className="col-lg-3 col-md-12 related-videos">
                     <h3>Related Videos</h3>
 
                     {

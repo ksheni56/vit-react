@@ -66,7 +66,11 @@ class Profile extends Component {
             }
 
             let account_info = accounts[0];
-            account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+            try {
+                account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+            } catch (error) {
+                // in case meta data is empty or malformed
+            }
 
             console.log("Account has been loaded", account_info);
             
@@ -160,7 +164,11 @@ class Profile extends Component {
                         steem.api.getAccounts([self.props.app.username], (err, accounts) => {
 
                             let account_info = accounts[0];
-                            account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                            try {
+                                account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                            } catch (error) {
+                                // in case meta data is empty or malformed
+                            }
 
                             self.setState({
                                 uploading: false,
@@ -257,7 +265,11 @@ class Profile extends Component {
                     steem.api.getAccounts([self.props.app.username], (err, accounts) => {
 
                         let account_info = accounts[0];
-                        account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                        try {
+                            account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                        } catch (error) {
+                            // in case meta data is empty or malformed
+                        }
 
                         self.setState({
                             saving: false,
@@ -384,7 +396,7 @@ class Profile extends Component {
 
                 <ToastContainer />
 
-                <div className="col-8 mt-4">
+                <div className="col-md-8 col-sm-12 mt-4">
 
                     <div className="upload-wrapper mb-4">
                         <div>
@@ -430,7 +442,7 @@ class Profile extends Component {
                             ref="powerup_form" 
                             >
 
-                            <div className="col-8 px-0">
+                            <div className="col-md-8 col-sm-12 px-0">
 
                                 <TextField 
                                     name="name"
@@ -487,7 +499,7 @@ class Profile extends Component {
                             className="btn btn-danger mb-4" 
                         >Generate New Password</button>
 
-                        <div className="col-8 px-0">
+                        <div className="col-md-8 col-sm-12 px-0">
 
                             <div className="form-group">
                                 <label>Suggested Password</label>
@@ -502,7 +514,7 @@ class Profile extends Component {
                             ref="password_form" 
                             >
 
-                            <div className="col-8 px-0">
+                            <div className="col-md-8 col-sm-12 px-0">
 
                                 <TextField 
                                     name="new_password"
