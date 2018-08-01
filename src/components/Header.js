@@ -48,9 +48,7 @@ class Header extends Component {
     }
 
     toggleLeftSidebar() {
-
         this.props.toggle();
-
     }
 
     logout() {
@@ -85,27 +83,29 @@ class Header extends Component {
                         {
                             this.state.authenticated ? (
                                 <span>
-
                                     <ButtonDropdown isOpen={this.state.dropdownOpen} toggle={this.toggle}>
                                         <DropdownToggle caret>
-                                            {this.props.app.username}
+                                            <span class="header-userame">
+                                            {this.props.app.username.length > 8 ? this.props.app.username.substring(0, 7) : this.props.app.username}
+                                            </span>
                                         </DropdownToggle>
                                         <DropdownMenu>
-                                            <Link to="/wallet" className="dropdown-item">Wallet</Link> 
-                                            <Link to="/profile" className="dropdown-item">Profile</Link> 
+                                            {/* add toggle here to close dropdown, reactstrap doesn't support Link tag */}
+                                            <Link to="/wallet" className="dropdown-item" onClick={this.toggle}>Wallet</Link> 
+                                            <Link to="/profile" className="dropdown-item" onClick={this.toggle}>Profile</Link> 
                                             <DropdownItem onClick={this.logout}>Logout</DropdownItem>
                                         </DropdownMenu>
                                     </ButtonDropdown>
                                 
-                                    <Link to="/upload" className="btn btn-danger mx-3"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
+                                    <Link to="/upload" className="btn btn-danger ml-3"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
 
                                 </span>
 
                             ) : (
 
                                 <span>
-                                    <Link to="/login" className="btn btn-light">Login</Link>
-                                    <a href="https://signup.vit.tube/" className="btn btn-light mx-3">Signup</a>
+                                    <Link to="/login" className="btn btn-light mr-3">Login</Link>
+                                    <a href="https://signup.vit.tube/" className="btn btn-light mr-3 link-signup">Signup</a>
                                     <Link to="/login" className="btn btn-danger"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
                                 </span>
 

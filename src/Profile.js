@@ -384,7 +384,7 @@ class Profile extends Component {
 
                 <ToastContainer />
 
-                <div className="col-8 mt-4">
+                <div className="col-md-8 col-sm-12 mt-4">
 
                     <div className="upload-wrapper mb-4">
                         <div>
@@ -430,7 +430,7 @@ class Profile extends Component {
                             ref="powerup_form" 
                             >
 
-                            <div className="col-8 px-0">
+                            <div className="col-md-8 col-sm-12 px-0">
 
                                 <TextField 
                                     name="name"
@@ -487,7 +487,7 @@ class Profile extends Component {
                             className="btn btn-danger mb-4" 
                         >Generate New Password</button>
 
-                        <div className="col-8 px-0">
+                        <div className="col-md-8 col-sm-12 px-0">
 
                             <div className="form-group">
                                 <label>Suggested Password</label>
@@ -502,7 +502,7 @@ class Profile extends Component {
                             ref="password_form" 
                             >
 
-                            <div className="col-8 px-0">
+                            <div className="col-md-8 col-sm-12 px-0">
 
                                 <TextField 
                                     name="new_password"

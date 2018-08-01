@@ -92,9 +92,14 @@ class Bootstrap extends Component {
     }
 
     toggleLeftSidebarCallback() {
-
         var node = ReactDOM.findDOMNode(this.refs.content_wrapper);
         node.classList.toggle('left-sidebar-off');
+
+        if (node.classList.contains('left-sidebar-off') && window.innerWidth < 767) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "auto";
+        }
 
     }
 
@@ -114,6 +119,7 @@ class Bootstrap extends Component {
                     ) : (
 
                         <div className="row mx-0 h-100 w-100">
+                            <div className="sidebar-overlay" onClick={(e) => this.toggleLeftSidebarCallback(e)}></div>
                             <LeftSidebar { ...this.props } />
                             <div className="col content">
                                 { this.props.children }
