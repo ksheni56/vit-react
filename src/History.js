@@ -1,13 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import Modal from 'react-modal';
 import axios from 'axios';
 import { post } from './actions/post';
 import './sass/Select.scss';
 import './sass/History.scss';
 import { ToastContainer } from 'react-toastify';
-
-Modal.setAppElement(document.getElementById('root'))
 
 class History extends Component {
 
@@ -20,17 +17,7 @@ class History extends Component {
             uploads: [],
             panel: false,
             status: [],
-            modalIsOpen: false,
-            currentUpload: false,
-            uploadComplete: false,
-            uploadPercent: false,
-            uploadHash: false,
-            uploadPlaylist: false,
         };
-
-        this.openModal = this.openModal.bind(this);
-        this.closeModal = this.closeModal.bind(this);
-
     } 
 
     componentWillMount() {
@@ -41,37 +28,17 @@ class History extends Component {
     }
 
     componentDidMount() {
-        this.getHistory();
+        this.getUploadHistory()
+        setInterval(function(){
+            this.getUploadHistory();
+        }.bind(this), 2000)
     }
 
-    openModal() {
-        this.setState({modalIsOpen: true});
-    }
-
-    closeModal() {
-        this.setState({modalIsOpen: false});
-    }
-
-    getHistory() {
+    getUploadHistory() {
         axios.get("http://192.168.0.7:5000/history/" + this.props.app.username).then(response => {
-            console.log(response.data.uploads.length)
-
             this.setState({
                 loading: false,
                 uploads: response.data.uploads
-            })
-        })
-    }
-
-    getStatus(upload) {
-        axios.get("http://192.168.0.7:5000/upload/video/status/" + upload).then(response => {
-            this.setState({
-                currentUpload: upload,
-                uploadComplete: response.data.Complete,
-                uploadPercent: response.data.Complete ? 100 : response.data.PercentComplete,
-                uploadHash: response.data.Complete ? response.data.Hash : false,
-                uploadPlaylist: response.data.Complete ? response.data.Playlist : false,
-                modalIsOpen: true
             })
         })
     }
@@ -94,15 +61,18 @@ class History extends Component {
 
                         { 
 
-                            this.state.uploads.map(
+                            Object.keys(this.state.uploads).map(
 
                                 (Item) =>
                                     <tr key={Item} className="upload-item">
-                                        <td style={{fontSize: '18px', lineHeight: '2em'}}>
+                                        <td>
                                             {Item}
                                         </td>
-                                        <td className="progress-link">
-                                            <button style={{width: '100%'}} onClick={() => this.getStatus(Item)} className='btn btn-dark'>Details</button>
+                                        <td>
+                                            {
+                                                this.state.uploads[Item].percent_complete ? 
+                                                    this.state.uploads[Item].percent_complete + "% Complete" : "Pending"
+                                            }
                                         </td>
                                     </tr>
                             )
@@ -171,29 +141,6 @@ class History extends Component {
                     </div>
 
                 </div>
-
-                <Modal
-                  isOpen={this.state.modalIsOpen}
-                  onRequestClose={this.closeModal}
-                  style={customStyles}
-                  contentLabel="Upload Details"
-                >
-
-                  <h3 ref={subtitle => this.subtitle = subtitle}>Details</h3>
-
-                  <hr/>
-
-                  <div><b>Completed:</b> {this.state.uploadComplete ? "Yes" : "No"}</div>
-                  <div><b>Percent Complete:</b> {this.state.uploadPercent}%</div>
-                  <div><b>Hash:</b> {this.state.uploadHash}</div>
-                  <div><b>Playlist:</b> {this.state.uploadPlaylist}</div>
-
-                  <hr/>
-
-                  <div style={{textAlign: 'right'}}>
-                      <button onClick={this.closeModal} className='btn btn-dark'>Close</button>
-                  </div>
-                </Modal>
 
             </div>
         )
