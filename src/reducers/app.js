@@ -40,9 +40,9 @@ export default function(state = initialState, action) {
             });
 
         case 'GET_SUBS':
-
+        
             return Object.assign({}, state, {
-                subs: state.subs.concat(action.payload)
+                subs: action.payload
             });
 
         default:

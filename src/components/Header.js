@@ -85,7 +85,7 @@ class Header extends Component {
                                 <span>
                                     <ButtonDropdown isOpen={this.state.dropdownOpen} toggle={this.toggle}>
                                         <DropdownToggle caret>
-                                            <span class="header-userame">
+                                            <span className="header-userame">
                                             {this.props.app.username.length > 8 ? this.props.app.username.substring(0, 7) : this.props.app.username}
                                             </span>
                                         </DropdownToggle>
