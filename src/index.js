@@ -30,6 +30,7 @@ import Post from './Post';
 import Login from './Login';
 import Channel from './Channel';
 import Upload from './Upload';
+import History from './History';
 import Categories from './Categories';
 import Wallet from './Wallet';
 import Profile from './Profile';
@@ -74,6 +75,7 @@ ReactDOM.render((
  
                             if(test_if_home) return <Home {...props} /> 
                             else if(props.location.pathname === '/upload') return <Upload {...props} />
+                            else if(props.location.pathname === '/history') return <History {...props} />
                             else if(props.location.pathname === '/wallet') return <Wallet {...props} />
                             else if(props.location.pathname === '/transfers') return <Transfers {...props} />
                             else if(props.location.pathname === '/profile') return <Profile {...props} />

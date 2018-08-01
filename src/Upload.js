@@ -108,7 +108,8 @@ class Upload extends Component {
 
         let formData = new FormData();
         formData.append('file', this.state.files[0]);
-        axios.post("https://media.vit.tube/upload/video", formData, {
+        formData.append('username', this.props.app.username);
+        axios.post("http://192.168.0.7:5000/upload/video", formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
