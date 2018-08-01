@@ -35,7 +35,7 @@ class History extends Component {
     }
 
     getUploadHistory() {
-        axios.get("http://192.168.0.7:5000/history/" + this.props.app.username).then(response => {
+        axios.get("https://media.vit.tube/history/" + this.props.app.username).then(response => {
             this.setState({
                 loading: false,
                 uploads: response.data.uploads
