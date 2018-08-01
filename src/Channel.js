@@ -70,8 +70,11 @@ class Channel extends Component {
             }
 
             let account_info = accounts[0];
-            account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
-
+            try {
+                account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+            } catch (error) {
+                // in case meta data is empty or malformed
+            }
             
             this.setState({
                 account_info: account_info,

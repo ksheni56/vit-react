@@ -66,7 +66,11 @@ class Profile extends Component {
             }
 
             let account_info = accounts[0];
-            account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+            try {
+                account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+            } catch (error) {
+                // in case meta data is empty or malformed
+            }
 
             console.log("Account has been loaded", account_info);
             
@@ -160,7 +164,11 @@ class Profile extends Component {
                         steem.api.getAccounts([self.props.app.username], (err, accounts) => {
 
                             let account_info = accounts[0];
-                            account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                            try {
+                                account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                            } catch (error) {
+                                // in case meta data is empty or malformed
+                            }
 
                             self.setState({
                                 uploading: false,
@@ -257,7 +265,11 @@ class Profile extends Component {
                     steem.api.getAccounts([self.props.app.username], (err, accounts) => {
 
                         let account_info = accounts[0];
-                        account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                        try {
+                            account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                        } catch (error) {
+                            // in case meta data is empty or malformed
+                        }
 
                         self.setState({
                             saving: false,
