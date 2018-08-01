@@ -68,7 +68,11 @@ class Wallet extends Component {
                 }
     
                 let account_info = accounts[0];
-                account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                try {
+                    account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
+                } catch (error) {
+                    // in case meta data is empty or malformed
+                }
                 account_info.balance = account_info.balance.split(' ')[0] + ' ' + LIQUID_TOKEN;
                 account_info.vesting_shares = this.numberWithCommas(this.vestingSteem(account_info, gprops).toFixed(3)) + ' ' + LIQUID_TOKEN;
                 console.log("Account has been loaded", account_info);

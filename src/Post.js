@@ -210,8 +210,11 @@ class Post extends Component {
                 return false;
             }
             
-            post.json_metadata = JSON.parse(result.json_metadata);
-            console.log("Post parsed", post)
+            try {
+                post.json_metadata = JSON.parse(result.json_metadata);
+            } catch (error) {
+                // in case meta data is empty or malformed
+            }
 
             steem.api.getDiscussionsByAuthorBeforeDate(author.replace('@',''), permalink, post.active, 5, (err, result) => {
                 
@@ -230,7 +233,11 @@ class Post extends Component {
                 console.log(">>>", err, result)
 
                 post.author_profile = result[0];
-                post.author_profile.json_metadata = JSON.parse(result[0].json_metadata);
+                try {
+                    post.author_profile.json_metadata = JSON.parse(result[0].json_metadata);
+                } catch (error) {
+                    // in case meta data is empty or malformed
+                }
 
                 this.setState({
                     loading: false,
