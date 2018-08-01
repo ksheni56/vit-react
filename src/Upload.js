@@ -11,6 +11,7 @@ import Select from 'react-select';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
+import { sign } from 'steem/lib/auth/ecc/src/signature';
 
 class Upload extends Component {
 
@@ -76,6 +77,16 @@ class Upload extends Component {
 
     }
 
+    generateSignature() {
+        const hostName = window.location.hostname;
+        const signUser = localStorage.getItem("username");
+        const wif = localStorage.getItem("postingWif");
+        const signUserHost = [signUser, hostName].join('@');
+        const signature = sign(signUserHost, wif);
+
+        return { signature: signature.toHex(), signUserHost: signUserHost};
+    }
+
     upload(form_data) {
 
         // todo: parse tags & cats
@@ -106,12 +117,17 @@ class Upload extends Component {
             uploading: true
         });
 
+        // get signed signature for Video Upload Authorisation
+        const { signature, signUserHost } = this.generateSignature();
+
         let formData = new FormData();
         formData.append('file', this.state.files[0]);
         formData.append('username', this.props.app.username);
-        axios.post("http://192.168.0.7:5000/upload/video", formData, {
+        axios.post("https://media.vit.tube/upload/video", formData, {
             headers: {
-                'Content-Type': 'multipart/form-data'
+                'Content-Type': 'multipart/form-data',
+                'X-Auth-Token':  signature,
+                'X-Auth-UserHost': signUserHost
             },
             onUploadProgress: (e) => {
               var completed = Math.round((e.loaded * 100) / e.total);
@@ -426,7 +442,7 @@ class Upload extends Component {
                                     onDrop={ this.handleDrop }
                                     multiple={ false } 
                                     onDropRejected={this.handleDropRejected }
-                                    accept="video/mp4, video/avi, video/x-matroska, video/quicktime"
+                                    accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
                                     disabled={ this.state.uploading }
                                 >
                                     <div className="w-100 text-center">
