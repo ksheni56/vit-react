@@ -9,7 +9,8 @@ import moment from 'moment';
 import TextArea from './components/forms/TextArea';
 import HLSSource from './HLS';
 import Item from './components/Item';
-
+import Avatar from './components/Avatar';
+import { VIDEO_THUMBNAIL_URL_PREFIX } from './config'
 
 class Post extends Component {
 
@@ -348,7 +349,7 @@ class Post extends Component {
                 {/*<PosterImage poster={ "https://media.vit.tube/playback/" +  thumbnail } />*/}
                     <HLSSource
                         isVideoChild
-                        src={ "https://media.vit.tube/playback/" + playlist }
+                        src={ VIDEO_THUMBNAIL_URL_PREFIX + playlist }
                     />
                     <BigPlayButton position="center" />
                 </Player>
@@ -386,7 +387,10 @@ class Post extends Component {
             )
 
         } else {
-
+            let avatar = null;
+            if (this.state.post.author_profile.json_metadata.profile) {
+                avatar = this.state.post.author_profile.json_metadata.profile.profile_image;
+            }
             return [
 
                 <div key="video-player">{ this.renderVideoPlayer() }</div>,
@@ -397,21 +401,7 @@ class Post extends Component {
                             <div className="col-3 col-md-2">
                                 <div>
                                     <div>
-                                        
-                                        {
-                                            this.state.post.author_profile.json_metadata.profile ? (
-
-                                                <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.post.author_profile.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
-                                            
-                                            ) : (
-
-                                                <div className="avatar"></div>
-
-                                            )
-
-                                        }
-                                        
-
+                                        <Avatar profile_image={avatar} />
                                         <div className="username text-center">
                                             <Link to={ "/@" + this.state.post.author }>
                                                 { this.state.post.author }

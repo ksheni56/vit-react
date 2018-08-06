@@ -4,6 +4,7 @@ import steem from 'steem';
 import FilterBar from './components/FilterBar';
 import Item from './components/Item';
 import debounce from 'lodash.debounce';
+import { PAGESIZE_TAG } from './config'
 
 class Tag extends Component {
 
@@ -11,7 +12,7 @@ class Tag extends Component {
 
         super(props);
 
-        this.pageSize = 30;
+        this.pageSize = PAGESIZE_TAG;
 
         this.scrollThreshold = 10;
 

@@ -8,6 +8,8 @@ import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 
 import { ToastContainer, toast } from 'react-toastify';
+import Avatar from './components/Avatar';
+import { AVATAR_UPLOAD_ENDPOINT, AVATAR_UPLOAD_PREFIX } from './config'
 
 class Profile extends Component {
 
@@ -74,14 +76,12 @@ class Profile extends Component {
 
             console.log("Account has been loaded", account_info);
             
-
-            // "https://steemitimages.com/100x100/" +  
             this.setState({
                 loading: false,
                 account: account_info,
                 display_name: (account_info.json_metadata.profile && account_info.json_metadata.profile.name) ? account_info.json_metadata.profile.name : '',
                 about: (account_info.json_metadata.profile && account_info.json_metadata.profile.about) ? account_info.json_metadata.profile.about : '',
-                profile_image: (account_info.json_metadata.profile && account_info.json_metadata.profile.profile_image) ? "https://steemitimages.com/100x100/" + account_info.json_metadata.profile.profile_image : '',
+                profile_image: (account_info.json_metadata.profile && account_info.json_metadata.profile.profile_image) ? account_info.json_metadata.profile.profile_image : '',
             })
 
         });
@@ -116,7 +116,7 @@ class Profile extends Component {
 
             let formData = new FormData();
             formData.append('file', this.state.files[0]);
-            axios.post("http://138.197.166.131:5000", formData, {
+            axios.post(AVATAR_UPLOAD_ENDPOINT, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -124,7 +124,7 @@ class Profile extends Component {
 
                 console.log("Avatar upload response", response);
 
-                let avatar_path = "https://media.vit.tube/uploads/" + response.data.Hash + "/" + response.data.Name,
+                let avatar_path = AVATAR_UPLOAD_PREFIX + response.data.Hash + "/" + response.data.Name,
                 jsonMetadata = { profile: { profile_image: avatar_path } };
 
                 if(this.state.account.json_metadata.profile && (this.state.account.json_metadata.profile.name || this.state.account.json_metadata.profile.about) ) {
@@ -175,7 +175,7 @@ class Profile extends Component {
                                 account: account_info,
                                 display_name: (account_info.json_metadata.profile && account_info.json_metadata.profile.name) ? account_info.json_metadata.profile.name : '',
                                 about: (account_info.json_metadata.profile && account_info.json_metadata.profile.about) ? account_info.json_metadata.profile.about : '',
-                                profile_image: (account_info.json_metadata.profile && account_info.json_metadata.profile.profile_image) ? "https://steemitimages.com/100x100/" + account_info.json_metadata.profile.profile_image : '',
+                                profile_image: (account_info.json_metadata.profile && account_info.json_metadata.profile.profile_image) ? account_info.json_metadata.profile.profile_image : '',
                             })
 
                         });
@@ -276,7 +276,7 @@ class Profile extends Component {
                             account: account_info,
                             display_name: (account_info.json_metadata.profile && account_info.json_metadata.profile.name) ? account_info.json_metadata.profile.name : '',
                             about: (account_info.json_metadata.profile && account_info.json_metadata.profile.about) ? account_info.json_metadata.profile.about : '',
-                            profile_image: (account_info.json_metadata.profile && account_info.json_metadata.profile.profile_image) ? "https://steemitimages.com/100x100/" + account_info.json_metadata.profile.profile_image : '',
+                            profile_image: (account_info.json_metadata.profile && account_info.json_metadata.profile.profile_image) ? account_info.json_metadata.profile.profile_image : '',
                         })
 
                     });
@@ -374,12 +374,18 @@ class Profile extends Component {
     }
 
     renderAvatar() {
-        if(this.state.profile_image !== '' ) {
-            return (
-                <div className="avatar">
-                    <img alt="Avatar" src={ this.state.profile_image }/>
-                </div>
-            )
+        if (this.state.profile_image !== '' ) {
+            if (this.state.ready_to_upload) {
+                return (
+                    <div className="avatar">
+                        <img alt="Avatar" src={ this.state.profile_image }/>
+                    </div>
+                )
+            } else {
+                return (
+                    <Avatar profile_image={this.state.profile_image} size="medium" />
+                )
+            }
         } else if( (this.state.account.json_metadata.profile && !this.state.account.json_metadata.profile.profile_image) || !this.state.account.json_metadata.profile ) {
             return (
                <div className="avatar d-flex justify-content-center align-items-center">

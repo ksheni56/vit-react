@@ -4,6 +4,7 @@ import FilterBar from './components/FilterBar';
 import Item from './components/Item';
 import steem from 'steem';
 import debounce from 'lodash.debounce';
+import { PAGESIZE_HOMEPAGE } from './config'
 
 class Home extends Component {
 
@@ -11,7 +12,7 @@ class Home extends Component {
 
         super(props);
 
-        this.pageSize = 30;
+        this.pageSize = PAGESIZE_HOMEPAGE;
 
         this.scrollThreshold = 10;
 
