@@ -4,6 +4,7 @@ import steem from 'steem';
 import Item from './components/Item';
 import moment from 'moment';
 import { subscribe, unsubscribe, getSubs } from './actions/app';
+import debounce from 'lodash.debounce';
 
 class Channel extends Component {
 
@@ -11,12 +12,17 @@ class Channel extends Component {
 
         super(props);
 
+        this.pageSize = 30;
+
+        this.scrollThreshold = 10;
+
         this.state = {
             posts: [],
             loading: true,
             author: this.props.match.params.filter.replace('@',''),
             loading_more: false,
             loading_account_info: true,
+            no_more_post: false,
             account_info: [],
             followers: '---',
             subscribing: false,
@@ -26,7 +32,7 @@ class Channel extends Component {
         this.loadMoreContent = this.loadMoreContent.bind(this);
         this.sub = this.sub.bind(this);
         this.unsub = this.unsub.bind(this);
-
+        this.scrollListener = this.scrollListener.bind(this);
 
     } 
 
@@ -48,6 +54,25 @@ class Channel extends Component {
         }
 
     }
+
+    attachScrollListener() {
+        window.document.getElementById('vitContent').addEventListener('scroll', this.scrollListener, {
+            capture: false,
+            passive: true,
+        });
+    }
+
+    detachScrollListener() {
+        window.document.getElementById('vitContent').removeEventListener('scroll', this.scrollListener)
+    }    
+
+    scrollListener = debounce(() => {
+        const el = window.document.getElementById('vitContent');
+        if (!el) return;
+        if(el.offsetHeight + el.scrollTop + this.scrollThreshold >= el.scrollHeight) {
+            this.loadMoreContent();
+        }
+    }, 150)
 
     getAccount() {
 
@@ -95,11 +120,16 @@ class Channel extends Component {
 
     }
 
+    componentWillUnmount() {
+        this.detachScrollListener();
+    }
+
     componentDidMount() {
 
         this.loadContent();
         this.getAccount();
         this.checkIfSubbed();
+        this.attachScrollListener();
 
     }
 
@@ -133,10 +163,9 @@ class Channel extends Component {
 
     loadContent() {
 
-
         let query = {
             'tag': this.state.author,
-            'limit': 30
+            'limit': this.pageSize
         };
 
         steem.api.getDiscussionsByBlog(query, (err, result) => {
@@ -147,14 +176,15 @@ class Channel extends Component {
 
                 this.setState({
                     posts: [],
+                    no_more_post: true,
                     loading: false
                 });
 
                 return;
             }
 
-            
             this.setState({
+                no_more_post: result.length < this.pageSize,
                 posts: result,
                 loading: false
             });
@@ -166,9 +196,15 @@ class Channel extends Component {
 
     loadMoreContent() {
 
+        if (this.state.loading_more || this.state.no_more_post) return;
+
+        this.setState({
+            loading_more: true
+        })
+
         let load_more_query = {
             'tag': this.state.author,
-            'limit': 30,
+            'limit': this.pageSize + 1,
             'start_author': this.state.author,
             'start_permlink': this.state.posts[this.state.posts.length - 1].permlink
         };
@@ -176,6 +212,10 @@ class Channel extends Component {
 
         steem.api.getDiscussionsByBlog(load_more_query, (err, result) => {
             if(err) {
+                this.setState({
+                    no_more_post: true,
+                    loading: false
+                });
                 return false; // add some sort of alert notifying about the end of the loop
             }
 
@@ -184,6 +224,8 @@ class Channel extends Component {
             let all_posts = this.state.posts.concat(result);
 
             this.setState({
+                loading_more: false,
+                no_more_post: result.length < this.pageSize,
                 posts: all_posts
             });
         });
@@ -354,6 +396,7 @@ class Channel extends Component {
     }
 
     render() {
+        
         return [
             <div className="channel-view" key="video-post">
                 { this.renderChannelHeader() }
@@ -361,16 +404,8 @@ class Channel extends Component {
             <div key="posts">{ this.renderPosts() }</div>,
             <div className="mb-4 mt-1 text-center" key="load-more">
                 {
-                    !this.state.loading ? (
-                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || !this.state.account_info || this.state.posts.length === 0}>
-                            {
-                                !this.state.loading_more ? (
-                                    <strong>Load More</strong>
-                                ) : (
-                                    <strong>Loading...</strong>
-                                )
-                            }
-                        </button>  
+                    !this.state.loading && this.state.loading_more ? (
+                        <i className="fas fa-spinner fa-pulse"></i>
                     ) : (
                         null
                     )
