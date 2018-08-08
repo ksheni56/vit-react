@@ -121,7 +121,7 @@ class Bootstrap extends Component {
                         <div className="row mx-0 h-100 w-100">
                             <div className="sidebar-overlay" onClick={(e) => this.toggleLeftSidebarCallback(e)}></div>
                             <LeftSidebar { ...this.props } />
-                            <div className="col content">
+                            <div className="col content" id="vitContent">
                                 { this.props.children }
                             </div> 
                         </div>
