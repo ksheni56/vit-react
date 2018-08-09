@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import FilterBar from './components/FilterBar';
 import Item from './components/Item';
+import debounce from 'lodash.debounce';
 
 class Tag extends Component {
 
@@ -10,12 +11,17 @@ class Tag extends Component {
 
         super(props);
 
+        this.pageSize = 30;
+
+        this.scrollThreshold = 10;
+
         this.state = {
             posts: [],
             loading: true,
             tag: this.props.match.params.tag,
             filter: this.props.match.params.filter,
-            'loading_more': false
+            no_more_post: false,
+            loading_more: false
         }
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
@@ -25,6 +31,7 @@ class Tag extends Component {
     componentDidMount() {
 
         this.loadContent(this.props.match.params.tag, this.props.match.params.filter)
+        this.attachScrollListener();
 
     }
 
@@ -44,15 +51,36 @@ class Tag extends Component {
 
     }
 
-    loadMoreContent() { 
+    attachScrollListener() {
+        window.document.getElementById('vitContent').addEventListener('scroll', this.scrollListener, {
+            capture: false,
+            passive: true,
+        });
+    }
+
+    detachScrollListener() {
+        window.document.getElementById('vitContent').removeEventListener('scroll', this.scrollListener)
+    }    
+
+    scrollListener = debounce(() => {
+        const el = window.document.getElementById('vitContent');
+        if (!el) return;
+        if(el.offsetHeight + el.scrollTop + this.scrollThreshold >= el.scrollHeight) {
+            this.loadMoreContent();
+        }
+    }, 150)
+
+    loadMoreContent () { 
+
+        if (this.state.loading_more || this.state.no_more_post) return;
 
         this.setState({
-            'loading_more': true
+            loading_more: true
         })
 
         let load_more_query =  {
             'tag': this.state.tag,
-            'limit': 30,
+            'limit': this.pageSize + 1,
             'start_author': this.state.posts[this.state.posts.length - 1].author,
             'start_permlink': this.state.posts[this.state.posts.length - 1].permlink
         }
@@ -66,6 +94,7 @@ class Tag extends Component {
 
                 this.setState({
                     posts: all_posts,
+                    no_more_post: result.length < this.pageSize,
                     'loading_more': false
                 })
 
@@ -80,6 +109,7 @@ class Tag extends Component {
 
                 this.setState({
                     posts: all_posts,
+                    no_more_post: result.length < this.pageSize,
                     'loading_more': false
                 });
 
@@ -95,6 +125,7 @@ class Tag extends Component {
 
                 this.setState({
                     posts: all_posts,
+                    no_more_post: result.length < this.pageSize,
                     'loading_more': false
                 })
 
@@ -109,7 +140,8 @@ class Tag extends Component {
 
                 this.setState({
                     posts: all_posts,
-                    'loading_more': false
+                    no_more_post: result.length < this.pageSize,
+                    loading_more: false
                 })
 
             });
@@ -122,7 +154,7 @@ class Tag extends Component {
 
         let query = {
             'tag': tag,
-            'limit': 30,
+            'limit': this.pageSize,
         }
 
         if(filter === 'trending') {
@@ -131,6 +163,7 @@ class Tag extends Component {
             
                 this.setState({
                     posts: result,
+                    no_more_post: result.length < this.pageSize,
                     loading: false
                 });
 
@@ -144,6 +177,7 @@ class Tag extends Component {
             
                 this.setState({
                     posts: result,
+                    no_more_post: result.length < this.pageSize,
                     loading: false
                 });
 
@@ -155,6 +189,7 @@ class Tag extends Component {
             
                 this.setState({
                     posts: result,
+                    no_more_post: result.length < this.pageSize,
                     loading: false
                 });
 
@@ -166,6 +201,7 @@ class Tag extends Component {
             
                 this.setState({
                     posts: result,
+                    no_more_post: result.length < this.pageSize,
                     loading: false
                 });
 
@@ -175,6 +211,7 @@ class Tag extends Component {
 
             this.setState({
                 posts: [],
+                no_more_post: true,
                 loading: false
             });
 
@@ -225,24 +262,15 @@ class Tag extends Component {
 
     render() {
         
-        
         return [
             <FilterBar { ...this.props } key="filter-bar" path={ "/" + this.state.tag + "/" } />,
             <div key="posts">{ this.renderPosts() }</div>,
             <div className="mb-4 mt-1 text-center" key="load-more">
 
                 {
-                    !this.state.loading ? (
+                    !this.state.loading && this.state.loading_more && !this.state.no_more_post? (
 
-                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || this.state.posts.length === 0}>
-                            {
-                                !this.state.loading_more ? (
-                                    <strong>Load More</strong>
-                                ) : (
-                                    <strong>Loading...</strong>
-                                )
-                            }
-                        </button>  
+                        <i className="fas fa-spinner fa-pulse"></i>
 
                     ) : (
 

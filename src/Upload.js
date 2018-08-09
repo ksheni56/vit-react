@@ -10,6 +10,8 @@ import TextField from './components/forms/TextField';
 import Select from 'react-select';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
+import { Line } from 'rc-progress';
+import { sign } from 'steem/lib/auth/ecc/src/signature';
 
 class Upload extends Component {
 
@@ -35,7 +37,9 @@ class Upload extends Component {
             'processing': false,
             'processed': false,
             'progress': null,
-            'permlink': ''
+            'permlink': '',
+            'transcoding': false,
+            'transcode_progress': 0
         }
 
         this.handleDrop = this.handleDrop.bind(this);
@@ -73,6 +77,16 @@ class Upload extends Component {
 
     }
 
+    generateSignature() {
+        const hostName = window.location.hostname;
+        const signUser = localStorage.getItem("username");
+        const wif = localStorage.getItem("postingWif");
+        const signUserHost = [signUser, hostName].join('@');
+        const signature = sign(signUserHost, wif);
+
+        return { signature: signature.toHex(), signUserHost: signUserHost};
+    }
+
     upload(form_data) {
 
         // todo: parse tags & cats
@@ -103,16 +117,23 @@ class Upload extends Component {
             uploading: true
         });
 
+        // get signed signature for Video Upload Authorisation
+        const { signature, signUserHost } = this.generateSignature();
+
         let formData = new FormData();
         formData.append('file', this.state.files[0]);
+        formData.append('username', this.props.app.username);
         axios.post("https://media.vit.tube/upload/video", formData, {
             headers: {
-                'Content-Type': 'multipart/form-data'
+                'Content-Type': 'multipart/form-data',
+                'X-Auth-Token':  signature,
+                'X-Auth-UserHost': signUserHost
             },
             onUploadProgress: (e) => {
               var completed = Math.round((e.loaded * 100) / e.total);
               this.setState({
                 progress: completed,
+                uploading: completed !== 100
               });
               // console.log("Completed ", completed, e);
             }
@@ -131,7 +152,6 @@ class Upload extends Component {
 
             var self = this;
 
-
             if(!response.data.Complete) {
                 let redirect_url = response.request.responseURL;
                 console.log("redirect_url", redirect_url)
@@ -142,7 +162,23 @@ class Upload extends Component {
 
                         console.log("Is it done yet?", response.data.Complete)
 
-                        if(response.data.Complete) {
+                        if(!response.data.Complete) {
+
+                            self.setState({
+                                processing: true,
+                                processed: false,
+                                transcode_progress: response.data.PercentComplete,
+                                transcoding: response.data.PercentComplete > 0 ? true : false,
+                            })
+
+                            console.log("Transcode Progress:", response.data.PercentComplete)
+
+                        } else {
+
+                            self.setState({
+                                transcode_progress: 100,
+                                transcoding: false,
+                            })
 
                             console.log("Done!", response.data)
 
@@ -291,6 +327,17 @@ class Upload extends Component {
 
     }
 
+    showTranscoding() {
+        if(!this.state.uploading && this.state.transcoding) {
+            return (
+                <div className="alert alert-warning mt-4" role="alert">
+                    <strong>Transcoding progress:</strong> {this.state.transcode_progress}% complete
+                    <Line percent={ this.state.transcode_progress } strokeWidth="4" strokeColor="#D3D3D3" />
+                </div>
+            )
+        }
+    }
+
     handleErrors() {
 
         if(this.state.error_type === 'generic') {
@@ -322,7 +369,7 @@ class Upload extends Component {
 
                 <ToastContainer />
 
-                <div className="col-8 mt-4">
+                <div className="col-md-8 col-sm-12 mt-4">
                     <div className="upload-wrapper">
                         <div>
 
@@ -333,7 +380,7 @@ class Upload extends Component {
                                 ref="upload_form" 
                                 >
 
-                                <div className="col-8 px-0">
+                                <div className="col-md-8 col-sm-12 px-0">
 
                                     <TextField 
                                         name="title"
@@ -382,13 +429,20 @@ class Upload extends Component {
                                     ) : null
                                 }
 
-                            
+                                {
+                                    this.state.success || this.state.transcoding ? (
+                                        <span>
+                                            { this.showTranscoding() }
+                                        </span>
+                                    ) : null
+                                }
+
                                 <Dropzone 
                                     className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
                                     onDrop={ this.handleDrop }
                                     multiple={ false } 
                                     onDropRejected={this.handleDropRejected }
-                                    accept="video/mp4, video/avi, video/x-matroska, video/quicktime"
+                                    accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
                                     disabled={ this.state.uploading }
                                 >
                                     <div className="w-100 text-center">

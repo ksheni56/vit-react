@@ -10,13 +10,15 @@ class Subscriptions extends Component {
         super(props);
 
         this.state = {
-            subscriptions: [],
             loading: true
         }  
 
     } 
 
     componentDidMount() {
+        if( (!this.props.app.username && !this.props.app.publicWif) || this.state.loading === false ) {
+            return null;
+        }
 
         this.props.getSubs({
             username: this.props.app.username,
@@ -24,7 +26,6 @@ class Subscriptions extends Component {
         }).then( response => {
 
             this.setState({
-                subscriptions: response.payload,
                 loading: false
             });
 
@@ -33,7 +34,7 @@ class Subscriptions extends Component {
             console.log("getSubs error", err);
 
         });
-
+        
     }
 
     renderSubscription() {
@@ -50,7 +51,7 @@ class Subscriptions extends Component {
             return [
 
                 <div className="d-flex justify-content-between align-items-center" key="section-title">
-                    <h3>Subscriptions</h3>
+                    <h3>Following</h3>
                     <div>
                         <i className="fa fa-ellipsis-v text-dark cursor-pointer"></i>
                     </div>
@@ -58,8 +59,7 @@ class Subscriptions extends Component {
                 <ul className="list-unstyled" ref="subscriptions" key="subscriptions-list">
                     { 
 
-                    this.state.subscriptions.map(
-
+                    this.props.subs.map(
                         (Subscription) =>
                             <li key={ Subscription.following } ref={ Subscription.following }>
     
@@ -78,7 +78,7 @@ class Subscriptions extends Component {
     render() {
         
         return this.renderSubscription();
-        
+
     }
 
 }
@@ -86,7 +86,8 @@ class Subscriptions extends Component {
 function mapStateToProps(state) {
 
     return { 
-        app: state.app
+        app: state.app,
+        subs: state.app.subs
     };
     
 }

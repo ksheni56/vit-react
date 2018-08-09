@@ -18,6 +18,7 @@ import './sass/Item.scss';
 import './sass/Upload.scss';
 import './sass/Post.scss';
 import './sass/Channel.scss';
+import './sass/Responsive.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -30,6 +31,7 @@ import Post from './Post';
 import Login from './Login';
 import Channel from './Channel';
 import Upload from './Upload';
+import History from './History';
 import Categories from './Categories';
 import Wallet from './Wallet';
 import Profile from './Profile';
@@ -40,19 +42,19 @@ import Transfers from './Transfers';
 
 // Connect to Vit Testnet
 
+/*
 steem.api.setOptions({
     url: 'https://peer.vit.tube/',
     address_prefix: "VIT",
     chain_id: "73f14dd4b7b07a8663be9d84300de0f65ef2ee7e27aae32bbe911c548c08f000"
 });
-
-/*
-steem.api.setOptions({
-    url: 'https://testapi.vit.tube/ws',
-    address_prefix: "TVT",
-    chain_id: "0fd7b6506d0d4b25dab0333cbd58391b0139119dfe585f372dc952687e7a6f86"
-});
 */
+
+steem.api.setOptions({
+    url: 'https://peer.proto.vit.tube',
+    address_prefix: "WIT",
+    chain_id: "1d50f6bcf387a5af6ebac42146ef920aedb5cc61d8f8ed37fb1ac671d722a302"
+});
 
 ReactDOM.render((
     <Provider store={reducers}>
@@ -74,6 +76,7 @@ ReactDOM.render((
  
                             if(test_if_home) return <Home {...props} /> 
                             else if(props.location.pathname === '/upload') return <Upload {...props} />
+                            else if(props.location.pathname === '/history') return <History {...props} />
                             else if(props.location.pathname === '/wallet') return <Wallet {...props} />
                             else if(props.location.pathname === '/transfers') return <Transfers {...props} />
                             else if(props.location.pathname === '/profile') return <Profile {...props} />

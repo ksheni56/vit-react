@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import FilterBar from './components/FilterBar';
 import Item from './components/Item';
 import steem from 'steem';
+import debounce from 'lodash.debounce';
 
 class Home extends Component {
 
@@ -10,11 +11,16 @@ class Home extends Component {
 
         super(props);
 
+        this.pageSize = 30;
+
+        this.scrollThreshold = 10;
+
         this.state = {
             'filter': '',
             'loading': true,
             'posts': [],
-            'loading_more': false
+            'loading_more': false,
+            no_more_post: false
         }
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
@@ -25,9 +31,13 @@ class Home extends Component {
 
         if(!this.props.match.params.filter) this.props.history.push('trending');
         else {
+            this.setState({
+                filter: this.props.match.params.filter
+            })
             this.loadContent(this.props.match.params.filter);
         }
 
+        this.attachScrollListener();
     }
 
     componentWillReceiveProps(nextProps) {    
@@ -45,19 +55,40 @@ class Home extends Component {
 
     }
 
+    attachScrollListener() {
+        window.document.getElementById('vitContent').addEventListener('scroll', this.scrollListener, {
+            capture: false,
+            passive: true,
+        });
+    }
+
+    detachScrollListener() {
+        window.document.getElementById('vitContent').removeEventListener('scroll', this.scrollListener)
+    }    
+
+    scrollListener = debounce(() => {
+        const el = window.document.getElementById('vitContent');
+        if (!el) return;
+        if(el.offsetHeight + el.scrollTop + this.scrollThreshold >= el.scrollHeight) {
+            this.loadMoreContent();
+        }
+    }, 150)
+
     loadMoreContent() {
+
+        if (this.state.loading_more || this.state.no_more_post) return;
 
         if(this.state.posts.length === 0) {
             return;
         }
 
         this.setState({
-            'loading_more': true
+            loading_more: true
         })
 
         let load_more_query =  {
             'tag': '',
-            'limit': 30,
+            'limit': this.pageSize + 1,
             'start_author': this.state.posts[this.state.posts.length - 1].author,
             'start_permlink': this.state.posts[this.state.posts.length - 1].permlink
         }
@@ -73,6 +104,7 @@ class Home extends Component {
                     
                     this.setState({
                         posts: [],
+                        no_more_post: true,
                         loading_more: false
                     });
 
@@ -84,6 +116,7 @@ class Home extends Component {
 
                 this.setState({
                     posts: all_posts,
+                    no_more_post: result.length < this.pageSize,
                     'loading_more': false
                 })
 
@@ -98,6 +131,7 @@ class Home extends Component {
 
                 this.setState({
                     posts: all_posts,
+                    no_more_post: result.length < this.pageSize,
                     'loading_more': false
                 })
             });
@@ -111,6 +145,7 @@ class Home extends Component {
 
                 this.setState({
                     posts: all_posts,
+                    no_more_post: result.length < this.pageSize,
                     'loading_more': false
                 })
 
@@ -125,6 +160,7 @@ class Home extends Component {
 
                 this.setState({
                     posts: all_posts,
+                    no_more_post: result.length < this.pageSize,
                     'loading_more': false
                 })
 
@@ -138,9 +174,10 @@ class Home extends Component {
 
     loadContent(filter) {
 
+
         let query = {
             'tag': '',
-            'limit': 30,
+            'limit': this.pageSize,
         }
 
         if(filter === 'trending') {
@@ -151,6 +188,7 @@ class Home extends Component {
                     
                     this.setState({
                         posts: [],
+                        no_more_post: true,
                         loading: false
                     });
 
@@ -159,6 +197,7 @@ class Home extends Component {
             
                 this.setState({
                     posts: result,
+                    no_more_post: result.length < this.pageSize,
                     loading: false
                 });
 
@@ -172,6 +211,7 @@ class Home extends Component {
                     
                     this.setState({
                         posts: [],
+                        no_more_post: true,
                         loading: false
                     });
 
@@ -180,6 +220,7 @@ class Home extends Component {
 
                 this.setState({
                     posts: result,
+                    no_more_post: result.length < this.pageSize,
                     loading: false
                 });
 
@@ -193,6 +234,7 @@ class Home extends Component {
                     
                     this.setState({
                         posts: [],
+                        no_more_post: true,
                         loading: false
                     });
 
@@ -201,6 +243,7 @@ class Home extends Component {
 
                 this.setState({
                     posts: result,
+                    no_more_post: result.length < this.pageSize,
                     loading: false
                 });
 
@@ -214,6 +257,7 @@ class Home extends Component {
                     
                     this.setState({
                         posts: [],
+                        no_more_post: true,
                         loading: false
                     });
 
@@ -222,6 +266,7 @@ class Home extends Component {
 
                 this.setState({
                     posts: result,
+                    no_more_post: result.length < this.pageSize,
                     loading: false
                 });
 
@@ -230,6 +275,7 @@ class Home extends Component {
         } else {
             this.setState({
                 posts: [],
+                no_more_post: true,
                 loading: false
             });
         }
@@ -277,27 +323,16 @@ class Home extends Component {
     }
 
     render() {
-        
+
         return [
             <FilterBar { ...this.props } key="filter-bar" path="/"/>,
             <div key="posts">{ this.renderPosts() }</div>,
             <div className="mb-4 mt-1 text-center" key="load-more">
 
                 {
-                    !this.state.loading ? (
+                    !this.state.loading && this.state.loading_more && !this.state.no_more_post? (
 
-                        <button className="btn btn-dark"  onClick={(e) => this.loadMoreContent(e)} disabled={this.state.loading_more || this.state.posts.length === 0}>
-
-                            {
-                                !this.state.loading_more ? (
-                                    <strong>Load More</strong>
-                                ) : (
-                                    <strong>Loading...</strong>
-                                )
-
-                            }
-
-                        </button>  
+                        <i className="fas fa-spinner fa-pulse"></i>
 
                     ) : (
 
