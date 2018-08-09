@@ -93,6 +93,7 @@ class Header extends Component {
                                             {/* add toggle here to close dropdown, reactstrap doesn't support Link tag */}
                                             <Link to="/wallet" className="dropdown-item" onClick={this.toggle}>Wallet</Link> 
                                             <Link to="/profile" className="dropdown-item" onClick={this.toggle}>Profile</Link> 
+                                            <Link to="/history" className="dropdown-item" onClick={this.toggle}>Uploads</Link> 
                                             <DropdownItem onClick={this.logout}>Logout</DropdownItem>
                                         </DropdownMenu>
                                     </ButtonDropdown>

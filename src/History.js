@@ -45,7 +45,7 @@ class History extends Component {
 
     displayHistory() {
 
-        if(this.state.uploads.length === 0) {
+        if(Object.keys(this.state.uploads).length === 0) {
             return (
                 <div className="text-left" role="alert">
                     <strong>You don't have any uploads to display yet...</strong>
