@@ -87,32 +87,32 @@ class History extends Component {
 
     render() {
 
-        const customStyles = {
-            overlay: {
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(255, 255, 255, 0.25)'
-            },
-            content : {
-                top: '50%',
-                left: '50%',
-                right: 'auto',
-                bottom: 'auto',
-                marginRight: '-50%',
-                transform: 'translate(-50%, -50%)',
-                backgroundColor: '#272C2F',
-                borderRadius: '4px',
-                padding: '20px',
-                border: '1px solid #000',
-                color: '#fff',
-                h3 : {
-                    color: '#fff',
-                }
-            },
-        };
+        // const customStyles = {
+        //     overlay: {
+        //         position: 'fixed',
+        //         top: 0,
+        //         left: 0,
+        //         right: 0,
+        //         bottom: 0,
+        //         backgroundColor: 'rgba(255, 255, 255, 0.25)'
+        //     },
+        //     content : {
+        //         top: '50%',
+        //         left: '50%',
+        //         right: 'auto',
+        //         bottom: 'auto',
+        //         marginRight: '-50%',
+        //         transform: 'translate(-50%, -50%)',
+        //         backgroundColor: '#272C2F',
+        //         borderRadius: '4px',
+        //         padding: '20px',
+        //         border: '1px solid #000',
+        //         color: '#fff',
+        //         h3 : {
+        //             color: '#fff',
+        //         }
+        //     },
+        // };
 
         return (
             <div className="row justify-content-center">

@@ -398,7 +398,7 @@ class Upload extends Component {
                                     <Select
                                         isMulti
                                         name="category"
-                                        className="Select"
+                                        classNamePrefix="Select"
                                         onChange={this.handleChangeCategory}
                                         options={this.state.categories}
                                     />
