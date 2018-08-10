@@ -2,14 +2,17 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import moment from 'moment'
+import { VIDEO_THUMBNAIL_URL_PREFIX } from '../config'
 
 class Item extends Component {
     renderThumbnail() {
-        let json_metadata = JSON.parse(this.props.data.json_metadata);
-        //console.log("Thumb", json_metadata.vit_data)
+        let json_metadata
+        try {
+            json_metadata = JSON.parse(this.props.data.json_metadata);
+        } catch (e) { }
 
         if(json_metadata && json_metadata.vit_data && json_metadata.vit_data.Hash) {
-            let URL = "https://media.vit.tube/playback/" + json_metadata.vit_data.Hash + "/thumbnail-01.jpg";
+            let URL = VIDEO_THUMBNAIL_URL_PREFIX + json_metadata.vit_data.Hash + "/thumbnail-01.jpg";
             console.log("URL", URL);
             return <img
               onError={ e => {e.target.src="/images/thumbnail.jpg" }}

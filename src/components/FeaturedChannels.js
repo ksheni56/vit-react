@@ -2,12 +2,17 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import List from './../featured.json'
+import proxifyImage from './../utils/ProxifyImage'
 
 class FeaturedChannels extends Component {
 
     constructor(props) {
 
         super(props);
+
+        List.forEach(element => {
+            element.avatar = proxifyImage(element.avatar, "30x30")
+        });
 
         this.state = {
             featured: List

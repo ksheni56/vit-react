@@ -5,6 +5,8 @@ import Item from './components/Item';
 import moment from 'moment';
 import { subscribe, unsubscribe, getSubs } from './actions/app';
 import debounce from 'lodash.debounce';
+import Avatar from './components/Avatar';
+import { PAGESIZE_CHANNEL } from './config'
 
 class Channel extends Component {
 
@@ -12,7 +14,7 @@ class Channel extends Component {
 
         super(props);
 
-        this.pageSize = 30;
+        this.pageSize = PAGESIZE_CHANNEL;
 
         this.scrollThreshold = 10;
 
@@ -356,6 +358,10 @@ class Channel extends Component {
                     </div>
                 )
             } else {
+                let avatar = null;
+                if (this.state.account_info.json_metadata.profile) {
+                    avatar = this.state.account_info.json_metadata.profile.profile_image;
+                }
                 return (
                     <div className="row mt-3 video-info align-items-center mb-3 no-gutters">
                         <div className="col-8 col-sm-9">
@@ -363,13 +369,7 @@ class Channel extends Component {
                                 <div className="col-md-2 col-4">
                                     <div className="d-flex justify-content-center w-100">
                                         <div>
-                                            {
-                                                this.state.account_info.json_metadata.profile ? (
-                                                    <div className="avatar" style={{'background': 'url( https://steemitimages.com/100x100/' + this.state.account_info.json_metadata.profile.profile_image + ' ) no-repeat center center', 'backgroundSize': 'cover'}}></div>
-                                                ) : (
-                                                    <div className="avatar"></div>
-                                                )
-                                            }
+                                            <Avatar profile_image={avatar} />
                                             <div className="username text-center">{this.state.account_info.name}</div>
                                         </div>
                                     </div>

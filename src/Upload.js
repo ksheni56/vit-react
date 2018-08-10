@@ -12,6 +12,7 @@ import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
 import { sign } from 'steem/lib/auth/ecc/src/signature';
+import { VIDEO_UPLOAD_ENDPOINT } from './config'
 
 class Upload extends Component {
 
@@ -122,8 +123,9 @@ class Upload extends Component {
 
         let formData = new FormData();
         formData.append('file', this.state.files[0]);
+
         formData.append('username', this.props.app.username);
-        axios.post("https://media.vit.tube/upload/video", formData, {
+        axios.post(VIDEO_UPLOAD_ENDPOINT, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
                 'X-Auth-Token':  signature,

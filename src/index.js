@@ -4,6 +4,11 @@ import { Provider } from 'react-redux';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import 'moment-timezone';
 import steem from 'steem';
+import { 
+    API_URL,
+    API_ADDRESS_PREFIX,
+    API_CHAIN_ID
+} from './config'
 
 import reducers from './reducers';
 
@@ -37,23 +42,11 @@ import Wallet from './Wallet';
 import Profile from './Profile';
 import Transfers from './Transfers';
 
-// Add Steem
-//steem.api.setOptions({ url: 'https://api.steemit.com'});
-
 // Connect to Vit Testnet
-
-/*
 steem.api.setOptions({
-    url: 'https://peer.vit.tube/',
-    address_prefix: "VIT",
-    chain_id: "73f14dd4b7b07a8663be9d84300de0f65ef2ee7e27aae32bbe911c548c08f000"
-});
-*/
-
-steem.api.setOptions({
-    url: 'https://peer.proto.vit.tube',
-    address_prefix: "WIT",
-    chain_id: "1d50f6bcf387a5af6ebac42146ef920aedb5cc61d8f8ed37fb1ac671d722a302"
+    url: API_URL,
+    address_prefix: API_ADDRESS_PREFIX,
+    chain_id: API_CHAIN_ID
 });
 
 ReactDOM.render((
