@@ -339,7 +339,7 @@ class Wallet extends Component {
                                         maxLength={100}
                                     />
 
-                                    <small className="mb-2 d-none" style={{'marginTop': '-5px'}}><a href="#" className="text-danger">Transfer all balance</a></small>
+                                    <small className="mb-2 d-none" style={{'marginTop': '-5px'}}><a href="#transfer-all" className="text-danger">Transfer all balance</a></small>
                                     
 
                                 </div>
