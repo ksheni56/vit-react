@@ -19,5 +19,6 @@ export const AVATAR_UPLOAD_PREFIX = process.env.REACT_APP_AVATAR_UPLOAD_PREFIX ?
 
 export const VIDEO_THUMBNAIL_URL_PREFIX = process.env.REACT_APP_VIDEO_THUMBNAIL_URL_PREFIX ? process.env.REACT_APP_VIDEO_THUMBNAIL_URL_PREFIX : "https://media.vit.tube/playback/";
 export const VIDEO_UPLOAD_ENDPOINT = process.env.REACT_APP_VIDEO_UPLOAD_ENDPOINT ? process.env.REACT_APP_VIDEO_UPLOAD_ENDPOINT : "https://media.vit.tube/upload/video";
+export const IMAGE_UPLOAD_ENDPOINT = process.env.REACT_APP_IMAGE_UPLOAD_ENDPOINT ? process.env.REACT_APP_IMAGE_UPLOAD_ENDPOINT : "https://media.vit.tube/upload/image";
 
 export const LIQUID_TOKEN = 'VIT';
