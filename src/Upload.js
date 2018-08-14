@@ -53,6 +53,11 @@ class Upload extends Component {
 
     componentDidMount() {
 
+        if(!this.props.app.authorized) {
+            this.props.history.push("/login");
+            return false;
+        }
+
         // TODO: change 'life'
         steem.api.getTrendingTags('', 60, (err, result) => {
 
