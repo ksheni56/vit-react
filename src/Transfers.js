@@ -6,6 +6,8 @@ import moment from 'moment';
 import { post } from './actions/post';
 import './sass/Select.scss';
 import { ToastContainer } from 'react-toastify';
+import { numberWithCommas } from './utils/Format'
+import { LIQUID_TOKEN } from './config'
 
 class Transfers extends Component {
 
@@ -18,10 +20,11 @@ class Transfers extends Component {
             transfers: []
         };
 
+        this.transfer_op = ["transfer_to_vesting", "transfer"];
 
     } 
 
-    componentWillMount() {
+    componentDidMount() {
 
         if(!this.props.app.authorized) {
             this.props.history.push("/login");
@@ -29,10 +32,10 @@ class Transfers extends Component {
         }
 
         steem.api.getAccountHistory(this.props.app.username, -1, 100, (err, result) => {
-            let transfers = result.filter( tx => tx[1].op[0] === 'transfer' )
+            let transfers = result.filter( tx => this.transfer_op.indexOf(tx[1].op[0]) !== -1 )
 
             this.setState({
-                 loading: false,
+                loading: false,
                 transfers: transfers
             })
             console.log(transfers)
@@ -75,7 +78,7 @@ class Transfers extends Component {
                                         <td>{ moment(Item[1]['timestamp']).format('MM/DD/YY, h:mm:ss a') }</td>
                                         <td>@{ Item[1]['op'][1]['from'] }</td>
                                         <td>@{ Item[1]['op'][1]['to'] }</td>
-                                        <td>{ Item[1]['op'][1]['amount'] }</td>
+                                        <td>{ numberWithCommas(Item[1]['op'][1]['amount'].split(' ')[0]) } {LIQUID_TOKEN}</td>
                                         <td><i>{ Item[1]['op'][1]['memo'] }</i></td>
                                        
                                     </tr>
