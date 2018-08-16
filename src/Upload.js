@@ -53,6 +53,11 @@ class Upload extends Component {
 
     componentDidMount() {
 
+        if(!this.props.app.authorized) {
+            this.props.history.push("/login");
+            return false;
+        }
+
         // TODO: change 'life'
         steem.api.getTrendingTags('', 60, (err, result) => {
 
@@ -154,8 +159,8 @@ class Upload extends Component {
 
             var self = this;
 
-            if(!response.data.Complete) {
-                let redirect_url = response.request.responseURL;
+            if(response.data.url) {
+                let redirect_url = response.data.url;
                 console.log("redirect_url", redirect_url)
 
                 var refreshInterval = setInterval(function() {
@@ -259,6 +264,14 @@ class Upload extends Component {
 
                 }, 2000);
 
+            } else {
+                self.setState({
+                    processing: false,
+                    processed: false,
+                    error: true,
+                    error_type: 'generic',
+                    uploading: false
+                });
             }
 
         }).catch(err => {
