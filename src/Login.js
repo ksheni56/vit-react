@@ -46,8 +46,9 @@ class Login extends Component {
             localStorage.setItem("username", response.payload.username);
             localStorage.setItem("publicWif", response.payload.publicWif);
             localStorage.setItem("postingWif", response.payload.postingWif);
+            localStorage.setItem("signature", response.payload.signature);
+            localStorage.setItem("signUserHost", response.payload.signUserHost);
             
-
         }).catch(err => {
 
             console.log("loginUser error", err);

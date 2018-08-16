@@ -11,7 +11,6 @@ import Select from 'react-select';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
-import { sign } from 'steem/lib/auth/ecc/src/signature';
 import { VIDEO_UPLOAD_ENDPOINT } from './config'
 
 class Upload extends Component {
@@ -83,16 +82,6 @@ class Upload extends Component {
 
     }
 
-    generateSignature() {
-        const hostName = window.location.hostname;
-        const signUser = localStorage.getItem("username");
-        const wif = localStorage.getItem("postingWif");
-        const signUserHost = [signUser, hostName].join('@');
-        const signature = sign(signUserHost, wif);
-
-        return { signature: signature.toHex(), signUserHost: signUserHost};
-    }
-
     upload(form_data) {
 
         // todo: parse tags & cats
@@ -124,7 +113,8 @@ class Upload extends Component {
         });
 
         // get signed signature for Video Upload Authorisation
-        const { signature, signUserHost } = this.generateSignature();
+        const signature = localStorage.getItem("signature");
+        const signUserHost = localStorage.getItem("signUserHost");
 
         let formData = new FormData();
         formData.append('file', this.state.files[0]);

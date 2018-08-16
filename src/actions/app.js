@@ -1,6 +1,6 @@
 import steem from 'steem';
 //import Config from './../config.json';
-
+import { sign } from 'steem/lib/auth/ecc/src/signature';
 
 export function loginUser(request) {   
 
@@ -33,15 +33,18 @@ export function loginUser(request) {
 	            publicWif = steem.auth.wifToPublic(wif),
 	            postingWif = wif;
 
-
 	        if(posting_key === publicWif) {
+				// generate the signature used for upload Video and Image
+				const { signature, signUserHost } = generateUserSignature(request.username, postingWif);
 
 	            resolve({
 	        		type: 'LOGIN_USER',
 	        		payload: {
 	        			'username': request.username,
 	        			'publicWif': publicWif,
-	        			'postingWif': postingWif
+						'postingWif': postingWif,
+						'signature': signature,
+						'signUserHost': signUserHost
 	        		}
 	        	})
 
@@ -49,7 +52,7 @@ export function loginUser(request) {
 
 	            reject({
 	        		type: 'INVALID_PASSWORD',
-	        		payload: ["Accont doesn't exist"]
+	        		payload: ["Account doesn't exist"]
 	        	})
 
 	        }
@@ -59,6 +62,15 @@ export function loginUser(request) {
     	
 	});
 
+}
+
+// generate the signature used for upload Video and Image
+function generateUserSignature(username, postingWif) {
+	const hostName = window.location.hostname;
+	const signUserHost = [username, hostName].join('@');
+	const signature = sign(signUserHost, postingWif);
+
+	return { signature: signature.toHex(), signUserHost: signUserHost};
 }
 
 export function restoreLogin(request) {
@@ -73,7 +85,9 @@ export function restoreLogin(request) {
 export function logout(request) {
 
 	localStorage.removeItem('username');
-    localStorage.removeItem('publicWif');
+	localStorage.removeItem('publicWif');
+	localStorage.removeItem('signature');
+	localStorage.removeItem('signUserHost');
 
     return {
         type: 'LOGOUT',
