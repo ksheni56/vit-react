@@ -114,11 +114,17 @@ class Profile extends Component {
                 uploading: true
             })
 
+            // get signed signature for Video Upload Authorisation
+            const signature = localStorage.getItem("signature");
+            const signUserHost = localStorage.getItem("signUserHost");
+
             let formData = new FormData();
             formData.append('file', this.state.files[0]);
             axios.post(AVATAR_UPLOAD_ENDPOINT, formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data',
+                    'X-Auth-Token':  signature,
+                    'X-Auth-UserHost': signUserHost
                 }
             }).then(response => {
 

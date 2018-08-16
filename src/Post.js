@@ -148,7 +148,7 @@ class Post extends Component {
 
             this.state.comments.unshift({
                 id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
-                author: response.payload.operations[0][1].parent_author,
+                author: response.payload.operations[0][1].author,
                 body: response.payload.operations[0][1].body,
                 created: new Date()
             })
