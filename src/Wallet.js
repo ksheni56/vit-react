@@ -7,6 +7,7 @@ import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
+import { vestingSteem, numberWithCommas } from './utils/Format'
 
 export const LIQUID_TOKEN = 'VIT';
 
@@ -74,7 +75,7 @@ class Wallet extends Component {
                     // in case meta data is empty or malformed
                 }
                 account_info.balance = account_info.balance.split(' ')[0] + ' ' + LIQUID_TOKEN;
-                account_info.vesting_shares = this.numberWithCommas(this.vestingSteem(account_info, gprops).toFixed(3)) + ' ' + LIQUID_TOKEN;
+                account_info.vesting_shares = numberWithCommas(vestingSteem(account_info, gprops).toFixed(3)) + ' ' + LIQUID_TOKEN;
                 console.log("Account has been loaded", account_info);
                 this.setState({
                     loading: false,
@@ -82,20 +83,6 @@ class Wallet extends Component {
                 })
             });
         });
-    }
-
-    /* Format values with commas */
-    numberWithCommas = x => x.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-
-    /* Calculate VIT power, formula taken from condenser */
-    vestingSteem(account, gprops) {
-        const vests = parseFloat(account.vesting_shares.split(' ')[0]);
-        const total_vests = parseFloat(gprops.total_vesting_shares.split(' ')[0]);
-        const total_vest_steem = parseFloat(
-            gprops.total_vesting_fund_steem.split(' ')[0]
-        );
-        const vesting_steemf = total_vest_steem * (vests / total_vests);
-        return vesting_steemf;
     }
 
     displayKeys() {
