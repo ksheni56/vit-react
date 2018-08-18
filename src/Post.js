@@ -23,6 +23,7 @@ class Post extends Component {
             loading: true,
             loading_comments: true,
             commenting: false,
+            comment_changed: false,
             comments: [],
             voting: false,
             related: [],
@@ -57,13 +58,17 @@ class Post extends Component {
             // got logged out
         }
 
-
+        if(nextProps.app.comment_changed !== this.state.comment_changed) {
+            console.log("comment added recently");
+            this.loadContent(nextProps.match.params.author, nextProps.match.params.permalink)
+        }
     }
 
     componentDidMount() {
 
         this.loadContent(this.props.match.params.author, this.props.match.params.permalink);
 
+        
     }
 
     getVotes(votes) {
@@ -172,7 +177,6 @@ class Post extends Component {
 
 
     loadContent(author, permalink) {
-
         steem.api.getContentReplies(author, permalink, (err, result) => {
 
             if(err) {

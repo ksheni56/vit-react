@@ -2,7 +2,8 @@ const initialState = {
     "username": null,
     "publicWif": null,
     "authorized": false,
-    "subs": []
+    "subs": [],
+    "comment_changed": false
 };
 
 export default function(state = initialState, action) {
@@ -44,6 +45,11 @@ export default function(state = initialState, action) {
             return Object.assign({}, state, {
                 subs: action.payload
             });
+
+        case 'COMMENT_SUCCESS':
+            return Object.assign({}, state, {
+                comment_changed: true
+            });    
 
         default:
             return state;
