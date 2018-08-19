@@ -65,10 +65,15 @@ class Post extends Component {
     }
 
     componentDidMount() {
-
-        this.loadContent(this.props.match.params.author, this.props.match.params.permalink);
-
-        
+        let { author, permalink } = this.props.match.params;
+        this.loadContent(author, permalink);
+        this.props.dispatch({
+            type: 'START_BACKGROUND_SYNC',
+		    callback: () => {
+                console.log("Syncing comments on " + permalink);
+                this.loadComments(author, permalink);
+            },
+        });
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -186,7 +191,7 @@ class Post extends Component {
     }
 
 
-    loadContent(author, permalink) {
+    loadComments(author, permalink) {
         steem.api.getContentReplies(author, permalink, (err, result) => {
 
             if(err) {
@@ -206,7 +211,20 @@ class Post extends Component {
             });
 
         });
+//        let timer = setTimeout( () => this.loadComments(author, permalink), 5000 );
+//        this.setState({
+//            timer: timer
+//        });
+    }
 
+    componentWillUnmount() {
+        //clearTimeout(this.state.timer);
+        this.props.dispatch({
+            type: 'STOP_BACKGROUND_SYNC',
+        });
+    }
+
+    loadContent(author, permalink) {
         steem.api.getContent(author, permalink, (err, result) => {
 
             console.log("getContent response", err, result)
@@ -560,4 +578,9 @@ function mapStateToProps(state) {
 }
 
 
-export default connect(mapStateToProps, { vote, comment })(Post);
+export default connect(
+    mapStateToProps,
+    (dispatch) => {
+        return { vote, comment, dispatch }
+    }
+)(Post);
