@@ -432,7 +432,7 @@ class Post extends Component {
 
         // skip displaying video if blocked
         const { category, author, permlink } = this.state.post;
-        const url = `/${category}/@${author}/${permlink}`;console.log(url);
+        const url = `/${category}/@${author}/${permlink}`;
         if (DMCAUtils.isBlocked(url, author)) {
             return (
                 <div className="row">
