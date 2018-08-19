@@ -7,9 +7,11 @@ import steem from 'steem';
 import { 
     API_URL,
     API_ADDRESS_PREFIX,
-    API_CHAIN_ID
+    API_CHAIN_ID,
+    DMCA_CONTENT_ENDPOINT,
+    DMCA_USER_ENDPOINT
 } from './config'
-
+import DMCA from './utils/DMCAUtils'
 import reducers from './reducers';
 
 // Styling
@@ -48,6 +50,9 @@ steem.api.setOptions({
     address_prefix: API_ADDRESS_PREFIX,
     chain_id: API_CHAIN_ID
 });
+
+// Fetch DMCA data
+DMCA.fetch(DMCA_CONTENT_ENDPOINT, DMCA_USER_ENDPOINT)
 
 ReactDOM.render((
     <Provider store={reducers}>

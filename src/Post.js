@@ -11,6 +11,7 @@ import HLSSource from './HLS';
 import Item from './components/Item';
 import Avatar from './components/Avatar';
 import { VIDEO_THUMBNAIL_URL_PREFIX } from './config'
+import DMCAUtils from './utils/DMCAUtils';
 
 class Post extends Component {
 
@@ -428,7 +429,24 @@ class Post extends Component {
     }
 
     render() {
+
+        // skip displaying video if blocked
+        const { category, author, permlink } = this.state.post;
+        const url = `/${category}/@${author}/${permlink}`;console.log(url);
+        if (DMCAUtils.isBlocked(url, author)) {
+            return (
+                <div className="row">
+                    <div className="col-12">
+                        <div className="no-results my-5 text-center">
+                            This post is not available due to a copyright claim.
+                        </div>
+                    </div>
+                </div>
+            )
+
+        }
         
+        // display video
         return (
             <div className="row justify-content-center mt-3">
                 <div className="col-lg-9 col-md-12 video-post">
