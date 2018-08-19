@@ -58,10 +58,10 @@ class Post extends Component {
             // got logged out
         }
 
-        if(nextProps.app.comment_changed !== this.state.comment_changed) {
-            console.log("comment added recently");
-            this.loadContent(nextProps.match.params.author, nextProps.match.params.permalink)
-        }
+        // if(nextProps.app.comment_changed !== this.state.comment_changed) {
+        //     console.log("comment added recently");
+        //     this.loadContent(nextProps.match.params.author, nextProps.match.params.permalink)
+        // }
     }
 
     componentDidMount() {
@@ -70,6 +70,15 @@ class Post extends Component {
 
         
     }
+
+    componentDidUpdate(prevProps, prevState) {
+        // only update chart if the data has changed
+        if (prevState.comment_changed !== this.state.comment_changed) {
+            this.loadContent(this.props.match.params.author, this.props.match.params.permalink);
+        }
+        console.log('Current', this.state.comment_changed);
+        console.log('Previous', prevState.comment_changed);
+      }
 
     getVotes(votes) {
 
@@ -159,7 +168,8 @@ class Post extends Component {
             })
 
             this.setState({
-                commenting: false
+                commenting: false,
+                comment_changed: true
             });
 
 

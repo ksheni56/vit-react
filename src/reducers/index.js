@@ -13,4 +13,4 @@ const rootReducer = combineReducers({
 
 const createStoreWithMiddleware = applyMiddleware(promise)(createStore);
 
-export default createStoreWithMiddleware(rootReducer);
+export default createStoreWithMiddleware(rootReducer, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
