@@ -1,20 +1,10 @@
-import { delay } from 'redux-saga';
-import {
-  take, put, call, fork, cancel, cancelled, all,
-  select
-} from 'redux-saga/effects';
 
 const initialState = {
     "username": null,
     "publicWif": null,
     "authorized": false,
-    "subs": [],
-    "comment_changed": false
+    "subs": []
 };
-
-export const START_BACKGROUND_SYNC = 'START_BACKGROUND_SYNC';
-export const STOP_BACKGROUND_SYNC = 'STOP_BACKGROUND_SYNC';
-export const CANCELLED_BACKGROUND_SYNC = 'CANCELLED_BACKGROUND_SYNC';
 
 export default function(state = initialState, action) {
 
@@ -56,47 +46,8 @@ export default function(state = initialState, action) {
                 subs: action.payload
             });
 
-        case 'COMMENT_SUCCESS':
-            return Object.assign({}, state, {
-                comment_changed: true
-            });    
-
         default:
             return state;
     }
 
-}
-
-const POLLING_INTERVAL = 5000; // 5 second polling interval
-
-function* bgSync(action) {
-    try {
-        while(true) {
-            const state = yield select();
-            yield call(action.callback, action, undefined, state);
-            yield call(delay, POLLING_INTERVAL);
-        }
-    } finally {
-        if (yield cancelled()) {
-            yield put({
-                type: CANCELLED_BACKGROUND_SYNC
-            });
-        }
-    }
-}
-
-function* pollForComments() {
-    while(true) {
-        const action = yield take(START_BACKGROUND_SYNC);
-        const bgSyncTask = yield fork(bgSync, action);
-        yield take(STOP_BACKGROUND_SYNC);
-        yield cancel(bgSyncTask);
-    }
-}
-
-export function* rootSaga() {
-    console.log("Launching root saga.");
-    yield all([
-        pollForComments()
-    ]);
 }

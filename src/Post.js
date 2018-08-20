@@ -23,7 +23,6 @@ class Post extends Component {
             loading: true,
             loading_comments: true,
             commenting: false,
-            comment_changed: false,
             comments: [],
             voting: false,
             related: [],
@@ -36,10 +35,7 @@ class Post extends Component {
         this.castVote = this.castVote.bind(this);
         this.submitComment = this.submitComment.bind(this);
 
-
     } 
-
-
 
     componentWillReceiveProps(nextProps) { 
 
@@ -58,17 +54,15 @@ class Post extends Component {
             // got logged out
         }
 
-        // if(nextProps.app.comment_changed !== this.state.comment_changed) {
-        //     console.log("comment added recently");
-        //     this.loadContent(nextProps.match.params.author, nextProps.match.params.permalink)
-        // }
     }
 
     componentDidMount() {
         let { author, permalink } = this.props.match.params;
         this.loadContent(author, permalink);
+
+        // start to sync comments
         this.props.dispatch({
-            type: 'START_BACKGROUND_SYNC',
+            type: 'START_BACKGROUND_SYNC_COMMENTS',
 		    callback: () => {
                 console.log("Syncing comments on " + permalink);
                 this.loadComments(author, permalink);
@@ -76,15 +70,12 @@ class Post extends Component {
         });
     }
 
-    componentDidUpdate(prevProps, prevState) {
-        // only update chart if the data has changed
-        if (prevState.comment_changed !== this.state.comment_changed) {
-            this.loadContent(this.props.match.params.author, this.props.match.params.permalink);
-        }
-        console.log('Current', this.state.comment_changed);
-        console.log('Previous', prevState.comment_changed);
-      }
-
+    componentWillUnmount() {
+        this.props.dispatch({
+            type: 'STOP_BACKGROUND_SYNC_COMMENTS',
+        });
+    }
+    
     getVotes(votes) {
 
         if(votes) {
@@ -173,8 +164,7 @@ class Post extends Component {
             })
 
             this.setState({
-                commenting: false,
-                comment_changed: true
+                commenting: false
             });
 
 
@@ -192,6 +182,7 @@ class Post extends Component {
 
 
     loadComments(author, permalink) {
+        
         steem.api.getContentReplies(author, permalink, (err, result) => {
 
             if(err) {
@@ -211,17 +202,7 @@ class Post extends Component {
             });
 
         });
-//        let timer = setTimeout( () => this.loadComments(author, permalink), 5000 );
-//        this.setState({
-//            timer: timer
-//        });
-    }
 
-    componentWillUnmount() {
-        //clearTimeout(this.state.timer);
-        this.props.dispatch({
-            type: 'STOP_BACKGROUND_SYNC',
-        });
     }
 
     loadContent(author, permalink) {
