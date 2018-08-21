@@ -7,6 +7,7 @@ import { vote, comment } from './actions/post';
 import Formsy from 'formsy-react';
 import moment from 'moment';
 import TextArea from './components/forms/TextArea';
+import TextField from './components/forms/TextField';
 import HLSSource from './HLS';
 import Item from './components/Item';
 import Avatar from './components/Avatar';
@@ -29,12 +30,15 @@ class Post extends Component {
             loading_related: true,
             tag: this.props.match.params.tag,
             author: this.props.match.params.author,
-            permalink: this.props.match.params.permalink
+            permalink: this.props.match.params.permalink,
+            currentReplyForm: "",
+            nestedComments: []
         }
 
         this.castVote = this.castVote.bind(this);
         this.submitComment = this.submitComment.bind(this);
-
+        this.toggleReply = this.toggleReply.bind(this);
+        this.submitNestedComment = this.submitNestedComment.bind(this);
     } 
 
     componentWillReceiveProps(nextProps) { 
@@ -180,6 +184,66 @@ class Post extends Component {
 
     }
 
+    toggleReply(Comment) {
+        //console.log(Comment.author, Comment.permlink);
+        this.setState({
+            currentReplyForm: Comment.permlink
+        })
+    }
+
+    submitNestedComment(form) {
+        // console.log(form.nestedComment)
+        // console.log(form.commentAuthorPermLink);
+        const commentAuthorAndPermLink = form.commentAuthorPermLink;
+        const [author, permlink] = commentAuthorAndPermLink.split("|");
+
+        if(!this.props.app.authorized) {
+            this.props.history.push("/login");
+            return false;
+        }
+
+        
+        this.setState({
+            commenting: true
+        });
+
+        this.props.comment({
+
+            postingWif: this.props.app.postingWif,
+            username: this.props.app.username, 
+            author: author,
+            permalink: permlink,
+            comment: form.nestedComment
+
+        }).then( response => {
+
+            console.log("comment submit success", response);
+
+            console.log(this.state.comments);
+
+            // this.state.comments.unshift({
+            //     id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
+            //     author: response.payload.operations[0][1].author,
+            //     body: response.payload.operations[0][1].body,
+            //     created: new Date()
+            // })
+
+            this.setState({
+                commenting: false
+            });
+
+
+        }).catch(err => {
+
+            console.log("comment submit error", err)
+
+            this.setState({
+                commenting: false
+            });
+
+        });
+    }
+
 
     loadComments(author, permalink) {
         
@@ -191,7 +255,7 @@ class Post extends Component {
                     loading_comments: false,
                     comments: []
                 });
-
+                
                 return false;
 
             }
@@ -203,6 +267,28 @@ class Post extends Component {
 
         });
 
+    }
+
+    loadNestedComments(author, permalink) {
+        steem.api.getContentReplies(author, permalink, (err, result) => {
+
+            if(err) {
+                
+                this.setState({
+                    loading_comments: false,
+                    nestedComments: []
+                });
+                
+                return false;
+
+            }
+            console.log(result);
+            this.setState({
+                loading_comments: false,
+                nestedComments: result
+            });
+
+        });
     }
 
     loadContent(author, permalink) {
@@ -276,21 +362,67 @@ class Post extends Component {
 
                         (Comment) =>
                             <li key={ Comment.id } ref={ Comment.id } className="media mb-4">
-
+                                
                                 <div className="mr-3 avatar"></div>
 
                                 <div className="media-body">
                                     <h5 className="mt-0 mb-1">{ Comment.author }</h5>
-
-                                    
-                                    
                                     <span>{ Comment.body }</span>
                                     <div className="text-muted small d-flex align-items-center comment-meta"> 
                                         { moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button disabled={this.state.voting} onClick={() => this.castVote(Comment.permlink, Comment.author, "comment")} className="btn btn-link btn-sm px-0">Like</button>
+                                        &middot; 
+                                        <button onClick={() => this.toggleReply(Comment)} className="btn btn-link btn-sm px-0">Reply</button>
                                     </div>
-                                </div>
+                                    { Comment.children > 0 && (
+                                        <ul className="list-unstyled">
+                                            <li className="media mb-4">
+                                                <div className="mr-3 avatar"></div>
+                                                <div className="media-body">
+                                                    <h6 className="mt-0 mb-1">Children Author</h6>
+                                                    <span>Children body</span>
+                                                    <div className="text-muted small d-flex align-items-center comment-meta"> 
+                                                        { moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button className="btn btn-link btn-sm px-0">Like</button>
+                                                        &middot; 
+                                                        <button className="btn btn-link btn-sm px-0">Reply</button>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        </ul>
+                                        )
+                                    }
+                                    
                                 
+                                    { this.state.currentReplyForm === Comment.permlink && (
+                                        <div className="col-12">
 
+                                        <Formsy 
+                                            onValidSubmit={this.submitNestedComment} 
+                                            ref="nested_comment_form" 
+                                            >
+    
+                                            <TextArea 
+                                                name="nestedComment"
+                                                id="nestedComment"
+                                                label="Your comment"
+                                                // value={this.state.comment_text}
+                                                placeholder="Type here..." 
+                                                required />
+                                            <TextField 
+                                                name="commentAuthorPermLink"
+                                                id="commentAuthorPermLink"
+                                                value={Comment.author + '|' + Comment.permlink}
+                                                type="hidden"
+                                                />    
+
+                                            <button type="submit" className="btn btn-danger">Submit</button>
+                                            <button className="btn btn-default" onClick={() => this.setState({currentReplyForm: ''})}>Cancel</button>
+    
+                                        </Formsy>
+    
+                                        </div>
+                                    )
+                                    }
+                                </div>
                             </li>
                         ) 
 
@@ -441,7 +573,9 @@ class Post extends Component {
     }
 
     render() {
-        
+        //console.log(this.state.comments);
+        //console.log(this.props.app.username);
+        //console.log(this.state.nestedComments);
         return (
             <div className="row justify-content-center mt-3">
                 <div className="col-lg-9 col-md-12 video-post">
