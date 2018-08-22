@@ -4,13 +4,11 @@ import steem from 'steem';
 import { Player, BigPlayButton } from 'video-react';
 import { Link } from 'react-router-dom';
 import { vote, comment } from './actions/post';
-import Formsy from 'formsy-react';
 import moment from 'moment';
-import TextArea from './components/forms/TextArea';
-import TextField from './components/forms/TextField';
 import HLSSource from './HLS';
 import Item from './components/Item';
 import Avatar from './components/Avatar';
+import Comments from './components/Comments';
 import { VIDEO_THUMBNAIL_URL_PREFIX } from './config'
 
 class Post extends Component {
@@ -22,28 +20,18 @@ class Post extends Component {
         this.state = {
             post: '',
             loading: true,
-            loading_comments: true,
-            commenting: false,
-            comments: [],
             voting: false,
             related: [],
             loading_related: true,
             tag: this.props.match.params.tag,
             author: this.props.match.params.author,
-            permalink: this.props.match.params.permalink,
-            currentReplyForm: "",
-            nestedComments: []
+            permalink: this.props.match.params.permalink
         }
 
         this.castVote = this.castVote.bind(this);
-        this.submitComment = this.submitComment.bind(this);
-        this.toggleReply = this.toggleReply.bind(this);
-        this.submitNestedComment = this.submitNestedComment.bind(this);
     } 
 
-    componentWillReceiveProps(nextProps) { 
-
-
+    componentWillReceiveProps(nextProps) {
         if(nextProps.match.params.permalink !== this.state.permalink) {
 
             this.setState({
@@ -51,43 +39,24 @@ class Post extends Component {
             })
 
             this.loadContent(nextProps.match.params.author, nextProps.match.params.permalink)
-
         }
 
         if(!nextProps.app.username && !nextProps.app.publicWif) {
             // got logged out
         }
-
     }
 
     componentDidMount() {
         let { author, permalink } = this.props.match.params;
         this.loadContent(author, permalink);
-
-        // start to sync comments
-        this.props.dispatch({
-            type: 'START_BACKGROUND_SYNC_COMMENTS',
-		    callback: () => {
-                console.log("Syncing comments on " + permalink);
-                this.loadComments(author, permalink);
-            },
-        });
-    }
-
-    componentWillUnmount() {
-        this.props.dispatch({
-            type: 'STOP_BACKGROUND_SYNC_COMMENTS',
-        });
     }
     
     getVotes(votes) {
-
         if(votes) {
             return (
                 <button disabled={this.state.voting} onClick={() => this.castVote(this.props.match.params.permalink, this.props.match.params.author, "post")} className="btn btn-danger btn-sm">Like <span className="votes font-weight-bold">{votes.length}</span></button>
             )
         }
-        
     }
 
     castVote(permalink, author, type) {
@@ -126,168 +95,11 @@ class Post extends Component {
             });
 
         }).catch(err => {
-
             console.log("castVote error", err)
 
             this.setState({
                 voting: false
             });
-
-        });
-
-    }
-
-    submitComment(form) {
-
-        if(!this.props.app.authorized) {
-            this.props.history.push("/login");
-            return false;
-        }
-
-        this.setState({
-            commenting: true
-        });
-
-        this.props.comment({
-
-            postingWif: this.props.app.postingWif,
-            username: this.props.app.username, 
-            author: this.props.match.params.author,
-            permalink: this.props.match.params.permalink,
-            comment: form.comment
-
-        }).then( response => {
-
-            console.log("comment submit success", response);
-
-            this.state.comments.unshift({
-                id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
-                author: response.payload.operations[0][1].author,
-                body: response.payload.operations[0][1].body,
-                created: new Date()
-            })
-
-            this.setState({
-                commenting: false
-            });
-
-
-        }).catch(err => {
-
-            console.log("comment submit error", err)
-
-            this.setState({
-                commenting: false
-            });
-
-        });
-
-    }
-
-    toggleReply(Comment) {
-        //console.log(Comment.author, Comment.permlink);
-        this.setState({
-            currentReplyForm: Comment.permlink
-        })
-    }
-
-    submitNestedComment(form) {
-        // console.log(form.nestedComment)
-        // console.log(form.commentAuthorPermLink);
-        const commentAuthorAndPermLink = form.commentAuthorPermLink;
-        const [author, permlink] = commentAuthorAndPermLink.split("|");
-
-        if(!this.props.app.authorized) {
-            this.props.history.push("/login");
-            return false;
-        }
-
-        
-        this.setState({
-            commenting: true
-        });
-
-        this.props.comment({
-
-            postingWif: this.props.app.postingWif,
-            username: this.props.app.username, 
-            author: author,
-            permalink: permlink,
-            comment: form.nestedComment
-
-        }).then( response => {
-
-            console.log("comment submit success", response);
-
-            console.log(this.state.comments);
-
-            // this.state.comments.unshift({
-            //     id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
-            //     author: response.payload.operations[0][1].author,
-            //     body: response.payload.operations[0][1].body,
-            //     created: new Date()
-            // })
-
-            this.setState({
-                commenting: false
-            });
-
-
-        }).catch(err => {
-
-            console.log("comment submit error", err)
-
-            this.setState({
-                commenting: false
-            });
-
-        });
-    }
-
-
-    loadComments(author, permalink) {
-        
-        steem.api.getContentReplies(author, permalink, (err, result) => {
-
-            if(err) {
-                
-                this.setState({
-                    loading_comments: false,
-                    comments: []
-                });
-                
-                return false;
-
-            }
-
-            this.setState({
-                loading_comments: false,
-                comments: result
-            });
-
-        });
-
-    }
-
-    loadNestedComments(author, permalink) {
-        steem.api.getContentReplies(author, permalink, (err, result) => {
-
-            if(err) {
-                
-                this.setState({
-                    loading_comments: false,
-                    nestedComments: []
-                });
-                
-                return false;
-
-            }
-            console.log(result);
-            this.setState({
-                loading_comments: false,
-                nestedComments: result
-            });
-
         });
     }
 
@@ -347,98 +159,6 @@ class Post extends Component {
             });
 
         });
-
-    }
-
-    displayComments() {
-
-        if(this.state.comments.length > 0) {
-
-            return (
-                <ul className="list-unstyled">
-                    { 
-
-                    this.state.comments.map(
-
-                        (Comment) =>
-                            <li key={ Comment.id } ref={ Comment.id } className="media mb-4">
-                                
-                                <div className="mr-3 avatar"></div>
-
-                                <div className="media-body">
-                                    <h5 className="mt-0 mb-1">{ Comment.author }</h5>
-                                    <span>{ Comment.body }</span>
-                                    <div className="text-muted small d-flex align-items-center comment-meta"> 
-                                        { moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button disabled={this.state.voting} onClick={() => this.castVote(Comment.permlink, Comment.author, "comment")} className="btn btn-link btn-sm px-0">Like</button>
-                                        &middot; 
-                                        <button onClick={() => this.toggleReply(Comment)} className="btn btn-link btn-sm px-0">Reply</button>
-                                    </div>
-                                    { Comment.children > 0 && (
-                                        <ul className="list-unstyled">
-                                            <li className="media mb-4">
-                                                <div className="mr-3 avatar"></div>
-                                                <div className="media-body">
-                                                    <h6 className="mt-0 mb-1">Children Author</h6>
-                                                    <span>Children body</span>
-                                                    <div className="text-muted small d-flex align-items-center comment-meta"> 
-                                                        { moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button className="btn btn-link btn-sm px-0">Like</button>
-                                                        &middot; 
-                                                        <button className="btn btn-link btn-sm px-0">Reply</button>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                        </ul>
-                                        )
-                                    }
-                                    
-                                
-                                    { this.state.currentReplyForm === Comment.permlink && (
-                                        <div className="col-12">
-
-                                        <Formsy 
-                                            onValidSubmit={this.submitNestedComment} 
-                                            ref="nested_comment_form" 
-                                            >
-    
-                                            <TextArea 
-                                                name="nestedComment"
-                                                id="nestedComment"
-                                                label="Your comment"
-                                                // value={this.state.comment_text}
-                                                placeholder="Type here..." 
-                                                required />
-                                            <TextField 
-                                                name="commentAuthorPermLink"
-                                                id="commentAuthorPermLink"
-                                                value={Comment.author + '|' + Comment.permlink}
-                                                type="hidden"
-                                                />    
-
-                                            <button type="submit" className="btn btn-danger">Submit</button>
-                                            <button className="btn btn-default" onClick={() => this.setState({currentReplyForm: ''})}>Cancel</button>
-    
-                                        </Formsy>
-    
-                                        </div>
-                                    )
-                                    }
-                                </div>
-                            </li>
-                        ) 
-
-                    }
-                </ul>
-            )
-
-        } else {
-
-            return (
-                <div className="alert alert-dark mb-0" role="alert">
-                    No comments yet...
-                </div>
-            )
-
-        }
 
     }
 
@@ -513,7 +233,6 @@ class Post extends Component {
                 </div>
             )
         }
-
         
     }  
 
@@ -573,13 +292,10 @@ class Post extends Component {
     }
 
     render() {
-        //console.log(this.state.comments);
-        //console.log(this.props.app.username);
-        //console.log(this.state.nestedComments);
+        
         return (
             <div className="row justify-content-center mt-3">
                 <div className="col-lg-9 col-md-12 video-post">
-
 
                     {
                         !this.state.loading ? (
@@ -596,68 +312,14 @@ class Post extends Component {
 
                     {
                         this.state.post ? (
-
-                            <div className="row my-4 comments">
-
-                                <div className="col-12">
-
-                                    <Formsy 
-                                        onValidSubmit={this.submitComment} 
-                                        ref="comment_form" 
-                                        >
-
-                                        <TextArea 
-                                            name="comment"
-                                            id="comment"
-                                            label="Your comment"
-                                            value={this.state.comment_text}
-                                            placeholder="Type here..." 
-                                            required />
-
-                                        <button type="submit" className="btn btn-danger" disabled={this.state.commenting || this.state.submitting}>Submit</button>
-
-                                    </Formsy>
-
-                                </div>
-
-                            </div>
+                            <Comments
+                                matchParams={this.props.match.params}
+                                castVote={this.castVote}
+                                post={this.state.post}
+                            />
                         ) : null
-
                     }
-
                     
-
-                    {
-                        (!this.state.loading_comments && !this.state.loading) ? (
-                            <span>
-                                {
-                                    this.state.post ? (
-
-                                        <div className="row mt-3 comments mb-3">
-                                            <div className="col-12">
-                                                <h3 className="mb-4">Comments <span>({this.state.comments.length})</span></h3>
-                                            </div>
-                                            <div className="col-12">
-                                                { this.displayComments() }
-                                            </div>
-                                        </div>
-
-                                    ) : null
-
-                                }   
-                            </span>
-                            
-
-                        ) : (
-                            <div className="row w-100 h-100 justify-content-center mt-5">
-                                <div className="text-center">Loading comments...</div>
-                            </div>
-                        )
-                    
-                    }
-
-                    
-
                 </div>
                 <div className="col-lg-3 col-md-12 related-videos">
                     <h3>Related Videos</h3>
