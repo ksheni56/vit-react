@@ -35,10 +35,7 @@ class Post extends Component {
         this.castVote = this.castVote.bind(this);
         this.submitComment = this.submitComment.bind(this);
 
-
     } 
-
-
 
     componentWillReceiveProps(nextProps) { 
 
@@ -57,15 +54,28 @@ class Post extends Component {
             // got logged out
         }
 
-
     }
 
     componentDidMount() {
+        let { author, permalink } = this.props.match.params;
+        this.loadContent(author, permalink);
 
-        this.loadContent(this.props.match.params.author, this.props.match.params.permalink);
-
+        // start to sync comments
+        this.props.dispatch({
+            type: 'START_BACKGROUND_SYNC_COMMENTS',
+		    callback: () => {
+                console.log("Syncing comments on " + permalink);
+                this.loadComments(author, permalink);
+            },
+        });
     }
 
+    componentWillUnmount() {
+        this.props.dispatch({
+            type: 'STOP_BACKGROUND_SYNC_COMMENTS',
+        });
+    }
+    
     getVotes(votes) {
 
         if(votes) {
@@ -171,8 +181,8 @@ class Post extends Component {
     }
 
 
-    loadContent(author, permalink) {
-
+    loadComments(author, permalink) {
+        
         steem.api.getContentReplies(author, permalink, (err, result) => {
 
             if(err) {
@@ -193,6 +203,9 @@ class Post extends Component {
 
         });
 
+    }
+
+    loadContent(author, permalink) {
         steem.api.getContent(author, permalink, (err, result) => {
 
             console.log("getContent response", err, result)
@@ -546,4 +559,9 @@ function mapStateToProps(state) {
 }
 
 
-export default connect(mapStateToProps, { vote, comment })(Post);
+export default connect(
+    mapStateToProps,
+    (dispatch) => {
+        return { vote, comment, dispatch }
+    }
+)(Post);
