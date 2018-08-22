@@ -11,7 +11,6 @@ import HLSSource from './HLS';
 import Item from './components/Item';
 import Avatar from './components/Avatar';
 import { VIDEO_THUMBNAIL_URL_PREFIX } from './config'
-import DMCAUtils from './utils/DMCAUtils';
 
 class Post extends Component {
 
@@ -429,21 +428,27 @@ class Post extends Component {
     }
 
     render() {
+        let loading = this.state.loading;
 
-        // skip displaying video if blocked
-        const { category, author, permlink } = this.state.post;
-        const url = `/${category}/@${author}/${permlink}`;
-        if (DMCAUtils.isBlocked(url, author)) {
-            return (
-                <div className="row">
-                    <div className="col-12">
-                        <div className="no-results my-5 text-center">
-                            This post is not available due to a copyright claim.
+        if (this.props.dmcaContents == null || this.props.blockedUsers == null) {
+            loading = true
+        } else {
+            // skip displaying video if blocked
+            const { category, author, permlink } = this.state.post;
+            const url = `/${category}/@${author}/${permlink}`;
+
+            if (this.props.dmcaContents.includes(url) || 
+                    this.props.blockedUsers.includes(author)) {
+                return (
+                    <div className="row">
+                        <div className="col-12">
+                            <div className="no-results my-5 text-center">
+                                This post is not available due to a copyright claim.
+                            </div>
                         </div>
                     </div>
-                </div>
-            )
-
+                )
+            }
         }
         
         // display video
@@ -453,7 +458,7 @@ class Post extends Component {
 
 
                     {
-                        !this.state.loading ? (
+                        !loading ? (
 
                             <span>{ this.renderVideoInfo() }</span>   
                             
@@ -499,7 +504,7 @@ class Post extends Component {
                     
 
                     {
-                        (!this.state.loading_comments && !this.state.loading) ? (
+                        (!this.state.loading_comments && !loading) ? (
                             <span>
                                 {
                                     this.state.post ? (
@@ -558,7 +563,9 @@ function mapStateToProps(state) {
 
     return { 
         search: state.search,
-        app: state.app
+        app: state.app,
+        dmcaContents: state.app.dmcaContents,
+        blockedUsers: state.app.blockedUsers
     };
     
 }

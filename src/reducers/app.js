@@ -2,7 +2,9 @@ const initialState = {
     "username": null,
     "publicWif": null,
     "authorized": false,
-    "subs": []
+    "subs": [],
+    dmcaContents: null,
+    blockedUsers: null,
 };
 
 export default function(state = initialState, action) {
@@ -44,6 +46,18 @@ export default function(state = initialState, action) {
             return Object.assign({}, state, {
                 subs: action.payload
             });
+
+        case 'SET_DMCA_CONTENTS': {
+            return Object.assign({}, state, {
+                dmcaContents: action.payload
+            });
+        }
+
+        case 'SET_BLOCKED_USERS': {
+            return Object.assign({}, state, {
+                blockedUsers: action.payload
+            });
+        }
 
         default:
             return state;

@@ -7,12 +7,10 @@ import steem from 'steem';
 import { 
     API_URL,
     API_ADDRESS_PREFIX,
-    API_CHAIN_ID,
-    DMCA_CONTENT_ENDPOINT,
-    DMCA_USER_ENDPOINT
+    API_CHAIN_ID
 } from './config'
-import DMCA from './utils/DMCAUtils'
 import reducers from './reducers';
+import { getDMCAContents, getBlockedUsers } from './actions/app'
 
 // Styling
 import './sass/bootstrap.scss';
@@ -52,7 +50,13 @@ steem.api.setOptions({
 });
 
 // Fetch DMCA data
-DMCA.fetch(DMCA_CONTENT_ENDPOINT, DMCA_USER_ENDPOINT)
+reducers.dispatch(getDMCAContents());
+reducers.dispatch(getBlockedUsers());
+/* getBlockedUsers()
+    .then(response => {
+        reducers.dispatch(response)
+    });
+ */
 
 ReactDOM.render((
     <Provider store={reducers}>
