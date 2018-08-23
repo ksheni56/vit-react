@@ -26,24 +26,27 @@ class Comments extends Component {
         }
 
         this.submitComment = this.submitComment.bind(this);
+        this.changeValue = this.changeValue.bind(this);
     }
 
     componentDidMount() {
 
-        this.props.dispatch({
-            type: 'START_BACKGROUND_SYNC_COMMENTS',
-		    callback: () => {
-                console.log("Syncing comments on " + this.state.permalink);
-                this.loadComments();
-            },
-        });
-        
+        this.loadComments();
+
+        // this.props.dispatch({
+        //     type: 'START_BACKGROUND_SYNC_COMMENTS',
+		//     callback: () => {
+        //         console.log("Syncing comments on " + this.state.permalink);
+        //         this.loadComments();
+        //     },
+        // });
+
     }
 
     componentWillUnmount() {
-        this.props.dispatch({
-            type: 'STOP_BACKGROUND_SYNC_COMMENTS',
-        });
+        // this.props.dispatch({
+        //     type: 'STOP_BACKGROUND_SYNC_COMMENTS',
+        // });
     }
 
     // toggleReply(Comment) {
@@ -128,11 +131,21 @@ class Comments extends Component {
     //     });
     // }
 
+    changeValue(event) {
+
+    }
+     
+
     submitComment(form) {
         if(!this.props.app.authorized) {
             this.props.history.push("/login");
             return false;
         }
+
+        
+        // determine whether to reply for post or comment
+        // TODO: plan to use this function both commenting on post or sub comment
+        // by using onChange, but it didn't work
 
         this.setState({
             commenting: true
@@ -179,8 +192,8 @@ class Comments extends Component {
                             name="comment"
                             id="comment"
                             label="Your comment"
-                            value={this.state.comment_text}
                             placeholder="Type here..." 
+                            value={this.state.comment_text}
                             required />
 
                         <button type="submit" className="btn btn-danger" disabled={this.state.commenting || this.state.submitting}>Submit</button>
@@ -248,28 +261,16 @@ class Comments extends Component {
                                         {/* <button onClick={() => this.toggleReply(Comment)} className="btn btn-link btn-sm px-0">Reply</button> */}
                                     </div>
 
-                                    { Comment.children > 0 && (
-                                        <ul className="list-unstyled">
-                                            {
-                                                Comment.replies.map(
-                                                    (NestedComment) => 
-                                                    <li key={ NestedComment.id } className="media mb-4">
-                                                        <div className="mr-3 avatar"></div>
-                                                        <div className="media-body">
-                                                            <h6 className="mt-0 mb-1">{NestedComment.author}</h6>
-                                                            <span>{NestedComment.body}</span>
-                                                            <div className="text-muted small d-flex align-items-center comment-meta"> 
-                                                                { moment.utc(NestedComment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button className="btn btn-link btn-sm px-0">Like</button>
-                                                                &middot; 
-                                                                <button className="btn btn-link btn-sm px-0">Reply</button>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                )
-                                            }
-                                        </ul>
-                                        )
+                                    {/* check and render the nested comments if any */}
+                                    {
+                                        Comment.children > 0 ? (
+                                            <ul>
+                                                {this.renderNestedComments(Comment.replies)}
+                                            </ul>
+                                        ) : null
                                     }
+
+                                    {/*  */}
                                 </div>
                             </li>
                         ) 
@@ -284,6 +285,38 @@ class Comments extends Component {
                 </div>
             )
         }
+    }
+
+    // render nested comments
+    renderNestedComments(subComments) {
+        let lists = subComments.map(comment => {
+            if (comment.children > 0 ) {
+                return (
+                    <li>
+                        <ul>
+                            {this.renderNestedComments(comment)}
+                        </ul>
+                    </li>
+                )
+            } else {
+                return (
+                    <li key={comment.id} className="media mb-4">
+                        <div className="mr-3 avatar"></div>
+                        <div className="media-body">
+                            <h6 className="mt-0 mb-1">{comment.author}</h6>
+                            <span>{comment.body}</span>
+                            <div className="text-muted small d-flex align-items-center comment-meta"> 
+                                { moment.utc(comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button className="btn btn-link btn-sm px-0">Like</button>
+                                &middot; 
+                                <button className="btn btn-link btn-sm px-0">Reply</button>
+                            </div>
+                        </div>
+                    </li>
+                )
+            }
+        })
+
+        return lists;        
     }
 
     // render list of comments
@@ -321,8 +354,6 @@ class Comments extends Component {
         )
     }
 }
-
-// export default Comments;
 
 function mapStateToProps(state) {
 
