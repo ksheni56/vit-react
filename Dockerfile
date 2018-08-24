@@ -7,6 +7,7 @@ WORKDIR /var/app
 RUN mkdir -p /var/app
 COPY . /var/app
 RUN npm install
+RUN npm run build
 
 #RUN mkdir tmp && \
 #    npm test && npm run build
