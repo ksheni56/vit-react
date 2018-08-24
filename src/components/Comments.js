@@ -19,122 +19,61 @@ class Comments extends Component {
             loading_comments: true,
             commenting: false,
             comments: [],
-            post: this.props.post
-            // related: [],
-            // currentReplyForm: "",
-            // nestedComments: []
+            post: this.props.post,
+            replyTarget: [this.props.matchParams.author, this.props.matchParams.permalink].join('|')
         }
 
         this.submitComment = this.submitComment.bind(this);
-        this.changeValue = this.changeValue.bind(this);
+        this.setReplyTarget = this.setReplyTarget.bind(this);
+        this.getReplyTarget = this.getReplyTarget.bind(this);
+        this.searchTargetLinkComment = this.searchTargetLinkComment.bind(this);
     }
 
     componentDidMount() {
 
-        this.loadComments();
-
-        // this.props.dispatch({
-        //     type: 'START_BACKGROUND_SYNC_COMMENTS',
-		//     callback: () => {
-        //         console.log("Syncing comments on " + this.state.permalink);
-        //         this.loadComments();
-        //     },
-        // });
+        this.props.dispatch({
+            type: 'START_BACKGROUND_SYNC_COMMENTS',
+		    callback: () => {
+                console.log("Syncing comments on " + this.state.permalink);
+                this.loadComments();
+            },
+        });
 
     }
 
     componentWillUnmount() {
-        // this.props.dispatch({
-        //     type: 'STOP_BACKGROUND_SYNC_COMMENTS',
-        // });
+        this.props.dispatch({
+            type: 'STOP_BACKGROUND_SYNC_COMMENTS',
+        });
     }
 
-    // toggleReply(Comment) {
-    //     //console.log(Comment.author, Comment.permlink);
-    //     this.setState({
-    //         currentReplyForm: Comment.permlink
-    //     })
-    // }
+    setReplyTarget(value) {
 
-    // submitNestedComment(form) {
-    //     // console.log(form.nestedComment)
-    //     // console.log(form.commentAuthorPermLink);
-    //     const commentAuthorAndPermLink = form.commentAuthorPermLink;
-    //     const [author, permlink] = commentAuthorAndPermLink.split("|");
-
-    //     if(!this.props.app.authorized) {
-    //         this.props.history.push("/login");
-    //         return false;
-    //     }
-
-        
-    //     this.setState({
-    //         commenting: true
-    //     });
-
-    //     this.props.comment({
-
-    //         postingWif: this.props.app.postingWif,
-    //         username: this.props.app.username, 
-    //         author: author,
-    //         permalink: permlink,
-    //         comment: form.nestedComment
-
-    //     }).then( response => {
-
-    //         console.log("comment submit success", response);
-
-    //         console.log(this.state.comments);
-
-    //         // this.state.comments.unshift({
-    //         //     id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
-    //         //     author: response.payload.operations[0][1].author,
-    //         //     body: response.payload.operations[0][1].body,
-    //         //     created: new Date()
-    //         // })
-
-    //         this.setState({
-    //             commenting: false
-    //         });
-
-
-    //     }).catch(err => {
-
-    //         console.log("comment submit error", err)
-
-    //         this.setState({
-    //             commenting: false
-    //         });
-
-    //     });
-    // }
-
-    // loadNestedComments(author, permalink) {
-    //     steem.api.getContentReplies(author, permalink, (err, result) => {
-
-    //         if(err) {
-                
-    //             this.setState({
-    //                 loading_comments: false,
-    //                 nestedComments: []
-    //             });
-                
-    //             return false;
-
-    //         }
-    //         console.log(result);
-    //         this.setState({
-    //             loading_comments: false,
-    //             nestedComments: result
-    //         });
-
-    //     });
-    // }
-
-    changeValue(event) {
+        // set state to reply target with value
+        this.setState({
+            replyTarget: value
+        })
 
     }
-     
+
+    getReplyTarget() {
+        const commentAuthorAndPermLink = this.state.replyTarget;
+        const [targetAuthor, targetPermlink] = commentAuthorAndPermLink.split("|");
+        return { "targetAuthor": targetAuthor, "targetPermlink": targetPermlink};
+    }
+
+    searchTargetLinkComment(index, comment, targetPermlink) {
+
+        if (comment.permlink === targetPermlink) {
+            return this.state.comments[index].replies;
+        } else {
+            if (comment.children > 0) {
+                return comment.replies.map((c, i) => {
+                    return this.searchTargetLinkComment(i, c, targetPermlink);
+                })
+            }
+        }
+    }
 
     submitComment(form) {
         if(!this.props.app.authorized) {
@@ -142,11 +81,8 @@ class Comments extends Component {
             return false;
         }
 
+        const { targetAuthor, targetPermlink } = this.getReplyTarget();
         
-        // determine whether to reply for post or comment
-        // TODO: plan to use this function both commenting on post or sub comment
-        // by using onChange, but it didn't work
-
         this.setState({
             commenting: true
         });
@@ -154,33 +90,44 @@ class Comments extends Component {
         this.props.comment({
             postingWif: this.props.app.postingWif,
             username: this.props.app.username, 
-            author: this.state.author,
-            permalink: this.state.permalink,
+            author: targetAuthor,
+            permalink: targetPermlink,
             comment: form.comment
         }).then( response => {
             console.log("comment submit success", response);
-
-            this.state.comments.unshift({
-                id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
-                author: response.payload.operations[0][1].author,
-                body: response.payload.operations[0][1].body,
-                created: new Date()
-            })
+            
+            const responseData = response.payload.operations[0][1];
+            const parentPermlink = responseData.parent_permlink;
+            if (parentPermlink === this.state.permalink) {
+                // add as the top comment of post
+                this.state.comments.unshift({
+                    id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
+                    author: responseData.author,
+                    body: responseData.body,
+                    created: new Date()
+                })
+            } else {
+                // reload the comments again
+                this.setReplyTarget([this.state.author, this.state.permalink].join('|'));
+                this.loadComments();
+            }
 
             this.setState({
-                commenting: false
+                commenting: false,
             });
+
         }).catch(err => {
             console.log("comment submit error", err)
 
             this.setState({
                 commenting: false
             });
+            
         });
     }
 
     // render Comment Input Box
-    renderCommentBox() {
+    renderCommentBox(mainComment = true) {
         return (
             <div className="row my-4 comments">
                 <div className="col-12">
@@ -195,8 +142,15 @@ class Comments extends Component {
                             placeholder="Type here..." 
                             value={this.state.comment_text}
                             required />
+                        <input type="hidden" name="info" value={this.state.replyTarget}></input>    
 
                         <button type="submit" className="btn btn-danger" disabled={this.state.commenting || this.state.submitting}>Submit</button>
+                        {   // this flag is used whethere cancel button is rendered or not
+                            // when cancel button is clicked, replyTarget will set to author of post
+                            !mainComment && (
+                                <button className="btn btn-default" onClick={() => this.setReplyTarget([this.state.author, this.state.permalink].join('|'))}>Cancel</button>
+                            )
+                        }
                     </Formsy>
                 </div>
             </div>
@@ -256,21 +210,28 @@ class Comments extends Component {
                                     <div className="text-muted small d-flex align-items-center comment-meta"> 
                                         {/* TODO: Modify getVosts as get whether comments are voted or not */}
                                         { moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button onClick={() => this.props.castVote(Comment.permlink, Comment.author, "comment")} className="btn btn-link btn-sm px-0">Like</button>
-                                        {/* { moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button className="btn btn-link btn-sm px-0">Like</button> */}
-                                        &middot; 
-                                        {/* <button onClick={() => this.toggleReply(Comment)} className="btn btn-link btn-sm px-0">Reply</button> */}
+                                        &middot;
+                                        <button className="btn btn-link btn-sm px-0" onClick={() => this.setReplyTarget([Comment.author, Comment.permlink].join('|'))}>Reply</button>
                                     </div>
+
+                                    {/* render comment box if matched */}
+                                    { 
+                                        this.state.replyTarget === [Comment.author, Comment.permlink].join('|') && (
+                                            this.renderCommentBox(false)
+                                        )
+                                    }
 
                                     {/* check and render the nested comments if any */}
                                     {
                                         Comment.children > 0 ? (
-                                            <ul>
+                                            <ul className="list-unstyled">
                                                 {this.renderNestedComments(Comment.replies)}
                                             </ul>
                                         ) : null
                                     }
 
-                                    {/*  */}
+                                    
+                                    
                                 </div>
                             </li>
                         ) 
@@ -289,31 +250,39 @@ class Comments extends Component {
 
     // render nested comments
     renderNestedComments(subComments) {
+        
         let lists = subComments.map(comment => {
-            if (comment.children > 0 ) {
-                return (
-                    <li>
-                        <ul>
-                            {this.renderNestedComments(comment)}
-                        </ul>
-                    </li>
-                )
-            } else {
-                return (
-                    <li key={comment.id} className="media mb-4">
-                        <div className="mr-3 avatar"></div>
-                        <div className="media-body">
-                            <h6 className="mt-0 mb-1">{comment.author}</h6>
-                            <span>{comment.body}</span>
-                            <div className="text-muted small d-flex align-items-center comment-meta"> 
-                                { moment.utc(comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button className="btn btn-link btn-sm px-0">Like</button>
-                                &middot; 
-                                <button className="btn btn-link btn-sm px-0">Reply</button>
-                            </div>
+            return (
+                <li key={comment.id} className="media mb-4">
+                    <div className="mr-3 avatar"></div>
+                    <div className="media-body">
+                        <h6 className="mt-0 mb-1">{comment.author}</h6>
+                        <span>{comment.body}</span>
+                        <div className="text-muted small d-flex align-items-center comment-meta"> 
+                            { moment.utc(comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button className="btn btn-link btn-sm px-0">Like</button>
+                            &middot; 
+                            <button className="btn btn-link btn-sm px-0" onClick={() => this.setReplyTarget([comment.author, comment.permlink].join('|'))}>Reply</button>
                         </div>
-                    </li>
-                )
-            }
+
+                        {/* render comment box if matched */}
+                        { 
+                            this.state.replyTarget === [comment.author, comment.permlink].join('|') && (
+                                this.renderCommentBox(false)
+                            )
+                        }
+
+                        {/* check and render the nested comments if any */}
+                        {
+                            comment.children > 0 ? (
+                                <ul className="list-unstyled">
+                                    {this.renderNestedComments(comment.replies)}
+                                </ul>
+                            ) : null
+                        }
+
+                    </div>
+                </li>
+            )
         })
 
         return lists;        
