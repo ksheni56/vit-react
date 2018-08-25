@@ -9,8 +9,8 @@ import {
     API_ADDRESS_PREFIX,
     API_CHAIN_ID
 } from './config'
-
 import reducers from './reducers';
+import { getDMCAContents, getBlockedUsers } from './actions/app'
 
 // Styling
 import './sass/bootstrap.scss';
@@ -48,6 +48,15 @@ steem.api.setOptions({
     address_prefix: API_ADDRESS_PREFIX,
     chain_id: API_CHAIN_ID
 });
+
+// Fetch DMCA data
+reducers.dispatch(getDMCAContents());
+reducers.dispatch(getBlockedUsers());
+/* getBlockedUsers()
+    .then(response => {
+        reducers.dispatch(response)
+    });
+ */
 
 ReactDOM.render((
     <Provider store={reducers}>
