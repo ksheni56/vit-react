@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import { Link } from 'react-router-dom';
 import Dropzone from 'react-dropzone';
-import axios from 'axios';
+// import axios from 'axios';
 import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
@@ -12,6 +12,7 @@ import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
 import { VIDEO_UPLOAD_ENDPOINT } from './config'
+import { uploadRequest, UploadStatus, uploadCancel } from   './reducers/upload'
 
 class Upload extends Component {
 
@@ -82,7 +83,7 @@ class Upload extends Component {
 
     }
 
-    upload(form_data) {
+    upload(files) {
 
         // todo: parse tags & cats
 
@@ -91,10 +92,10 @@ class Upload extends Component {
             return false;
         }
 
-        let categories = [];
+        // let categories = [];
         
         
-        if(this.state.selected_category.length > 0 ) {
+        /* if(this.state.selected_category.length > 0 ) {
        
             for(var i in this.state.selected_category) {
                 if(i < 5) categories.push(this.state.selected_category[i]['value']);
@@ -103,24 +104,34 @@ class Upload extends Component {
         } else {
             toast.error("Please select at least 1 category!");
             return false;
-        }
+        } */
         
 
-        this.setState({
+        /* this.setState({
             success: false,
             error: false,
             uploading: true
-        });
+        }); */
 
         // get signed signature for Video Upload Authorisation
         const signature = localStorage.getItem("signature");
         const signUserHost = localStorage.getItem("signUserHost");
 
-        let formData = new FormData();
-        formData.append('file', this.state.files[0]);
+        const headers = {
+            'Content-Type': 'multipart/form-data',
+            'X-Auth-Token':  signature,
+            'X-Auth-UserHost': signUserHost
+        }
 
+        let formData = new FormData();
         formData.append('username', this.props.app.username);
-        axios.post(VIDEO_UPLOAD_ENDPOINT, formData, {
+
+        files.forEach(file => {
+            formData.append('file', file);
+            this.props.onUpload(VIDEO_UPLOAD_ENDPOINT, formData, headers)
+        })
+        
+        /* axios.post(VIDEO_UPLOAD_ENDPOINT, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
                 'X-Auth-Token':  signature,
@@ -272,15 +283,17 @@ class Upload extends Component {
                 error: true
             });
 
-        });
+        }); */
     }
 
-    handleDrop(file) {
+    handleDrop(files) {
 
-        this.setState({
+        this.upload(files)
+
+        /* this.setState({
             files: file,
             ready_to_upload: true
-        });
+        }); */
 
 
     }
@@ -305,7 +318,40 @@ class Upload extends Component {
     */
 
     showProgress() {
-        if(this.state.uploading && this.state.progress) {
+        return (
+            Object.keys(this.props.uploads).map(key => {
+                const file = this.props.uploads[key]
+                console.log(file)
+                let message;
+                switch (file.status) {
+                    case UploadStatus.UPLOADING:
+                        message = <span><strong>Uploading, { file.progress }%</strong> complete. Do not close/leave this page! <button onClick={() => this.props.onCancel(key, file)} >Cancel</button></span>
+                        break
+
+                    case UploadStatus.TRANSCODING:
+                        message = <span><strong>Transcoding, { file.progress }%</strong> complete. You can close/leave the page as you wish!</span>
+                        break
+
+                    case UploadStatus.COMPLETED:
+                        message = <strong>{ file.name } completed!</strong>
+                        break
+
+                    case UploadStatus.CANCELLED:
+                        message = <strong>{ file.name } cancelled!</strong>
+                        break
+
+                    default:
+                        message = <strong>Upload failed!</strong>
+                }
+                return (
+                <div className="alert alert-warning mt-4" role="alert" key={key}>
+                    { message }
+                </div>
+                )
+            })
+        )
+
+        /* if(this.state.uploading && this.state.progress) {
             return (
                 <div className="alert alert-warning mt-4" role="alert">
                     <strong>Uploading, { this.state.progress }%</strong> complete. Do not close/leave this page!
@@ -328,7 +374,7 @@ class Upload extends Component {
                 </div>
             )
 
-        }
+        } */
 
     }
 
@@ -372,7 +418,7 @@ class Upload extends Component {
         return (
             <div className="row justify-content-center">
 
-                <ToastContainer />
+                {/* <ToastContainer /> */}
 
                 <div className="col-md-8 col-sm-12 mt-4">
                     <div className="upload-wrapper">
@@ -380,7 +426,7 @@ class Upload extends Component {
 
                             <h3 className="text-center mb-4">Upload your content</h3>
 
-                            <Formsy 
+                            {/* <Formsy 
                                 onValidSubmit={this.upload} 
                                 ref="upload_form" 
                                 >
@@ -404,7 +450,7 @@ class Upload extends Component {
                                         classNamePrefix="Select"
                                         onChange={this.handleChangeCategory}
                                         options={this.state.categories}
-                                    />
+                                    /> */}
 
                                     {/*<label className="mt-3">Tags</label>
                                     
@@ -416,7 +462,7 @@ class Upload extends Component {
                                     />
                                     <small className="text-muted mb-2 d-block" style={{'marginTop': '11px'}}>Up to 10 tags</small>
                                     */}
-                                </div>
+                                {/* </div>
 
                                 {
                                     this.state.error ? (
@@ -464,10 +510,31 @@ class Upload extends Component {
                                 <button 
                                     type="submit"
                                     className="btn btn-danger mt-4" 
-                                    disabled={!this.state.ready_to_upload || this.state.uploading}
+                                    // disabled={!this.state.ready_to_upload || this.state.uploading}
                                 >Upload</button>
 
-                            </Formsy>
+                            </Formsy> */}
+
+                            { this.showProgress() }
+
+                            <Dropzone 
+                                    className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
+                                    onDropAccepted={ this.handleDrop }
+                                    multiple={ true } 
+                                    onDropRejected={this.handleDropRejected }
+                                    accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
+                                    disabled={ this.state.uploading }
+                                >
+                                    <div className="w-100 text-center">
+                                        Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span>
+
+                                        {
+                                            this.state.files.length > 0 ? (
+                                                <small className="d-block text-white text-center mt-2">You are ready to upload <strong>{this.state.files[0].name}</strong></small>
+                                            ) : null
+                                        }
+                                    </div>
+                                </Dropzone>
 
                         </div>
                     </div>
@@ -483,10 +550,20 @@ function mapStateToProps(state) {
 
     return { 
         search: state.search,
-        app: state.app
+        app: state.app,
+        uploads: state.upload.uploads
     };
     
 }
 
+const mapDispatchToProps = (dispatch) => ({
+    post,
+    onUpload: (upload_backend, formData, headers) => {
+        dispatch(uploadRequest(upload_backend, formData, headers));
+    },
+    onCancel: (id, data) => {
+        dispatch(uploadCancel(id, data));
+    }
+});
 
-export default connect(mapStateToProps, { post })(Upload);
+export default connect(mapStateToProps, mapDispatchToProps)(Upload);
