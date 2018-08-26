@@ -4,7 +4,6 @@ import steem from 'steem';
 import moment from 'moment'
 import Formsy from 'formsy-react';
 import TextArea from './forms/TextArea';
-import TextField from './forms/TextField';
 import { vote, comment } from '../actions/post';
 import { Promise } from 'bluebird';
 
@@ -22,7 +21,7 @@ class Comments extends Component {
             post: this.props.post,
             replyTarget: [this.props.matchParams.author, this.props.matchParams.permalink].join('|')
         }
-
+        
         this.submitComment = this.submitComment.bind(this);
         this.setReplyTarget = this.setReplyTarget.bind(this);
         this.getReplyTarget = this.getReplyTarget.bind(this);
@@ -30,35 +29,41 @@ class Comments extends Component {
     }
 
     componentDidMount() {
+        this.loadComments();
 
-        this.props.dispatch({
-            type: 'START_BACKGROUND_SYNC_COMMENTS',
-		    callback: () => {
-                console.log("Syncing comments on " + this.state.permalink);
-                this.loadComments();
-            },
-        });
+        // this.props.dispatch({
+        //     type: 'START_BACKGROUND_SYNC_COMMENTS',
+		//     callback: () => {
+        //         console.log("Syncing comments on " + this.state.permalink);
+        //         this.loadComments();
+        //     },
+        // });
+
+        // steem.api.getContent("wittest2", "20180825t163109941z", (err, result) => {
+        //     console.log("dfdfdf", result);
+        // });
 
     }
 
     componentWillUnmount() {
-        this.props.dispatch({
-            type: 'STOP_BACKGROUND_SYNC_COMMENTS',
-        });
+        // this.props.dispatch({
+        //     type: 'STOP_BACKGROUND_SYNC_COMMENTS',
+        // });
     }
 
     setReplyTarget(value) {
-
+        
         // set state to reply target with value
         this.setState({
             replyTarget: value
-        })
 
+        });
     }
 
     getReplyTarget() {
         const commentAuthorAndPermLink = this.state.replyTarget;
         const [targetAuthor, targetPermlink] = commentAuthorAndPermLink.split("|");
+        console.log('initial', targetAuthor, targetPermlink);
         return { "targetAuthor": targetAuthor, "targetPermlink": targetPermlink};
     }
 
@@ -82,7 +87,7 @@ class Comments extends Component {
         }
 
         const { targetAuthor, targetPermlink } = this.getReplyTarget();
-        
+        console.log(targetAuthor, targetPermlink);
         this.setState({
             commenting: true
         });
@@ -105,7 +110,11 @@ class Comments extends Component {
                     author: responseData.author,
                     body: responseData.body,
                     created: new Date()
-                })
+                });
+
+                // close the replybox of post
+                this.props.togglePostReply();
+
             } else {
                 // reload the comments again
                 this.setReplyTarget([this.state.author, this.state.permalink].join('|'));
@@ -114,13 +123,17 @@ class Comments extends Component {
 
             this.setState({
                 commenting: false,
+                // initial to comment on the post instead of nested replies
+                replyTarget: [this.props.matchParams.author, this.props.matchParams.permalink].join('|')
             });
 
         }).catch(err => {
             console.log("comment submit error", err)
 
             this.setState({
-                commenting: false
+                commenting: false,
+                // initial post author and permlink
+                replyTarget: [this.props.matchParams.author, this.props.matchParams.permalink].join('|')
             });
             
         });
@@ -145,10 +158,11 @@ class Comments extends Component {
                         <input type="hidden" name="info" value={this.state.replyTarget}></input>    
 
                         <button type="submit" className="btn btn-danger" disabled={this.state.commenting || this.state.submitting}>Submit</button>
-                        {   // this flag is used whethere cancel button is rendered or not
-                            // when cancel button is clicked, replyTarget will set to author of post
-                            !mainComment && (
-                                <button className="btn btn-default" onClick={() => this.setReplyTarget([this.state.author, this.state.permalink].join('|'))}>Cancel</button>
+                        {
+                            mainComment ? (
+                                <a className="btn" onClick={() => this.props.togglePostReply()}>Cancel</a>
+                            ) : (
+                                <a className="btn" onClick={() => this.setReplyTarget([this.state.author, this.state.permalink].join('|'))}>Cancel</a>
                             )
                         }
                     </Formsy>
@@ -160,8 +174,47 @@ class Comments extends Component {
     // load list of comments related to post
     loadComments() {
 
-        let fetchReplies = function (author, permlink) {
+        let fetchVoters = function (replies) {
+            return new Promise((resolve, reject) => {
+                //TODO: get active_votes by doing recursive
+                resolve(replies);
+                // let finalReplies = Promise.map(replies, function(reply) {
+                //     if (reply.net_votes > 0) {
+                        
+                //         let temp = function() {
+                //             return new Promise((accept, rej) => {
+                //                 let temp = steem.api.getContent(reply.author, reply.permlink, (err, result) => {
+                //                     return result;
+                //                 });
+                //                 accept(temp);
+                //             })
+                //         }
 
+                //         console.log("dd", temp)
+                //         return reply;
+                //     } else {
+                //         return reply;
+                //     }
+                // });
+                // let finalReplies = Promise.map(replies, function(reply) {
+                //     // get voter for itself and for children
+                //     let vote;
+                //     if (reply.net_votes > 0) {
+                //         new Promise((a, r) => {
+                //             steem.api.getContent(reply.author, reply.permlink, (err, res) => {
+                //                 a(res);
+                //             });
+                //         })
+                //     }
+                //     console.log(vote);
+                    
+                // });
+
+                
+            })
+        }
+
+        let fetchReplies = function (author, permlink) {
             return new Promise((resolve, reject) => {
                 steem.api.getContentReplies(author, permlink, (err, result) => {
                     let reply = Promise.map(result, function(r) {
@@ -174,22 +227,50 @@ class Comments extends Component {
                         } else {
                             return r;
                         }
-                    })
+                    });
                     resolve(reply);
                 });
             });
 
+
+            // return new Promise((resolve, reject) => {
+            //     steem.api.getContentReplies(author, permlink, (err, result) => {
+            //         let reply = Promise.map(result, function(r) {
+            //             if (r.children > 0) {
+            //                 return fetchReplies(r.author, r.permlink)
+            //                         .then(function(children) {
+            //                             r.replies = children;
+            //                             return r;
+            //                         })
+            //             } else {
+            //                 return r;
+            //             }
+            //         })
+            //         resolve(reply);
+            //     });
+            // });
+
         }
         
         fetchReplies(this.state.author, this.state.permalink)
-            .then( replies => {
-
+        .then( replies => {
+            fetchVoters(replies).then(replies => {
                 this.setState({
                     loading_comments: false,
                     comments: replies
                 });
-
             });
+        }); 
+
+        // fetchReplies(this.state.author, this.state.permalink)
+        // .then( replies => {
+
+        //     this.setState({
+        //         loading_comments: false,
+        //         comments: replies
+        //     });
+
+        // });    
 
     }
 
@@ -209,8 +290,10 @@ class Comments extends Component {
                                     <span>{ Comment.body }</span>
                                     <div className="text-muted small d-flex align-items-center comment-meta"> 
                                         {/* TODO: Modify getVosts as get whether comments are voted or not */}
-                                        { moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button onClick={() => this.props.castVote(Comment.permlink, Comment.author, "comment")} className="btn btn-link btn-sm px-0">Like</button>
-                                        &middot;
+                                        <button onClick={() => this.props.castVote(Comment.permlink, Comment.author, "comment")} className="btn btn-link btn-sm px-0">Like</button>
+                                        | <span className=""> {Comment.net_votes} Votes </span>
+                                        {/* { moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button onClick={() => this.props.castVote(Comment.permlink, Comment.author, "comment")} className="btn btn-link btn-sm px-0">Like</button> */}
+                                        |
                                         <button className="btn btn-link btn-sm px-0" onClick={() => this.setReplyTarget([Comment.author, Comment.permlink].join('|'))}>Reply</button>
                                     </div>
 
@@ -290,7 +373,7 @@ class Comments extends Component {
 
     // render list of comments
     renderComments() {
-
+        
         return (
             (!this.state.loading_comments) ? (
                 <span>
@@ -312,10 +395,17 @@ class Comments extends Component {
     }
 
     render () {
+        console.log(this.state.comments);
+        
         return (
             <div>
                 {/* Render Comment Box */}
-                {this.renderCommentBox()}
+                {
+                    this.props.commentForPost && (
+                        this.renderCommentBox()        
+                    )
+                }
+                {/* {this.renderCommentBox()} */}
 
                 {/* Render lisf of comments */}
                 {this.renderComments()}

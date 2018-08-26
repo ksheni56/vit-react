@@ -25,10 +25,12 @@ class Post extends Component {
             loading_related: true,
             tag: this.props.match.params.tag,
             author: this.props.match.params.author,
-            permalink: this.props.match.params.permalink
+            permalink: this.props.match.params.permalink,
+            commentForPost: false
         }
 
         this.castVote = this.castVote.bind(this);
+        this.togglePostReply = this.togglePostReply.bind(this);
     } 
 
     componentWillReceiveProps(nextProps) {
@@ -49,6 +51,12 @@ class Post extends Component {
     componentDidMount() {
         let { author, permalink } = this.props.match.params;
         this.loadContent(author, permalink);
+    }
+
+    togglePostReply() {
+        this.setState({
+            commentForPost: !this.state.commentForPost
+        })
     }
     
     getVotes(votes) {
@@ -283,6 +291,7 @@ class Post extends Component {
                         </div>
                     </div>
                     <div className="col-3 text-right">
+                        <button className="btn btn-sm post-reply-btn" onClick={() => this.togglePostReply()}>Reply</button>
                         { this.getVotes(this.state.post.active_votes) }
                     </div>
                 </div>
@@ -316,6 +325,8 @@ class Post extends Component {
                                 matchParams={this.props.match.params}
                                 castVote={this.castVote}
                                 post={this.state.post}
+                                commentForPost={this.state.commentForPost}
+                                togglePostReply={this.togglePostReply}
                             />
                         ) : null
                     }
