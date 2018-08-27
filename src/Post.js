@@ -69,11 +69,10 @@ class Post extends Component {
             voted = votes.filter(vote => {
                 return (vote.voter == this.props.app.username ? vote : null);
             })
-
-            //console.log(type, voted.length, voted.length > 0 ? voted[0].weight : 'empty');
             
-            if (voted.length > 0 && voted[0].weight > 0) {
-                // TODO it seems like downvote one still appear on the active_votes???
+            // AS DOWNVOTE does not remove a record out of the active_votes
+            // So we need to check the percent as well
+            if (voted.length > 0 && voted[0].percent > 0) {
                 btnLike = 
                     <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 0)}>Unlike</span>
             } else {
@@ -86,32 +85,6 @@ class Post extends Component {
                 <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
         }
 
-
-
-        // let btnLike = 
-        // <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
-
-        // if (data.net_votes > 0) {
-        //     // determine render Like or Unlike button
-        //     let voted = false;
-        //     voted = votes.some(vote => {
-        //         // console.log(vote, vote.voter, vote.weight);
-        //         // if (vote.weight === 0) {
-        //         //     console.log("0 vote", vote);
-        //         // }
-        //         console.log(vote.voter === this.props.app.username, vote.weight > 0);
-        //         if (vote.voter === this.props.app.username && vote.weight > 0) {
-        //             console.log("dfd", vote);
-        //         }    
-
-        //         return (vote.voter === this.props.app.username && vote.weight > 0);
-        //     });
-        //     if (voted) {
-        //         btnLike = 
-        //             <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 0)}>Unlike</span>
-        //     }
-        // }
-
         return btnLike;
     }
 
@@ -121,6 +94,8 @@ class Post extends Component {
             this.props.history.push("/login");
             return false;
         }
+
+        
 
         this.setState({
             voting: true
@@ -138,9 +113,10 @@ class Post extends Component {
 
             console.log("castVote success", response);
 
-            if(type === "post") 
-                //this.state.post.active_votes.push({'dummy': 'data'});
+            if(type === "post") {
+                this.loadContent(this.state.author, this.state.permalink);
                 console.log("Update post voting");
+            }
             else {
                 console.log("Update comment voting");
             }
