@@ -1,5 +1,6 @@
 import steem from 'steem';
-//import Config from './../config.json';
+import axios from 'axios'
+import { DMCA_CONTENT_ENDPOINT, DMCA_USER_ENDPOINT } from './../config'
 import { sign } from 'steem/lib/auth/ecc/src/signature';
 
 export function loginUser(request) {   
@@ -232,3 +233,52 @@ export function getSubs(request) {
 	});
 
 }
+
+export function getDMCAContents() {
+	return new Promise((resolve, reject) => {
+		fetchData(DMCA_CONTENT_ENDPOINT)
+			.then(response => {
+				resolve({
+					type: 'SET_DMCA_CONTENTS',
+					payload: response
+				});
+			})
+			.catch(error => {
+				resolve({
+					type: 'SET_DMCA_CONTENTS',
+					payload: []
+				});
+			});
+	});
+};
+
+export function getBlockedUsers() {
+	return new Promise((resolve, reject) => {
+		fetchData(DMCA_USER_ENDPOINT)
+			.then(response => {
+				resolve({
+					type: 'SET_BLOCKED_USERS',
+					payload: response
+				});
+			})
+			.catch(error => {
+				resolve({
+					type: 'SET_BLOCKED_USERS',
+					payload: []
+				});
+			});
+	});
+};
+
+function fetchData(endpoint) {
+	return new Promise((resolve, reject) => {
+		axios.get(endpoint)
+		.then(response => {
+			resolve(response.data.split("\n"));
+		})
+		.catch(error => {
+			console.log(error);
+		});
+	})        
+}  
+
