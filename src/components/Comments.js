@@ -174,44 +174,12 @@ class Comments extends Component {
     // load list of comments related to post
     loadComments() {
 
-        let fetchVoters = function (replies) {
+        let fetchVotes = (r) => {
             return new Promise((resolve, reject) => {
-                //TODO: get active_votes by doing recursive
-                resolve(replies);
-                // let finalReplies = Promise.map(replies, function(reply) {
-                //     if (reply.net_votes > 0) {
-                        
-                //         let temp = function() {
-                //             return new Promise((accept, rej) => {
-                //                 let temp = steem.api.getContent(reply.author, reply.permlink, (err, result) => {
-                //                     return result;
-                //                 });
-                //                 accept(temp);
-                //             })
-                //         }
-
-                //         console.log("dd", temp)
-                //         return reply;
-                //     } else {
-                //         return reply;
-                //     }
-                // });
-                // let finalReplies = Promise.map(replies, function(reply) {
-                //     // get voter for itself and for children
-                //     let vote;
-                //     if (reply.net_votes > 0) {
-                //         new Promise((a, r) => {
-                //             steem.api.getContent(reply.author, reply.permlink, (err, res) => {
-                //                 a(res);
-                //             });
-                //         })
-                //     }
-                //     console.log(vote);
-                    
-                // });
-
-                
-            })
+                steem.api.getContent(r.author, r.permlink, (err, result) => {
+                    resolve(result);
+                });
+            });
         }
 
         let fetchReplies = function (author, permlink) {
@@ -219,59 +187,37 @@ class Comments extends Component {
                 steem.api.getContentReplies(author, permlink, (err, result) => {
                     let reply = Promise.map(result, function(r) {
                         if (r.children > 0) {
-                            return fetchReplies(r.author, r.permlink)
+                            return fetchVotes(r).then(data => {
+                                r.active_votes = data.active_votes;
+                                return fetchReplies(r.author, r.permlink)
                                     .then(function(children) {
                                         r.replies = children;
                                         return r;
-                                    })
+                                });
+                            });
                         } else {
-                            return r;
+                            if (r.net_votes > 0) {
+                                return fetchVotes(r).then(data => {
+                                    r.active_votes = data.active_votes;
+                                    return r;
+                                });
+                            } else {
+                                return r;
+                            }
                         }
                     });
                     resolve(reply);
                 });
             });
-
-
-            // return new Promise((resolve, reject) => {
-            //     steem.api.getContentReplies(author, permlink, (err, result) => {
-            //         let reply = Promise.map(result, function(r) {
-            //             if (r.children > 0) {
-            //                 return fetchReplies(r.author, r.permlink)
-            //                         .then(function(children) {
-            //                             r.replies = children;
-            //                             return r;
-            //                         })
-            //             } else {
-            //                 return r;
-            //             }
-            //         })
-            //         resolve(reply);
-            //     });
-            // });
-
         }
-        
+
         fetchReplies(this.state.author, this.state.permalink)
-        .then( replies => {
-            fetchVoters(replies).then(replies => {
+            .then( replies => {
                 this.setState({
                     loading_comments: false,
                     comments: replies
                 });
             });
-        }); 
-
-        // fetchReplies(this.state.author, this.state.permalink)
-        // .then( replies => {
-
-        //     this.setState({
-        //         loading_comments: false,
-        //         comments: replies
-        //     });
-
-        // });    
-
     }
 
     displayComments() {
@@ -279,22 +225,28 @@ class Comments extends Component {
         if(this.state.comments.length > 0) {
 
             return (
-                <ul className="list-unstyled">
+                <ul className="list-unstyled comments">
                     { 
                     this.state.comments.map(
                         (Comment) =>
                             <li key={ Comment.id } ref={ Comment.id } className="media mb-4">
                                 <div className="mr-3 avatar"></div>
                                 <div className="media-body">
-                                    <h5 className="mt-0 mb-1">{ Comment.author }</h5>
+                                    <h6 className="mt-0 mb-1">{ Comment.author }</h6>
                                     <span>{ Comment.body }</span>
                                     <div className="text-muted small d-flex align-items-center comment-meta"> 
                                         {/* TODO: Modify getVosts as get whether comments are voted or not */}
-                                        <button onClick={() => this.props.castVote(Comment.permlink, Comment.author, "comment")} className="btn btn-link btn-sm px-0">Like</button>
-                                        | <span className=""> {Comment.net_votes} Votes </span>
+                                        {/* <button onClick={() => this.props.castVote(Comment.permlink, Comment.author, "comment")} className="btn btn-link btn-sm px-0">Like</button> */}
+                                        {/* <button className="btn btn-link btn-sm px-0">Like</button> */}
+                                        {/* {this.props.getVotes(Comment.active_votes)} */}
+                                        {/* | <span className=""> {Comment.net_votes} Votes </span> */}
                                         {/* { moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button onClick={() => this.props.castVote(Comment.permlink, Comment.author, "comment")} className="btn btn-link btn-sm px-0">Like</button> */}
-                                        |
-                                        <button className="btn btn-link btn-sm px-0" onClick={() => this.setReplyTarget([Comment.author, Comment.permlink].join('|'))}>Reply</button>
+                                        {/* | */}
+                                        {/* <button className="btn btn-link btn-sm px-0" onClick={() => this.setReplyTarget([Comment.author, Comment.permlink].join('|'))}>Reply</button> */}
+
+                                        {this.props.getVotes(Comment, "comment")} | {Comment.net_votes} Votes
+                                        | <button className="btn btn-link btn-sm px-0" onClick={() => this.setReplyTarget([Comment.author, Comment.permlink].join('|'))}>Reply</button>
+
                                     </div>
 
                                     {/* render comment box if matched */}
@@ -307,13 +259,11 @@ class Comments extends Component {
                                     {/* check and render the nested comments if any */}
                                     {
                                         Comment.children > 0 ? (
-                                            <ul className="list-unstyled">
+                                            <ul className="list-unstyled sub-comments">
                                                 {this.renderNestedComments(Comment.replies)}
                                             </ul>
                                         ) : null
                                     }
-
-                                    
                                     
                                 </div>
                             </li>
@@ -342,9 +292,9 @@ class Comments extends Component {
                         <h6 className="mt-0 mb-1">{comment.author}</h6>
                         <span>{comment.body}</span>
                         <div className="text-muted small d-flex align-items-center comment-meta"> 
-                            { moment.utc(comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button className="btn btn-link btn-sm px-0">Like</button>
-                            &middot; 
-                            <button className="btn btn-link btn-sm px-0" onClick={() => this.setReplyTarget([comment.author, comment.permlink].join('|'))}>Reply</button>
+                            { moment.utc(comment.created).tz( moment.tz.guess() ).fromNow() } &middot;
+                            {this.props.getVotes(comment, "comment")} | {comment.net_votes} Votes
+                            | <button className="btn btn-link btn-sm px-0" onClick={() => this.setReplyTarget([comment.author, comment.permlink].join('|'))}>Reply</button>
                         </div>
 
                         {/* render comment box if matched */}
@@ -357,7 +307,7 @@ class Comments extends Component {
                         {/* check and render the nested comments if any */}
                         {
                             comment.children > 0 ? (
-                                <ul className="list-unstyled">
+                                <ul className="list-unstyled sub-comments">
                                     {this.renderNestedComments(comment.replies)}
                                 </ul>
                             ) : null

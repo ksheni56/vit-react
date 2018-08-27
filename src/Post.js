@@ -9,7 +9,7 @@ import HLSSource from './HLS';
 import Item from './components/Item';
 import Avatar from './components/Avatar';
 import Comments from './components/Comments';
-import { VIDEO_THUMBNAIL_URL_PREFIX } from './config'
+import { VIDEO_THUMBNAIL_URL_PREFIX } from './config';
 
 class Post extends Component {
 
@@ -30,6 +30,7 @@ class Post extends Component {
         }
 
         this.castVote = this.castVote.bind(this);
+        this.getVotes = this.getVotes.bind(this);
         this.togglePostReply = this.togglePostReply.bind(this);
     } 
 
@@ -59,22 +60,69 @@ class Post extends Component {
         })
     }
     
-    getVotes(votes) {
-        if(votes) {
-            return (
-                <button disabled={this.state.voting} onClick={() => this.castVote(this.props.match.params.permalink, this.props.match.params.author, "post")} className="btn btn-danger btn-sm">Like <span className="votes font-weight-bold">{votes.length}</span></button>
-            )
+    getVotes(data, type = 'post') {
+        let votes = data.active_votes;
+        let btnLike;
+
+        if (data.net_votes > 0) {
+            let voted;
+            voted = votes.filter(vote => {
+                return (vote.voter == this.props.app.username ? vote : null);
+            })
+
+            //console.log(type, voted.length, voted.length > 0 ? voted[0].weight : 'empty');
+            
+            if (voted.length > 0 && voted[0].weight > 0) {
+                // TODO it seems like downvote one still appear on the active_votes???
+                btnLike = 
+                    <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 0)}>Unlike</span>
+            } else {
+                btnLike = 
+                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
+            }
+
+        } else {
+            btnLike = 
+                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
         }
+
+
+
+        // let btnLike = 
+        // <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
+
+        // if (data.net_votes > 0) {
+        //     // determine render Like or Unlike button
+        //     let voted = false;
+        //     voted = votes.some(vote => {
+        //         // console.log(vote, vote.voter, vote.weight);
+        //         // if (vote.weight === 0) {
+        //         //     console.log("0 vote", vote);
+        //         // }
+        //         console.log(vote.voter === this.props.app.username, vote.weight > 0);
+        //         if (vote.voter === this.props.app.username && vote.weight > 0) {
+        //             console.log("dfd", vote);
+        //         }    
+
+        //         return (vote.voter === this.props.app.username && vote.weight > 0);
+        //     });
+        //     if (voted) {
+        //         btnLike = 
+        //             <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 0)}>Unlike</span>
+        //     }
+        // }
+
+        return btnLike;
     }
 
-    castVote(permalink, author, type) {
-
-        // type: post or comment
-
+    castVote(permalink, author, type, typeVote) {
+        //console.log(permalink, author, type, typeVote);
         if(!this.props.app.authorized) {
             this.props.history.push("/login");
             return false;
         }
+
+        console.log(permalink, author, type, typeVote);
 
         this.setState({
             voting: true
@@ -86,16 +134,17 @@ class Post extends Component {
             username: this.props.app.username, 
             author: author,
             permalink: permalink,
-            weight: 10000
+            weight: typeVote
 
         }).then( response => {
 
             console.log("castVote success", response);
 
             if(type === "post") 
-                this.state.post.active_votes.push({'dummy': 'data'})
+                //this.state.post.active_votes.push({'dummy': 'data'});
+                console.log("Update post voting");
             else {
-                console.log("Upvoting comment")
+                console.log("Update comment voting");
             }
 
             this.setState({
@@ -109,7 +158,60 @@ class Post extends Component {
                 voting: false
             });
         });
+
     }
+
+    // getVotes(votes) {
+    //     if(votes) {
+    //         return (
+    //             <button disabled={this.state.voting} onClick={() => this.castVote(this.props.match.params.permalink, this.props.match.params.author, "post")} className="btn btn-danger btn-sm">Like <span className="votes font-weight-bold">{votes.length}</span></button>
+    //         )
+    //     }
+    // }
+
+    // castVote(permalink, author, type) {
+
+    //     // type: post or comment
+
+    //     if(!this.props.app.authorized) {
+    //         this.props.history.push("/login");
+    //         return false;
+    //     }
+
+    //     this.setState({
+    //         voting: true
+    //     });
+
+    //     this.props.vote({
+
+    //         postingWif: this.props.app.postingWif,
+    //         username: this.props.app.username, 
+    //         author: author,
+    //         permalink: permalink,
+    //         weight: 10000
+
+    //     }).then( response => {
+
+    //         console.log("castVote success", response);
+
+    //         if(type === "post") 
+    //             this.state.post.active_votes.push({'dummy': 'data'})
+    //         else {
+    //             console.log("Upvoting comment")
+    //         }
+
+    //         this.setState({
+    //             voting: false
+    //         });
+
+    //     }).catch(err => {
+    //         console.log("castVote error", err)
+
+    //         this.setState({
+    //             voting: false
+    //         });
+    //     });
+    // }
 
     loadContent(author, permalink) {
         steem.api.getContent(author, permalink, (err, result) => {
@@ -284,15 +386,18 @@ class Post extends Component {
                             </div>
                             <div className="col-9 col-md-10">
                                 <h2>{ this.state.post.title }</h2>
-                                    <div className="payout small">
-                                        Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
-                                    </div>
+                                <div className="payout small">
+                                    Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
+                                </div>
+                                <div className="votes">
+                                    {/* <button className="btn btn-danger btn-sm">Like</button> */}
+                                    {this.getVotes(this.state.post)} | {this.state.post.net_votes} Votes
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div className="col-3 text-right">
                         <button className="btn btn-sm post-reply-btn" onClick={() => this.togglePostReply()}>Reply</button>
-                        { this.getVotes(this.state.post.active_votes) }
                     </div>
                 </div>
             ]
@@ -323,11 +428,13 @@ class Post extends Component {
                         this.state.post ? (
                             <Comments
                                 matchParams={this.props.match.params}
-                                castVote={this.castVote}
+                                //castVote={this.castVote}
                                 post={this.state.post}
                                 commentForPost={this.state.commentForPost}
                                 togglePostReply={this.togglePostReply}
+                                getVotes={this.getVotes}
                             />
+                            
                         ) : null
                     }
                     
