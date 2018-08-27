@@ -29,26 +29,21 @@ class Comments extends Component {
     }
 
     componentDidMount() {
-        this.loadComments();
 
-        // this.props.dispatch({
-        //     type: 'START_BACKGROUND_SYNC_COMMENTS',
-		//     callback: () => {
-        //         console.log("Syncing comments on " + this.state.permalink);
-        //         this.loadComments();
-        //     },
-        // });
-
-        // steem.api.getContent("wittest2", "20180825t163109941z", (err, result) => {
-        //     console.log("dfdfdf", result);
-        // });
+        this.props.dispatch({
+            type: 'START_BACKGROUND_SYNC_COMMENTS',
+		    callback: () => {
+                console.log("Syncing comments on " + this.state.permalink);
+                this.loadComments();
+            },
+        });
 
     }
 
     componentWillUnmount() {
-        // this.props.dispatch({
-        //     type: 'STOP_BACKGROUND_SYNC_COMMENTS',
-        // });
+        this.props.dispatch({
+            type: 'STOP_BACKGROUND_SYNC_COMMENTS',
+        });
     }
 
     setReplyTarget(value) {
@@ -345,7 +340,6 @@ class Comments extends Component {
     }
 
     render () {
-        console.log(this.state.comments);
         
         return (
             <div>

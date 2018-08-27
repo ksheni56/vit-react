@@ -115,14 +115,12 @@ class Post extends Component {
         return btnLike;
     }
 
-    castVote(permalink, author, type, typeVote) {
-        //console.log(permalink, author, type, typeVote);
+    castVote(permalink, author, type, weight) {
+        
         if(!this.props.app.authorized) {
             this.props.history.push("/login");
             return false;
         }
-
-        console.log(permalink, author, type, typeVote);
 
         this.setState({
             voting: true
@@ -134,7 +132,7 @@ class Post extends Component {
             username: this.props.app.username, 
             author: author,
             permalink: permalink,
-            weight: typeVote
+            weight: weight
 
         }).then( response => {
 
@@ -160,58 +158,6 @@ class Post extends Component {
         });
 
     }
-
-    // getVotes(votes) {
-    //     if(votes) {
-    //         return (
-    //             <button disabled={this.state.voting} onClick={() => this.castVote(this.props.match.params.permalink, this.props.match.params.author, "post")} className="btn btn-danger btn-sm">Like <span className="votes font-weight-bold">{votes.length}</span></button>
-    //         )
-    //     }
-    // }
-
-    // castVote(permalink, author, type) {
-
-    //     // type: post or comment
-
-    //     if(!this.props.app.authorized) {
-    //         this.props.history.push("/login");
-    //         return false;
-    //     }
-
-    //     this.setState({
-    //         voting: true
-    //     });
-
-    //     this.props.vote({
-
-    //         postingWif: this.props.app.postingWif,
-    //         username: this.props.app.username, 
-    //         author: author,
-    //         permalink: permalink,
-    //         weight: 10000
-
-    //     }).then( response => {
-
-    //         console.log("castVote success", response);
-
-    //         if(type === "post") 
-    //             this.state.post.active_votes.push({'dummy': 'data'})
-    //         else {
-    //             console.log("Upvoting comment")
-    //         }
-
-    //         this.setState({
-    //             voting: false
-    //         });
-
-    //     }).catch(err => {
-    //         console.log("castVote error", err)
-
-    //         this.setState({
-    //             voting: false
-    //         });
-    //     });
-    // }
 
     loadContent(author, permalink) {
         steem.api.getContent(author, permalink, (err, result) => {
@@ -428,7 +374,6 @@ class Post extends Component {
                         this.state.post ? (
                             <Comments
                                 matchParams={this.props.match.params}
-                                //castVote={this.castVote}
                                 post={this.state.post}
                                 commentForPost={this.state.commentForPost}
                                 togglePostReply={this.togglePostReply}
