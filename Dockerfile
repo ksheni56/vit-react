@@ -1,11 +1,17 @@
-FROM node:8.7 as Base
+FROM node:8.11.4 as Base
 
 # Set DOCKER_BUILD so that jest will run all the tests (see scripts/test.js)
 ENV DOCKER_BUILD yes
 
+ARG DMCA_CONTENT_ENDPOINT
+ARG DMCA_USER_ENDPOINT
+ENV REACT_APP_DMCA_CONTENT_ENDPOINT $DMCA_CONTENT_ENDPOINT
+ENV REACT_APP_DMCA_USER_ENDPOINT $DMCA_USER_ENDPOINT
+
 WORKDIR /var/app
 RUN mkdir -p /var/app
 COPY . /var/app
+RUN env
 RUN npm install
 RUN npm run build
 

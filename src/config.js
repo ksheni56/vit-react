@@ -24,5 +24,5 @@ export const IMAGE_UPLOAD_ENDPOINT = process.env.REACT_APP_IMAGE_UPLOAD_ENDPOINT
 export const LIQUID_TOKEN = 'VIT';
 
 // DMCA endpoints
-export const DMCA_CONTENT_ENDPOINT = process.env.REACT_APP_DMCA_CONTENT_ENDPOINT ? process.env.REACT_APP_DMCA_CONTENT_ENDPOINT : "http://localhost:3000/DMCAContents";
-export const DMCA_USER_ENDPOINT = process.env.REACT_APP_DMCA_USER_ENDPOINT ? process.env.REACT_APP_DMCA_USER_ENDPOINT : "http://localhost:3000/DMCAUsers";
+export const DMCA_CONTENT_ENDPOINT = process.env.REACT_APP_DMCA_CONTENT_ENDPOINT ? process.env.REACT_APP_DMCA_CONTENT_ENDPOINT : "/blank";
+export const DMCA_USER_ENDPOINT = process.env.REACT_APP_DMCA_USER_ENDPOINT ? process.env.REACT_APP_DMCA_USER_ENDPOINT : "/blank";
