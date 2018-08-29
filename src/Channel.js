@@ -150,6 +150,10 @@ class Channel extends Component {
                 this.setState({
                     is_subbed: true
                 });
+            } else {
+                this.setState({
+                    is_subbed: false
+                });
             }
            
 
