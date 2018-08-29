@@ -7,9 +7,8 @@ import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
-import { vestingSteem, numberWithCommas } from './utils/Format'
-
-export const LIQUID_TOKEN = 'VIT';
+import { vestingSteem, numberWithCommas } from './utils/Format';
+import { LIQUID_TOKEN } from './config';
 
 class Wallet extends Component {
 
@@ -110,7 +109,7 @@ class Wallet extends Component {
             //power_success: false
         });
 
-        let amount = form_data.power_amount + " TVIT",
+        let amount = form_data.power_amount + " " + LIQUID_TOKEN,
         confirmation = prompt("Please enter your VIT password to confirm this action", "");
 
         if(confirmation) {
@@ -160,7 +159,7 @@ class Wallet extends Component {
                 transferring: true
             });
 
-            let amount = form_data.amount + " TVIT",
+            let amount = form_data.amount + " " + LIQUID_TOKEN,
             keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
 
             steem.broadcast.transfer(keys.active, this.props.app.username, form_data.to, amount, form_data.memo, (err, result) => {
