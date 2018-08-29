@@ -7,12 +7,16 @@ import Dropzone from 'react-dropzone';
 import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
+import TextArea from './components/forms/TextArea';
 import Select from 'react-select';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
-import { VIDEO_UPLOAD_ENDPOINT } from './config'
-import { uploadRequest, UploadStatus, uploadCancel } from   './reducers/upload'
+import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX } from './config'
+import { uploadRequest, UploadStatus, uploadCancel } from './reducers/upload';
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import HLSSource from './HLS';
+import { Player, BigPlayButton } from 'video-react';
 
 class Upload extends Component {
 
@@ -40,7 +44,9 @@ class Upload extends Component {
             'progress': null,
             'permlink': '',
             'transcoding': false,
-            'transcode_progress': 0
+            'transcode_progress': 0,
+            'currentPostForm': '',
+            'uploadVideos': [] 
         }
 
         this.handleDrop = this.handleDrop.bind(this);
@@ -48,7 +54,8 @@ class Upload extends Component {
         this.handleChangeCategory = this.handleChangeCategory.bind(this);
         //this.handleChangeTags = this.handleChangeTags.bind(this);
         this.upload = this.upload.bind(this);
-
+        this.setPreviewPost = this.setPreviewPost.bind(this);
+        this.showUploadForm = this.showUploadForm.bind(this);
     } 
 
     componentDidMount() {
@@ -73,13 +80,48 @@ class Upload extends Component {
                 categories: categories,
                 loading_categories: false
             });
-        
 
         });
 
     }
 
     componentWillReceiveProps(nextProps) {    
+
+    }
+
+    setPreviewPost(key, type) {
+        if (type === 'add') {
+            // show the Upload form
+            if (this.state.uploadVideos.length === 0) {
+                this.setState({
+                    uploadVideos: [...this.state.uploadVideos, key]
+                });
+            } else {
+                let found = '';
+                found = this.state.uploadVideos.find(data => {
+                    return data === key;
+                });
+                if (!found) {
+                    this.setState({
+                        uploadVideos: [...this.state.uploadVideos, key]
+                    });
+                }
+            }
+        } else {
+            // hide the Upload form
+            const uploadVideos = [...this.state.uploadVideos];
+            const index = uploadVideos.indexOf(key);
+            uploadVideos.splice(index, 1);
+            this.setState({
+                uploadVideos: uploadVideos
+            });
+
+            // let array = ["quang", "hong", "minh"];
+            // const index = array.indexOf("hong");
+            // array.splice(index, 1);
+            // console.log(array);
+        }
+        
 
     }
 
@@ -116,6 +158,7 @@ class Upload extends Component {
         // get signed signature for Video Upload Authorisation
         const signature = localStorage.getItem("signature");
         const signUserHost = localStorage.getItem("signUserHost");
+        
 
         const headers = {
             'Content-Type': 'multipart/form-data',
@@ -288,6 +331,8 @@ class Upload extends Component {
 
     handleDrop(files) {
 
+        // set uploading in progress
+
         this.upload(files)
 
         /* this.setState({
@@ -317,6 +362,69 @@ class Upload extends Component {
     }
     */
 
+    showUploadForm(key, file) {
+        
+        return (
+            <div className="upload-form row">
+                <div className="col-md-6 col-sm-12 video-player" style={{'marginTop': '33px'}}>
+                    <Player playsInline>
+                    {/*<PosterImage poster={ "https://media.vit.tube/playback/" +  thumbnail } />*/}
+                        <HLSSource
+                            isVideoChild
+                            src={ VIDEO_THUMBNAIL_URL_PREFIX + file.vit_data.Playlist }
+                        />
+                        <BigPlayButton position="center" />
+                    </Player>
+                </div>
+                <div className="col-md-6 col-sm-12">
+                    <Formsy 
+                        //onValidSubmit={this.upload} 
+                        ref="upload_form" 
+                        >
+
+                        <div className="col-md-12 col-sm-12 px-0">
+                            <TextField 
+                                name="title"
+                                id="title"
+                                label="Title"
+                                value={this.state.title}
+                                placeholder="" 
+                                maxLength={100}
+                                required />
+                            <small className="text-muted mb-2 d-block" style={{'marginTop': '-5px'}}>100 characters max</small>
+
+                            
+                            <Select
+                                isMulti
+                                name="category"
+                                classNamePrefix="Select"
+                                placeholder="Select some tags" 
+                                //onChange={this.handleChangeCategory}
+                                options={this.state.categories}
+                            />
+
+                            
+                            <TextArea 
+                                name="description"
+                                id="description"
+                                placeholder="Type here..." 
+                                value={this.state.comment_text}
+                            />
+
+                            <button 
+                                type="submit"
+                                className="btn btn-danger" 
+                                // disabled={!this.state.ready_to_upload || this.state.uploading}
+                            >Post</button>
+                            <a className="btn" onClick={() => this.setPreviewPost(key, 'remove')}>Cancel</a>
+                            
+                        </div>
+                    </Formsy>    
+                </div>
+            </div>
+        )
+    }
+
     showProgress() {
         return (
             Object.keys(this.props.uploads).map(key => {
@@ -325,28 +433,67 @@ class Upload extends Component {
                 let message;
                 switch (file.status) {
                     case UploadStatus.UPLOADING:
-                        message = <span><strong>Uploading, { file.progress }%</strong> complete. Do not close/leave this page! <button onClick={() => this.props.onCancel(key, file)} >Cancel</button></span>
+                        // message = <span><strong>Uploading, { file.progress }%</strong> complete. Do not close/leave this page! <button onClick={() => this.props.onCancel(key, file)} >Cancel</button></span>
+                        message = 
+                        <div className="row alert alert-warning" key={key}>
+                            <div className="col-md-10 col-sm-12">
+                                <strong>Uploading progress: {file.progress}%</strong> complete. Do not close/leave this page!
+                                <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
+                            </div>
+                            <div className="col-md-2 col-sm-12">
+                                <button className="btn btn-danger btn-sm progress-cancel" onClick={() => this.props.onCancel(key, file)}>Cancel</button>
+                            </div>
+                        </div>
                         break
 
                     case UploadStatus.TRANSCODING:
-                        message = <span><strong>Transcoding, { file.progress }%</strong> complete. You can close/leave the page as you wish!</span>
+                        message = 
+                        <div className="row alert alert-warning" key={key}>
+                            <div className="col-md-10 col-sm-12">
+                                <strong>Trancoding progress: {file.progress}%</strong> complete. Do not close/leave this page!
+                                <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
+                            </div>
+                            <div className="col-md-2 col-sm-12">
+                                <button className="btn btn-danger btn-sm progress-cancel" onClick={() => this.props.onCancel(key, file)}>Cancel</button>
+                            </div>
+                        </div>
                         break
 
                     case UploadStatus.COMPLETED:
-                        message = <strong>{ file.name } completed!</strong>
+                        message = 
+                        <div key={key}>
+                            {
+                                this.state.uploadVideos.includes(key) ? 
+                                (
+                                    this.showUploadForm(key, file)
+                                ) : (
+                                    <div className="row alert alert-warning">
+                                        <span>
+                                            Trancoding of <strong>{file.fileName} completed</strong>, it is now <button className="btn btn-primary btn-sm" onClick={() => this.setPreviewPost(key, "add")}>ready to post</button>
+                                        </span>
+                                    </div>
+                                )
+                            }
+                        </div>
                         break
 
                     case UploadStatus.CANCELLED:
-                        message = <strong>{ file.name } cancelled!</strong>
+                        message = 
+                        <div className="alert alert-warning" role="alert" key={key}>
+                            <strong>{ file.fileName } cancelled!</strong>
+                        </div>
                         break
 
                     default:
-                        message = <strong>Upload failed!</strong>
+                        message = 
+                        <div className="alert alert-warning" role="alert">
+                            <strong>Upload failed!</strong>
+                        </div>
                 }
                 return (
-                <div className="alert alert-warning mt-4" role="alert" key={key}>
-                    { message }
-                </div>
+                    <div key={key}>
+                        {message}
+                    </div>
                 )
             })
         )
@@ -414,129 +561,157 @@ class Upload extends Component {
     }
 
     render() {
-        
+        console.log("MyData", this.state.uploadVideos);
         return (
             <div className="row justify-content-center">
 
                 {/* <ToastContainer /> */}
 
-                <div className="col-md-8 col-sm-12 mt-4">
+                <div className="col-md-10 col-sm-12 mt-4">
                     <div className="upload-wrapper">
-                        <div>
+                        <Tabs>
+                            <TabList>
+                                <Tab>Upload</Tab>
+                                <Tab>History</Tab>
+                            </TabList>
 
-                            <h3 className="text-center mb-4">Upload your content</h3>
+                            <TabPanel>
+                                {/* Upload Area */}
+                                <div>
+                                    <h3 className="text-center mb-4">Upload your content</h3>
 
-                            {/* <Formsy 
-                                onValidSubmit={this.upload} 
-                                ref="upload_form" 
-                                >
+                                    {/* <Formsy 
+                                        onValidSubmit={this.upload} 
+                                        ref="upload_form" 
+                                        >
 
-                                <div className="col-md-8 col-sm-12 px-0">
+                                        <div className="col-md-8 col-sm-12 px-0">
 
-                                    <TextField 
-                                        name="title"
-                                        id="title"
-                                        label="Title"
-                                        value={this.state.title}
-                                        placeholder="" 
-                                        maxLength={100}
-                                        required />
-                                    <small className="text-muted mb-2 d-block" style={{'marginTop': '-5px'}}>100 characters max</small>
+                                            <TextField 
+                                                name="title"
+                                                id="title"
+                                                label="Title"
+                                                value={this.state.title}
+                                                placeholder="" 
+                                                maxLength={100}
+                                                required />
+                                            <small className="text-muted mb-2 d-block" style={{'marginTop': '-5px'}}>100 characters max</small>
 
-                                    <label>Category</label>
-                                    <Select
-                                        isMulti
-                                        name="category"
-                                        classNamePrefix="Select"
-                                        onChange={this.handleChangeCategory}
-                                        options={this.state.categories}
-                                    /> */}
+                                            <label>Category</label>
+                                            <Select
+                                                isMulti
+                                                name="category"
+                                                classNamePrefix="Select"
+                                                onChange={this.handleChangeCategory}
+                                                options={this.state.categories}
+                                            /> */}
 
-                                    {/*<label className="mt-3">Tags</label>
+                                            {/*<label className="mt-3">Tags</label>
+                                            
+                                            <CreatableSelect
+                                                isMulti
+                                                className="Select"
+                                                
+                                                onChange={this.handleChangeTags}
+                                            />
+                                            <small className="text-muted mb-2 d-block" style={{'marginTop': '11px'}}>Up to 10 tags</small>
+                                            */}
+                                        {/* </div>
+
+                                        {
+                                            this.state.error ? (
+                                                <div className="alert alert-danger mt-4" role="alert">
+                                                    { this.handleErrors() }
+                                                </div>
+                                            ) : null
+                                        }
+
+                                        {
+                                            this.state.success || this.state.uploading ? (
+                                                <span>
+                                                    { this.showProgress() }
+                                                </span>
+                                            ) : null
+                                        }
+
+                                        {
+                                            this.state.success || this.state.transcoding ? (
+                                                <span>
+                                                    { this.showTranscoding() }
+                                                </span>
+                                            ) : null
+                                        }
+
+                                        <Dropzone 
+                                            className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
+                                            onDrop={ this.handleDrop }
+                                            multiple={ false } 
+                                            onDropRejected={this.handleDropRejected }
+                                            accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
+                                            disabled={ this.state.uploading }
+                                        >
+                                            <div className="w-100 text-center">
+                                                Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span>
+
+                                                {
+                                                    this.state.files.length > 0 ? (
+                                                        <small className="d-block text-white text-center mt-2">You are ready to upload <strong>{this.state.files[0].name}</strong></small>
+                                                    ) : null
+                                                }
+                                            </div>
+                                        </Dropzone>
+
+                                        <button 
+                                            type="submit"
+                                            className="btn btn-danger mt-4" 
+                                            // disabled={!this.state.ready_to_upload || this.state.uploading}
+                                        >Upload</button>
+
+                                    </Formsy> */}
+
+                                    {/* <div className="alert alert-warning mt-4 col-md-8 col-sm-12" role="alert">
+                                        <span>
+                                            <strong>Uploading progress: 40%</strong> complete. Do not close/leave this page!
+                                            <Line percent="40" strokeWidth="4" strokeColor="#D3D3D3" />
+                                            <div>
+                                                <button className="btn btn-danger btn-sm progress-cancel">Cancel</button>
+                                            </div>
+                                        </span>
+                                    </div>     */}
                                     
-                                    <CreatableSelect
-                                        isMulti
-                                        className="Select"
-                                        
-                                        onChange={this.handleChangeTags}
-                                    />
-                                    <small className="text-muted mb-2 d-block" style={{'marginTop': '11px'}}>Up to 10 tags</small>
-                                    */}
-                                {/* </div>
+                                    
+                                    {/* { this.showUploadForm() } */}
 
-                                {
-                                    this.state.error ? (
-                                        <div className="alert alert-danger mt-4" role="alert">
-                                            { this.handleErrors() }
-                                        </div>
-                                    ) : null
-                                }
+                                    { this.showProgress() }
+                                    
 
-                                {
-                                    this.state.success || this.state.uploading ? (
-                                        <span>
-                                            { this.showProgress() }
-                                        </span>
-                                    ) : null
-                                }
+                                    <Dropzone 
+                                            className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
+                                            onDropAccepted={ this.handleDrop }
+                                            multiple={ true } 
+                                            onDropRejected={this.handleDropRejected }
+                                            accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
+                                            disabled={ this.state.uploading }
+                                        >
+                                            <div className="w-100 text-center">
+                                                Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span>
 
-                                {
-                                    this.state.success || this.state.transcoding ? (
-                                        <span>
-                                            { this.showTranscoding() }
-                                        </span>
-                                    ) : null
-                                }
+                                                {
+                                                    this.state.files.length > 0 ? (
+                                                        <small className="d-block text-white text-center mt-2">You are ready to upload <strong>{this.state.files[0].name}</strong></small>
+                                                    ) : null
+                                                }
+                                            </div>
+                                    </Dropzone>
+                                </div>
+                            </TabPanel>
 
-                                <Dropzone 
-                                    className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
-                                    onDrop={ this.handleDrop }
-                                    multiple={ false } 
-                                    onDropRejected={this.handleDropRejected }
-                                    accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
-                                    disabled={ this.state.uploading }
-                                >
-                                    <div className="w-100 text-center">
-                                        Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span>
+                            <TabPanel>
+                                <h3 className="text-center mb-4">Upload Histories</h3>
+                            </TabPanel>
+                        </Tabs>
 
-                                        {
-                                            this.state.files.length > 0 ? (
-                                                <small className="d-block text-white text-center mt-2">You are ready to upload <strong>{this.state.files[0].name}</strong></small>
-                                            ) : null
-                                        }
-                                    </div>
-                                </Dropzone>
-
-                                <button 
-                                    type="submit"
-                                    className="btn btn-danger mt-4" 
-                                    // disabled={!this.state.ready_to_upload || this.state.uploading}
-                                >Upload</button>
-
-                            </Formsy> */}
-
-                            { this.showProgress() }
-
-                            <Dropzone 
-                                    className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
-                                    onDropAccepted={ this.handleDrop }
-                                    multiple={ true } 
-                                    onDropRejected={this.handleDropRejected }
-                                    accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
-                                    disabled={ this.state.uploading }
-                                >
-                                    <div className="w-100 text-center">
-                                        Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span>
-
-                                        {
-                                            this.state.files.length > 0 ? (
-                                                <small className="d-block text-white text-center mt-2">You are ready to upload <strong>{this.state.files[0].name}</strong></small>
-                                            ) : null
-                                        }
-                                    </div>
-                                </Dropzone>
-
-                        </div>
+                        
                     </div>
                 </div>
             </div>
