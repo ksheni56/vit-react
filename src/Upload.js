@@ -46,7 +46,8 @@ class Upload extends Component {
             'transcoding': false,
             'transcode_progress': 0,
             'currentPostForm': '',
-            'uploadVideos': [] 
+            'uploadVideos': [],
+            'tabIndex': 0 
         }
 
         this.handleDrop = this.handleDrop.bind(this);
@@ -56,6 +57,7 @@ class Upload extends Component {
         this.upload = this.upload.bind(this);
         this.setPreviewPost = this.setPreviewPost.bind(this);
         this.showUploadForm = this.showUploadForm.bind(this);
+        this.postVideo = this.postVideo.bind(this);
     } 
 
     componentDidMount() {
@@ -89,39 +91,135 @@ class Upload extends Component {
 
     }
 
-    setPreviewPost(key, type) {
+    setPreviewPost(file, type) {
+        const key = file.vit_data.Hash;
+
         if (type === 'add') {
             // show the Upload form
             if (this.state.uploadVideos.length === 0) {
                 this.setState({
-                    uploadVideos: [...this.state.uploadVideos, key]
+                    uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file} }]
                 });
             } else {
-                let found = '';
-                found = this.state.uploadVideos.find(data => {
-                    return data === key;
+                let foundObject = this.state.uploadVideos.find(e => {
+                    return e.hasOwnProperty(key);
                 });
-                if (!found) {
+
+                if (!foundObject || foundObject === undefined) {
                     this.setState({
-                        uploadVideos: [...this.state.uploadVideos, key]
-                    });
+                        uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file} }]
+                    })
                 }
             }
         } else {
             // hide the Upload form
             const uploadVideos = [...this.state.uploadVideos];
-            const index = uploadVideos.indexOf(key);
+            const foundObject = uploadVideos.find(e => {
+                return e.hasOwnProperty(key);
+            });
+
+            const index = uploadVideos.indexOf(foundObject);
             uploadVideos.splice(index, 1);
             this.setState({
                 uploadVideos: uploadVideos
             });
-
-            // let array = ["quang", "hong", "minh"];
-            // const index = array.indexOf("hong");
-            // array.splice(index, 1);
-            // console.log(array);
         }
+    }
+
+    postVideo(form) {
+        const hash = form.hash;
+        const uploadVideos = [...this.state.uploadVideos];
+        const updateObject = uploadVideos.find(e => {
+            return e.hasOwnProperty(hash);
+        });
+
+        const vit_data = updateObject[hash].file.vit_data;
+        let slug = form.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
+
+        let categories = [];
+        if(this.state.selected_category.length > 0 ) {
+       
+            for(var i in this.state.selected_category) {
+                if(i < 5) categories.push(this.state.selected_category[i]['value']);
+            }
         
+        } else {
+            toast.error("Please select at least 1 category!");
+            return false;
+        }
+
+        this.setState({
+            error: false,
+            uploading: true
+        });
+
+        // I. POST VIDEO
+        this.props.post({
+
+            postingWif: this.props.app.postingWif, 
+            category: categories[0], // category
+            username: this.props.app.username, 
+            slug: slug, // slug
+            title: form.title, // title
+            body: form.description, // body,
+            tags: categories,
+            vit_data: vit_data
+
+        }).then( response => {
+
+            console.log("post blockchain success", response);
+
+            // TODO: call URL to updated posted 
+            
+            // UPDATE state to notify this video is post
+            const index = uploadVideos.indexOf(updateObject);
+            uploadVideos.splice(index, 1);
+            updateObject[hash].post = 'posted';
+            this.setState({
+                uploadVideos: [...uploadVideos, updateObject],
+                permlink: response.payload.operations[0][1].permlink,
+                uploading: false
+            })
+
+        }).catch(err => {
+
+            console.log("post error", err)
+
+            if(err.payload.data && err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
+                
+                this.setState({
+                    error: true,
+                    error_type: 'timeout',
+                    custom_error_text: 'You may only post once every 5 minutes.',
+                    uploading: false
+                });
+
+            } else {
+
+                this.setState({
+                    error: true,
+                    error_type: 'other',
+                    uploading: false,
+                    custom_error_text: err.payload.data.stack[0].format
+                });
+
+            }
+        });
+
+
+        
+        // II. then update this uploadVideos state as posted in order to display another message
+        // const hash = form.hash;
+        // const uploadVideos = [...this.state.uploadVideos];
+        // const updateObject = uploadVideos.find(e => {
+        //     return e.hasOwnProperty(hash);
+        // });
+        // const index = uploadVideos.indexOf(updateObject);
+        // uploadVideos.splice(index, 1);
+        // updateObject[hash].post = 'posted';
+        // this.setState({
+        //     uploadVideos: [...uploadVideos, updateObject]
+        // })
 
     }
 
@@ -365,7 +463,7 @@ class Upload extends Component {
     showUploadForm(key, file) {
         
         return (
-            <div className="upload-form row">
+            <div className="upload-form row" key={key} style={{'marginTop': '20px'}}>
                 <div className="col-md-6 col-sm-12 video-player" style={{'marginTop': '33px'}}>
                     <Player playsInline>
                     {/*<PosterImage poster={ "https://media.vit.tube/playback/" +  thumbnail } />*/}
@@ -378,7 +476,7 @@ class Upload extends Component {
                 </div>
                 <div className="col-md-6 col-sm-12">
                     <Formsy 
-                        //onValidSubmit={this.upload} 
+                        onValidSubmit={this.postVideo} 
                         ref="upload_form" 
                         >
 
@@ -399,7 +497,7 @@ class Upload extends Component {
                                 name="category"
                                 classNamePrefix="Select"
                                 placeholder="Select some tags" 
-                                //onChange={this.handleChangeCategory}
+                                onChange={this.handleChangeCategory}
                                 options={this.state.categories}
                             />
 
@@ -411,12 +509,21 @@ class Upload extends Component {
                                 value={this.state.comment_text}
                             />
 
+                            {/* TODO: Is there any way to post this form without hidden field */}
+                            <TextField 
+                                name="hash"
+                                id="hash"
+                                value={file.vit_data.Hash}
+                                style={{'marginTop': '33px'}}
+                                />
+
                             <button 
                                 type="submit"
-                                className="btn btn-danger" 
+                                className="btn btn-danger"
+                                style={{'marginBottom': '10px'}}
                                 // disabled={!this.state.ready_to_upload || this.state.uploading}
                             >Post</button>
-                            <a className="btn" onClick={() => this.setPreviewPost(key, 'remove')}>Cancel</a>
+                            <a className="btn" style={{'marginBottom': '10px'}} onClick={() => this.setPreviewPost(file, 'remove')}>Cancel</a>
                             
                         </div>
                     </Formsy>    
@@ -460,19 +567,26 @@ class Upload extends Component {
                         break
 
                     case UploadStatus.COMPLETED:
+                        let foundObject = this.state.uploadVideos.find(e => {
+                            return e.hasOwnProperty(file.vit_data.Hash);
+                        });
                         message = 
                         <div key={key}>
                             {
-                                this.state.uploadVideos.includes(key) ? 
+                                foundObject === undefined ?
                                 (
-                                    this.showUploadForm(key, file)
-                                ) : (
-                                    <div className="row alert alert-warning">
+                                    <div className="row alert alert-warning" role="alert" key={key}>
                                         <span>
-                                            Trancoding of <strong>{file.fileName} completed</strong>, it is now <button className="btn btn-primary btn-sm" onClick={() => this.setPreviewPost(key, "add")}>ready to post</button>
+                                            Trancoding of <strong>{file.fileName} completed</strong>, it is now <button className="btn btn-primary btn-sm" onClick={() => this.setPreviewPost(file, "add")}>ready to post</button>
                                         </span>
                                     </div>
-                                )
+                                ) : [
+                                    (
+                                        foundObject[file.vit_data.Hash].post === 'posted'
+                                        ? <div className="alert alert-warning" role="alert" key={key}>Recently posted {file.fileName}, please see the <button className="btn btn-primary btn-sm" onClick={() => this.setState({tabIndex: 1})}>history</button></div>
+                                        : this.showUploadForm(key, file)
+                                    )
+                                ]
                             }
                         </div>
                         break
@@ -561,7 +675,7 @@ class Upload extends Component {
     }
 
     render() {
-        console.log("MyData", this.state.uploadVideos);
+        
         return (
             <div className="row justify-content-center">
 
@@ -569,7 +683,7 @@ class Upload extends Component {
 
                 <div className="col-md-10 col-sm-12 mt-4">
                     <div className="upload-wrapper">
-                        <Tabs>
+                        <Tabs selectedIndex={this.state.tabIndex} onSelect={tabIndex => this.setState({ tabIndex })}>
                             <TabList>
                                 <Tab>Upload</Tab>
                                 <Tab>History</Tab>
@@ -679,11 +793,8 @@ class Upload extends Component {
                                         </span>
                                     </div>     */}
                                     
-                                    
-                                    {/* { this.showUploadForm() } */}
 
                                     { this.showProgress() }
-                                    
 
                                     <Dropzone 
                                             className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
@@ -707,11 +818,10 @@ class Upload extends Component {
                             </TabPanel>
 
                             <TabPanel>
+                                {/* TODO: the history of user's posted articles */}
                                 <h3 className="text-center mb-4">Upload Histories</h3>
                             </TabPanel>
                         </Tabs>
-
-                        
                     </div>
                 </div>
             </div>
