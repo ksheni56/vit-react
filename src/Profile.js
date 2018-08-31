@@ -124,13 +124,15 @@ class Profile extends Component {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'X-Auth-Token':  signature,
-                    'X-Auth-UserHost': signUserHost
+                    'X-Auth-UserHost': signUserHost,
+                    'Profile-Picture': this.props.app.username
                 }
             }).then(response => {
 
                 console.log("Avatar upload response", response);
 
-                let avatar_path = AVATAR_UPLOAD_PREFIX + response.data.Hash + "/" + response.data.Name,
+                //let avatar_path = AVATAR_UPLOAD_PREFIX + response.data.Hash + "/" + response.data.Name,
+                let avatar_path = AVATAR_UPLOAD_PREFIX + this.props.app.username + "/avatar",
                 jsonMetadata = { profile: { profile_image: avatar_path } };
 
                 if(this.state.account.json_metadata.profile && (this.state.account.json_metadata.profile.name || this.state.account.json_metadata.profile.about) ) {

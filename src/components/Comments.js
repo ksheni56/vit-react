@@ -6,7 +6,8 @@ import Formsy from 'formsy-react';
 import TextArea from './forms/TextArea';
 import { vote, comment } from '../actions/post';
 import { Promise } from 'bluebird';
-
+import { AVATAR_UPLOAD_PREFIX } from '../config';
+import Avatar from './Avatar';
 
 class Comments extends Component {
     constructor(props) {
@@ -225,7 +226,9 @@ class Comments extends Component {
                     this.state.comments.map(
                         (Comment) =>
                             <li key={ Comment.id } ref={ Comment.id } className="media mb-4">
-                                <div className="mr-3 avatar"></div>
+                                <div className="mr-3 avatar">
+                                    <Avatar profile_image={AVATAR_UPLOAD_PREFIX + Comment.author + "/avatar"} />
+                                </div>
                                 <div className="media-body">
                                     <h6 className="mt-0 mb-1">{ Comment.author }</h6>
                                     <span>{ Comment.body }</span>
@@ -282,7 +285,9 @@ class Comments extends Component {
         let lists = subComments.map(comment => {
             return (
                 <li key={comment.id} className="media mb-4">
-                    <div className="mr-3 avatar"></div>
+                    <div className="mr-3 avatar">
+                        <Avatar profile_image={AVATAR_UPLOAD_PREFIX + comment.author + "/avatar"} />
+                    </div>
                     <div className="media-body">
                         <h6 className="mt-0 mb-1">{comment.author}</h6>
                         <span>{comment.body}</span>
