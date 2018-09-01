@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import 'moment-timezone';
 import steem from 'steem';
-import { 
+import {
     API_URL,
     API_ADDRESS_PREFIX,
     API_CHAIN_ID
@@ -63,20 +63,20 @@ ReactDOM.render((
         <Router>
             <Switch>
 
-                <Route exact path="/login/:username?" component={ Login } /> 
-                
+                <Route exact path="/login/:username?" component={ Login } />
+
             	<Bootstrap>
-            
 
-                    <Route 
+
+                    <Route
                         exact
-                        path="/:filter?" 
-                        render={ props => { 
+                        path="/:filter?"
+                        render={ props => {
 
-                            var test_if_home = /trending|new|hot|promoted/.test(props.location.pathname);
+                            var test_if_home = /trending|new|hot/.test(props.location.pathname);
                             var test_if_channel = /@/.test(props.location.pathname);
- 
-                            if(test_if_home) return <Home {...props} /> 
+
+                            if(test_if_home) return <Home {...props} />
                             else if(props.location.pathname === '/upload') return <Upload {...props} />
                             else if(props.location.pathname === '/history') return <History {...props} />
                             else if(props.location.pathname === '/wallet') return <Wallet {...props} />
@@ -86,25 +86,25 @@ ReactDOM.render((
                             else if(test_if_channel) return <Channel {...props} />
                             else return <Redirect to="/new/"/>
 
-                        } } 
+                        } }
                     />
-                    
-                    <Route 
-                        path="/:tag/:filter" 
-                        render={ props => { 
-                            
+
+                    <Route
+                        path="/:tag/:filter"
+                        render={ props => {
+
                             var test_if_post = /@/.test(props.location.pathname);
                             if(!test_if_post) return <Tag {...props} />
                             else return null;
 
                         } }
-                    /> 
-                    <Route path="/@:author/:permalink" component={ Post } /> 
-                	                    
+                    />
+                    <Route path="/@:author/:permalink" component={ Post } />
 
-                </Bootstrap> 
+
+                </Bootstrap>
 
             </Switch>
         </Router>
-    </Provider> 
+    </Provider>
 ), document.getElementById('root'));
