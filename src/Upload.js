@@ -13,7 +13,7 @@ import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
 import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX } from './config'
-import { uploadRequest, UploadStatus, uploadCancel } from './reducers/upload';
+import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck } from './reducers/upload';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import HLSSource from './HLS';
 import { Player, BigPlayButton } from 'video-react';
@@ -66,6 +66,9 @@ class Upload extends Component {
             this.props.history.push("/login");
             return false;
         }
+        
+        // update transcoding progress
+        this.props.startTranscodeCheck("https://media.vit.tube/history/" + this.props.app.username)
 
         // TODO: change 'life'
         steem.api.getTrendingTags('', 60, (err, result) => {
@@ -87,8 +90,8 @@ class Upload extends Component {
 
     }
 
-    componentWillReceiveProps(nextProps) {    
-
+    componentWillUnmount () {
+        this.props.stopTranscodeCheck()
     }
 
     setPreviewPost(file, type) {
@@ -536,7 +539,7 @@ class Upload extends Component {
         return (
             Object.keys(this.props.uploads).map(key => {
                 const file = this.props.uploads[key]
-                console.log(file)
+                // console.log(file)
                 let message;
                 switch (file.status) {
                     case UploadStatus.UPLOADING:
@@ -552,6 +555,13 @@ class Upload extends Component {
                             </div>
                         </div>
                         break
+
+                    case UploadStatus.UPLOADED:
+                        message = 
+                        <div className="alert alert-warning" role="alert" key={key}>
+                            <strong>{ file.original_filename } uploaded! Waiting for transcoding!</strong>
+                        </div>
+                        break;
 
                     case UploadStatus.TRANSCODING:
                         message = 
@@ -577,13 +587,13 @@ class Upload extends Component {
                                 (
                                     <div className="row alert alert-warning" role="alert" key={key}>
                                         <span>
-                                            Trancoding of <strong>{file.fileName} completed</strong>, it is now <button className="btn btn-primary btn-sm" onClick={() => this.setPreviewPost(file, "add")}>ready to post</button>
+                                            Trancoding of <strong>{file.original_filename} completed</strong>, it is now <button className="btn btn-primary btn-sm" onClick={() => this.setPreviewPost(file, "add")}>ready to post</button>
                                         </span>
                                     </div>
                                 ) : [
                                     (
                                         foundObject[file.vit_data.Hash].post === 'posted'
-                                        ? <div className="alert alert-warning" role="alert" key={key}>Recently posted {file.fileName}, please see the <button className="btn btn-primary btn-sm" onClick={() => this.setState({tabIndex: 1})}>history</button></div>
+                                        ? <div className="alert alert-warning" role="alert" key={key}>Recently posted {file.original_filename}, please see the <button className="btn btn-primary btn-sm" onClick={() => this.setState({tabIndex: 1})}>history</button></div>
                                         : this.showUploadForm(key, file)
                                     )
                                 ]
@@ -594,7 +604,7 @@ class Upload extends Component {
                     case UploadStatus.CANCELLED:
                         message = 
                         <div className="alert alert-warning" role="alert" key={key}>
-                            <strong>{ file.fileName } cancelled!</strong>
+                            <strong>{ file.original_filename } cancelled!</strong>
                         </div>
                         break
 
@@ -848,6 +858,12 @@ const mapDispatchToProps = (dispatch) => ({
     },
     onCancel: (id, data) => {
         dispatch(uploadCancel(id, data));
+    },
+    startTranscodeCheck: (url) => {
+        dispatch(startTranscodeCheck(url))
+    },
+    stopTranscodeCheck: () => {
+        dispatch(stopTranscodeCheck())
     }
 });
 

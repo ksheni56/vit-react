@@ -1,8 +1,8 @@
-import { buffers, eventChannel, END } from "redux-saga";
-import { call, put, take, takeEvery } from 'redux-saga/effects';
+import { buffers, eventChannel, END, delay } from "redux-saga";
+import { call, put, take, takeEvery, fork, cancel, cancelled } from 'redux-saga/effects';
 import {
     UploadActionTypes, uploadFailure, updateStatus,
-    updateProgress, uploadRegister, UploadStatus, updateVitData
+    updateProgress, uploadRegister, UploadStatus, updateVitData, updateData, updateIPFSHash
 } from './../reducers/upload'
 import axios from 'axios';
 
@@ -13,19 +13,35 @@ export function* uploadRequestWatcherSaga() {
     yield takeEvery(UploadActionTypes.UPLOAD_CANCEL, cancelUpload)
 }
 
+export function* transCodingWatcherSaga() {
+    while ( true ) {
+        const action = yield take(UploadActionTypes.START_TRANCODING_UPDATE)
+
+        // starts the task in the background
+        const trancodeCheckTask = yield fork(transcodeCheck, action)
+
+        // wait for the user stop action
+        yield take(UploadActionTypes.STOP_TRANCODING_UPDATE)
+
+        // user clicked stop. cancel the background task
+        // this will cause the forked bgSync task to jump into its finally block
+        yield cancel(trancodeCheckTask)
+    }
+}
+
 // Upload the specified file
 export function* uploadFileSaga(action) {
     const { upload_backend, formData, headers } = action.payload
     const channel = yield call(createUploadFileChannel, upload_backend, formData, headers);
 
     // temp unique upload ID
-    const fileName = formData.get("file").name;
-    const uid = Date.now() + "_" + fileName;
+    const original_filename = formData.get("file").name;
+    const uid = Date.now() + "_" + original_filename;
 
     while (true) {
-        const { progress = 0, err, success, cancelToken, transcodingURL } = yield take(channel);
+        const { progress = 0, err, success, cancelToken, ipfs_hash } = yield take(channel);
         if (cancelToken) {
-            yield put(uploadRegister(uid, fileName, cancelToken))
+            yield put(uploadRegister(uid, original_filename, cancelToken))
         }
         if (err) {
             yield put(uploadFailure(uid, err))
@@ -33,7 +49,7 @@ export function* uploadFileSaga(action) {
         }
         if (success) {
             yield put(updateStatus(uid, UploadStatus.UPLOADED))
-            yield call(transcodeCheck, uid, transcodingURL)
+            yield put(updateIPFSHash(uid, ipfs_hash))
             return;
         }
         yield put(updateProgress(uid, progress));
@@ -65,7 +81,9 @@ function createUploadFileChannel(endpoint, formData, headers) {
         })
             .then(response => {
                 if (response.status === 200) {
-                    emitter({ success: true, transcodingURL: response.data.url });
+                    const transcodingURL = response.data.url
+                    const ipfs_hash = transcodingURL.substr(transcodingURL.lastIndexOf("/") + 1);
+                    emitter({ success: true, ipfs_hash: ipfs_hash});
                     emitter(END);
                 } else {
                     onFailure(null);
@@ -80,26 +98,36 @@ function createUploadFileChannel(endpoint, formData, headers) {
 }
 
 // might refactor this when we have /history backend ready, to reduce calls to backend for every uploaded file.
-function* transcodeCheck(uid, transcodingURL) {
-    const channel = yield call(createTranscodeCheckChannel, transcodingURL)
+function* transcodeCheck(action) {
+    const { url: backendURL } = action.payload
+    const channel = yield call(createTranscodeCheckChannel, backendURL)
 
-    yield put(updateStatus(uid, UploadStatus.TRANSCODING))
-    yield put(updateProgress(uid, 0)) // reset progress
+    try {
+        while (true) {
+            const { data, err, success, id } = yield take(channel)
 
-    while (true) {
-        const { progress = 0, err, success, vit_data } = yield take(channel)
-
-        if (err) {
-            // no need if failed to request to transcoding backend?
-            // yield put(uploadFailure(uid, err));
-            return;
+            /* if (err) {
+                // no need if failed to request to transcoding backend?
+                // yield put(uploadFailure(uid, err));
+                return;
+            }
+            if (success) {
+                yield put(updateStatus(ipfs_hash, UploadStatus.COMPLETED))
+                //yield put(updateVitData(ipfs_hash, vit_data))
+                return;
+            } */
+            yield put(updateData(id, data))
+            //yield put(updateProgress(ipfs_hash, progress))
+            //yield call(delay, 2000)
         }
-        if (success) {
-            yield put(updateStatus(uid, UploadStatus.COMPLETED))
-            yield put(updateVitData(uid, vit_data))
-            return;
+    
+    } finally {
+        if (yield cancelled()) {
+            channel.close()
+            yield put({
+                type: "CANCELLED_BACKGROUND_SYNC"
+            });
         }
-        yield put(updateProgress(uid, progress))
     }
 }
 
@@ -114,19 +142,30 @@ function createTranscodeCheckChannel(transcodingURL) {
         const refreshInterval = setInterval(() => {
             axios.get(transcodingURL)
                 .then(response => {
-                    if (!response.data.Complete) {
-                        // not complete yet
-                        console.log(response)
-                        emitter({ progress: response.data.PercentComplete })
-                        //console.log("Transcode Progress:", response.data.PercentComplete)
-                    } else {
-                        emitter({ success: true, vit_data: response.data })
-                        emitter(END);
-                        console.log("Done!", response.data)
+                    if (response.status !== 200) return
+                    if (!response.data.hasOwnProperty('uploads')) return
+
+                    
+                    for (let i in response.data.uploads) {
+                        const keys = Object.keys(response.data.uploads[i])
+                        const file = response.data.uploads[i][keys[0]]
+                        const data = {
+                            original_filename: file.original_filename, 
+                            progress: file.percent_complete,
+                            status: file.status !== "end" ? UploadStatus.TRANSCODING : UploadStatus.COMPLETED,
+                            vit_data: {
+                                Hash: file.ipfs_hash,
+                                Playlist: file.playlist
+                            }
+                        }
+                        // console.log(file)
+                        emitter({ id: keys[0], data: data })
                     }
+
+                    // console.log(response)
                 })
                 .catch(e => onFailure(e))
-        }, 2000);
+        }, 5000)
 
         return () => {
             clearInterval(refreshInterval)

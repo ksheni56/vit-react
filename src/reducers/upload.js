@@ -1,3 +1,5 @@
+import { renameProp } from "../utils/Format";
+
 export const UploadActionTypes = {
     UPLOAD_REGISTER: "UPLOAD_REGISTER",
     UPLOAD_REQUEST: "UPLOAD_REQUEST",
@@ -5,7 +7,11 @@ export const UploadActionTypes = {
     UPLOAD_CANCEL: "UPLOAD_CANCEL",
     PROGRESS_UPDATE: "PROGRESS_UPDATE",
     STATUS_UPDATE: "STATUS_UPDATE",
-    VIT_DATA_UPDATE: "VIT_DATA_UPDATE"
+    IPFS_HASH_UPDATE: "IPFS_HASH_UPDATE",
+    DATA_UPDATE: "DATA_UPDATE",
+    // VIT_DATA_UPDATE: "VIT_DATA_UPDATE",
+    START_TRANCODING_UPDATE: "START_TRANCODING_UPDATE",
+    STOP_TRANCODING_UPDATE: "STOP_TRANCODING_UPDATE"
 };
 
 export const UploadStatus = {
@@ -24,7 +30,6 @@ export const UploadStatus = {
         progress (for both upload and transcode), 
         cancelToken, 
         status,
-        transcodingURL,
         vit_data // hash, playlist for posting on chain
     } 
 } */
@@ -35,9 +40,9 @@ const initialState = {
 export default function(state = initialState, action) {
     switch(action.type) {
         case UploadActionTypes.UPLOAD_REGISTER: {
-            const { id, fileName, cancelToken } = action.payload
+            const { id, original_filename, cancelToken } = action.payload
 
-            return updateObject(state, id, { fileName, cancelToken, progress: 0, status: UploadStatus.UPLOADING })
+            return updateObject(state, id, { original_filename, cancelToken, progress: 0, status: UploadStatus.UPLOADING })
         }
         
         case UploadActionTypes.PROGRESS_UPDATE: {
@@ -52,6 +57,24 @@ export default function(state = initialState, action) {
             return updateObject(state, sid, { status: status })
         }
 
+        case UploadActionTypes.IPFS_HASH_UPDATE: {
+            const { id: hid, ipfs_hash } = action.payload
+
+            let uploads = Object.assign({}, state.uploads)
+            uploads = renameProp(hid, ipfs_hash, uploads)
+            console.log(uploads)
+
+            return Object.assign({}, state.uploads, {
+                uploads: uploads
+            });
+        }
+
+        case UploadActionTypes.DATA_UPDATE: {
+            const { id: did, data } = action.payload
+// console.log(did, data)
+            return updateObject(state, did, data)
+        }
+
         case UploadActionTypes.UPLOAD_FAILURE: {
             const { id: fl_id, err } = action.payload
 
@@ -62,11 +85,11 @@ export default function(state = initialState, action) {
             return updateObject(state, fl_id, { status: UploadStatus.FAILED, error: err })
         }
 
-        case UploadActionTypes.VIT_DATA_UPDATE: {
+/*         case UploadActionTypes.VIT_DATA_UPDATE: {
             const { id: vid, data } = action.payload
 
             return updateObject(state, vid, { vit_data: data })
-        }
+        } */
 
         default:
             return state
@@ -88,9 +111,9 @@ export const uploadRequest = (upload_backend, formData, headers) => ({
     payload: { upload_backend, formData, headers }
 })
 
-export const uploadRegister = (id, fileName, cancelToken) => ({
+export const uploadRegister = (id, original_filename, cancelToken) => ({
     type: UploadActionTypes.UPLOAD_REGISTER,
-    payload: { id, fileName, cancelToken }
+    payload: { id, original_filename, cancelToken }
 })
 
 export const updateProgress = (id, progress) => ({
@@ -114,7 +137,26 @@ export const uploadFailure = (id, err) => ({
     error: true,
 })
 
-export const updateVitData = (id, data) => ({
+export const updateIPFSHash = (id, ipfs_hash) => ({
+    type: UploadActionTypes.IPFS_HASH_UPDATE,
+    payload: { id, ipfs_hash }
+})
+
+export const updateData = (id, data) => ({
+    type: UploadActionTypes.DATA_UPDATE,
+    payload: { id, data }
+})
+
+/* export const updateVitData = (id, data) => ({
     type: UploadActionTypes.VIT_DATA_UPDATE,
     payload: { id, data }
+}) */
+
+export const startTranscodeCheck = (url) => ({
+    type: UploadActionTypes.START_TRANCODING_UPDATE,
+    payload: { url }
+})
+
+export const stopTranscodeCheck = () => ({
+    type: UploadActionTypes.STOP_TRANCODING_UPDATE
 })

@@ -11,3 +11,12 @@ export const vestingSteem = (account, gprops) => {
     const vesting_steemf = total_vest_steem * (vests / total_vests);
     return vesting_steemf;
 }
+
+export const renameProp = (
+    oldProp,
+    newProp,
+    { [oldProp]: old, ...others }
+  ) => ({
+    [newProp]: old,
+    ...others
+  })
