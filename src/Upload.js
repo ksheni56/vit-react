@@ -12,7 +12,7 @@ import Select from 'react-select';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
-import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX } from './config'
+import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_HISTORY_ENDPOINT } from './config'
 import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck } from './reducers/upload';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import HLSSource from './HLS';
@@ -68,7 +68,7 @@ class Upload extends Component {
         }
         
         // update transcoding progress
-        this.props.startTranscodeCheck("https://media.vit.tube/history/" + this.props.app.username)
+        this.props.startTranscodeCheck(VIDEO_HISTORY_ENDPOINT + "/" + this.props.app.username + "?posted=false")
 
         // TODO: change 'life'
         steem.api.getTrendingTags('', 60, (err, result) => {
@@ -539,7 +539,7 @@ class Upload extends Component {
         return (
             Object.keys(this.props.uploads).map(key => {
                 const file = this.props.uploads[key]
-                // console.log(file)
+                console.log(key, file)
                 let message;
                 switch (file.status) {
                     case UploadStatus.UPLOADING:

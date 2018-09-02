@@ -104,21 +104,15 @@ function* transcodeCheck(action) {
 
     try {
         while (true) {
-            const { data, err, success, id } = yield take(channel)
+            const { data, err } = yield take(channel)
 
-            /* if (err) {
+            if (err) {
                 // no need if failed to request to transcoding backend?
                 // yield put(uploadFailure(uid, err));
                 return;
             }
-            if (success) {
-                yield put(updateStatus(ipfs_hash, UploadStatus.COMPLETED))
-                //yield put(updateVitData(ipfs_hash, vit_data))
-                return;
-            } */
-            yield put(updateData(id, data))
-            //yield put(updateProgress(ipfs_hash, progress))
-            //yield call(delay, 2000)
+
+            yield put(updateData(data))
         }
     
     } finally {
@@ -145,7 +139,7 @@ function createTranscodeCheckChannel(transcodingURL) {
                     if (response.status !== 200) return
                     if (!response.data.hasOwnProperty('uploads')) return
 
-                    
+                    const transcodedFiles = {}
                     for (let i in response.data.uploads) {
                         const keys = Object.keys(response.data.uploads[i])
                         const file = response.data.uploads[i][keys[0]]
@@ -158,14 +152,14 @@ function createTranscodeCheckChannel(transcodingURL) {
                                 Playlist: file.playlist
                             }
                         }
-                        // console.log(file)
-                        emitter({ id: keys[0], data: data })
+                        transcodedFiles[keys[0]] = data
                     }
 
+                    emitter({data: transcodedFiles})
                     // console.log(response)
                 })
                 .catch(e => onFailure(e))
-        }, 5000)
+        }, 2000)
 
         return () => {
             clearInterval(refreshInterval)

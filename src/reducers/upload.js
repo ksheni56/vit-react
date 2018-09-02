@@ -9,7 +9,6 @@ export const UploadActionTypes = {
     STATUS_UPDATE: "STATUS_UPDATE",
     IPFS_HASH_UPDATE: "IPFS_HASH_UPDATE",
     DATA_UPDATE: "DATA_UPDATE",
-    // VIT_DATA_UPDATE: "VIT_DATA_UPDATE",
     START_TRANCODING_UPDATE: "START_TRANCODING_UPDATE",
     STOP_TRANCODING_UPDATE: "STOP_TRANCODING_UPDATE"
 };
@@ -70,9 +69,19 @@ export default function(state = initialState, action) {
         }
 
         case UploadActionTypes.DATA_UPDATE: {
-            const { id: did, data } = action.payload
-// console.log(did, data)
-            return updateObject(state, did, data)
+            const { data } = action.payload
+            const uploads = Object.assign({}, state.uploads)
+            const keys = Object.keys(data)
+
+            for(let i in keys) {
+                const key = keys[i]
+                const upload = Object.assign({}, uploads[key], data[key])
+                uploads[key] = upload;
+            }
+
+            return Object.assign({}, state.uploads, {
+                uploads: uploads
+            });
         }
 
         case UploadActionTypes.UPLOAD_FAILURE: {
@@ -84,12 +93,6 @@ export default function(state = initialState, action) {
 
             return updateObject(state, fl_id, { status: UploadStatus.FAILED, error: err })
         }
-
-/*         case UploadActionTypes.VIT_DATA_UPDATE: {
-            const { id: vid, data } = action.payload
-
-            return updateObject(state, vid, { vit_data: data })
-        } */
 
         default:
             return state
@@ -142,15 +145,10 @@ export const updateIPFSHash = (id, ipfs_hash) => ({
     payload: { id, ipfs_hash }
 })
 
-export const updateData = (id, data) => ({
+export const updateData = (data) => ({
     type: UploadActionTypes.DATA_UPDATE,
-    payload: { id, data }
+    payload: { data }
 })
-
-/* export const updateVitData = (id, data) => ({
-    type: UploadActionTypes.VIT_DATA_UPDATE,
-    payload: { id, data }
-}) */
 
 export const startTranscodeCheck = (url) => ({
     type: UploadActionTypes.START_TRANCODING_UPDATE,
