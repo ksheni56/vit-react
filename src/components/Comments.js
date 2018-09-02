@@ -227,7 +227,9 @@ class Comments extends Component {
                         (Comment) =>
                             <li key={ Comment.id } ref={ Comment.id } className="media mb-4">
                                 <div className="mr-3 avatar">
-                                    <Avatar profile_image={AVATAR_UPLOAD_PREFIX + Comment.author + "/avatar"} />
+                                    <Avatar 
+                                        profile_image={AVATAR_UPLOAD_PREFIX + Comment.author + "/avatar"} 
+                                    />
                                 </div>
                                 <div className="media-body">
                                     <h6 className="mt-0 mb-1">{ Comment.author }</h6>
@@ -286,7 +288,9 @@ class Comments extends Component {
             return (
                 <li key={comment.id} className="media mb-4">
                     <div className="mr-3 avatar">
-                        <Avatar profile_image={AVATAR_UPLOAD_PREFIX + comment.author + "/avatar"} />
+                        <Avatar 
+                            profile_image={AVATAR_UPLOAD_PREFIX + comment.author + "/avatar"} 
+                        />
                     </div>
                     <div className="media-body">
                         <h6 className="mt-0 mb-1">{comment.author}</h6>

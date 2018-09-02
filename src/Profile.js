@@ -25,6 +25,8 @@ class Profile extends Component {
             display_name: '',
             about: '',
             profile_image: '',
+            tmp_profile_image: '',
+            profile_hash: '',
             error_text: 'Something went wrong',
             success: false,
             error: false,
@@ -142,6 +144,7 @@ class Profile extends Component {
                 // get the keys
                 let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
                 var self = this;
+                const profile_hash = response.data.Hash;
 
                 console.log("jsonMetadata on Upload", jsonMetadata)
 
@@ -168,25 +171,11 @@ class Profile extends Component {
 
                         console.log("Avatar update", result);
 
-                        // get the most recent profile
-                        steem.api.getAccounts([self.props.app.username], (err, accounts) => {
-
-                            let account_info = accounts[0];
-                            try {
-                                account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
-                            } catch (error) {
-                                // in case meta data is empty or malformed
-                            }
-
-                            self.setState({
-                                uploading: false,
-                                account: account_info,
-                                display_name: (account_info.json_metadata.profile && account_info.json_metadata.profile.name) ? account_info.json_metadata.profile.name : '',
-                                about: (account_info.json_metadata.profile && account_info.json_metadata.profile.about) ? account_info.json_metadata.profile.about : '',
-                                profile_image: (account_info.json_metadata.profile && account_info.json_metadata.profile.profile_image) ? account_info.json_metadata.profile.profile_image : '',
-                            })
-
-                        });
+                        self.setState({
+                            uploading: false,
+                            ready_to_upload: false,
+                            profile_hash: profile_hash
+                        })
 
                         toast.success("Your new avatar has been uploaded!");
 
@@ -210,7 +199,7 @@ class Profile extends Component {
         this.setState({
             files: file,
             ready_to_upload: true,
-            profile_image: file[0].preview
+            tmp_profile_image: file[0].preview
         });
 
 
@@ -284,7 +273,6 @@ class Profile extends Component {
                             account: account_info,
                             display_name: (account_info.json_metadata.profile && account_info.json_metadata.profile.name) ? account_info.json_metadata.profile.name : '',
                             about: (account_info.json_metadata.profile && account_info.json_metadata.profile.about) ? account_info.json_metadata.profile.about : '',
-                            profile_image: (account_info.json_metadata.profile && account_info.json_metadata.profile.profile_image) ? account_info.json_metadata.profile.profile_image : '',
                         })
 
                     });
@@ -386,12 +374,18 @@ class Profile extends Component {
             if (this.state.ready_to_upload) {
                 return (
                     <div className="avatar">
-                        <img alt="Avatar" src={ this.state.profile_image }/>
+                        <img alt="Avatar" src={ this.state.tmp_profile_image }/>
                     </div>
                 )
             } else {
+                let avatar=''
+                if (this.state.profile_hash !== '') {
+                    avatar = AVATAR_UPLOAD_PREFIX + this.props.app.username + "/avatar?v=" + this.state.profile_hash;
+                } else {
+                    avatar = AVATAR_UPLOAD_PREFIX + this.props.app.username + "/avatar"
+                }
                 return (
-                    <Avatar profile_image={this.state.profile_image} size="medium" />
+                    <Avatar profile_image={avatar} />
                 )
             }
         } else if( (this.state.account.json_metadata.profile && !this.state.account.json_metadata.profile.profile_image) || !this.state.account.json_metadata.profile ) {
