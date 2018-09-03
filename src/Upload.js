@@ -248,7 +248,7 @@ class Upload extends Component {
         formData.append('username', this.props.app.username);
 
         files.forEach(file => {
-            formData.append('file', file);
+            formData.set('file', file);
             this.props.onUpload(VIDEO_UPLOAD_ENDPOINT, formData, headers)
         })
     }
