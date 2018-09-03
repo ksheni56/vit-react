@@ -33,7 +33,8 @@ export const UploadStatus = {
     } 
 } */
 const initialState = {
-    uploads: {}  
+    uploads: {} ,
+    initialized: false
 }
 
 export default function(state = initialState, action) {
@@ -63,7 +64,7 @@ export default function(state = initialState, action) {
             uploads = renameProp(hid, ipfs_hash, uploads)
             console.log(uploads)
 
-            return Object.assign({}, state.uploads, {
+            return Object.assign({}, state, {
                 uploads: uploads
             });
         }
@@ -79,8 +80,9 @@ export default function(state = initialState, action) {
                 uploads[key] = upload;
             }
 
-            return Object.assign({}, state.uploads, {
-                uploads: uploads
+            return Object.assign({}, state, {
+                uploads: uploads,
+                initialized: true
             });
         }
 
@@ -104,7 +106,7 @@ function updateObject (state, uid, newValues) {
     const upload = Object.assign({}, uploads[uid], newValues)
     uploads[uid] = upload;
 
-    return Object.assign({}, state.uploads, {
+    return Object.assign({}, state, {
         uploads: uploads
     });
 }

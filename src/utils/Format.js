@@ -17,6 +17,6 @@ export const renameProp = (
     newProp,
     { [oldProp]: old, ...others }
   ) => ({
-    [newProp]: old,
-    ...others
+    ...others,
+    [newProp]: old
   })

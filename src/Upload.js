@@ -536,6 +536,16 @@ class Upload extends Component {
     }
 
     showProgress() {
+        // block UI until finishing loading transcoding videos
+        if (!this.props.initialized) 
+            return (
+                <div className="row text-center">
+                    <div className="col-12">
+                        <i className="fas fa-spinner fa-pulse"></i>
+                    </div>
+                </div>
+            )
+
         return (
             Object.keys(this.props.uploads).map(key => {
                 const file = this.props.uploads[key]
@@ -812,10 +822,17 @@ class Upload extends Component {
                                             multiple={ true } 
                                             onDropRejected={this.handleDropRejected }
                                             accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
-                                            disabled={ this.state.uploading }
+                                            disabled={ !this.props.initialized }
                                         >
                                             <div className="w-100 text-center">
-                                                Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span>
+                                                {
+                                                    !this.props.initialized ? (
+                                                        <div>Please wait</div>
+                                                    ) : (
+                                                        <div>Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span></div>
+                                                    )
+                                                }
+                                                
 
                                                 {
                                                     this.state.files.length > 0 ? (
@@ -846,7 +863,8 @@ function mapStateToProps(state) {
     return { 
         search: state.search,
         app: state.app,
-        uploads: state.upload.uploads
+        uploads: state.upload.uploads,
+        initialized: state.upload.initialized
     };
     
 }

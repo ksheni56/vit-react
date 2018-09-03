@@ -1,10 +1,13 @@
-import { buffers, eventChannel, END, delay } from "redux-saga";
+import { buffers, eventChannel, END, } from "redux-saga";
 import { call, put, take, takeEvery, fork, cancel, cancelled } from 'redux-saga/effects';
 import {
     UploadActionTypes, uploadFailure, updateStatus,
-    updateProgress, uploadRegister, UploadStatus, updateVitData, updateData, updateIPFSHash
+    updateProgress, uploadRegister, UploadStatus, updateData, updateIPFSHash
 } from './../reducers/upload'
 import axios from 'axios';
+
+const TRANSCODE_CHECK_INTERVAL = 2000
+let refreshTimeout
 
 // Watch for an upload request and then
 // defer to another saga to perform the actual upload
@@ -133,38 +136,42 @@ function createTranscodeCheckChannel(transcodingURL) {
             emitter(END);
         };
 
-        const refreshInterval = setInterval(() => {
-            axios.get(transcodingURL)
-                .then(response => {
-                    if (response.status !== 200) return
-                    if (!response.data.hasOwnProperty('uploads')) return
-
-                    const transcodedFiles = {}
-                    for (let i in response.data.uploads) {
-                        const keys = Object.keys(response.data.uploads[i])
-                        const file = response.data.uploads[i][keys[0]]
-                        const data = {
-                            original_filename: file.original_filename, 
-                            progress: file.percent_complete,
-                            status: file.status !== "end" ? UploadStatus.TRANSCODING : UploadStatus.COMPLETED,
-                            vit_data: {
-                                Hash: file.ipfs_hash,
-                                Playlist: file.playlist
-                            }
-                        }
-                        transcodedFiles[keys[0]] = data
-                    }
-
-                    emitter({data: transcodedFiles})
-                    // console.log(response)
-                })
-                .catch(e => onFailure(e))
-        }, 2000)
-
+        callTranscodeCheck(emitter, transcodingURL, onFailure)
+        
         return () => {
-            clearInterval(refreshInterval)
+            clearTimeout(refreshTimeout)
         }
     }, buffers.sliding(2))
+}
+
+function callTranscodeCheck (emitter, transcodingURL, onFailure) {
+    axios.get(transcodingURL)
+        .then(response => {
+            if (response.status !== 200) return
+            if (!response.data.hasOwnProperty('uploads')) return
+
+            const transcodedFiles = {}
+            for (let i in response.data.uploads) {
+                const keys = Object.keys(response.data.uploads[i])
+                const file = response.data.uploads[i][keys[0]]
+                const data = {
+                    original_filename: file.original_filename, 
+                    progress: file.percent_complete,
+                    status: file.status !== "end" ? UploadStatus.TRANSCODING : UploadStatus.COMPLETED,
+                    vit_data: {
+                        Hash: file.ipfs_hash,
+                        Playlist: file.playlist
+                    }
+                }
+                transcodedFiles[keys[0]] = data
+            }
+
+            emitter({data: transcodedFiles})
+
+            // make sure previous request ends before new request starts
+            refreshTimeout = setTimeout(callTranscodeCheck, TRANSCODE_CHECK_INTERVAL, emitter, transcodingURL, onFailure)
+        })
+        .catch(e => onFailure(e))
 }
 
 function* cancelUpload(action) {
