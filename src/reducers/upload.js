@@ -39,6 +39,10 @@ const initialState = {
 
 export default function(state = initialState, action) {
     switch(action.type) {
+        case 'LOGOUT': {
+            return initialState
+        }
+
         case UploadActionTypes.UPLOAD_REGISTER: {
             const { id, original_filename, cancelToken } = action.payload
 
