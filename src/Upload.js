@@ -244,11 +244,11 @@ class Upload extends Component {
             'X-Auth-UserHost': signUserHost
         }
 
-        let formData = new FormData();
-        formData.append('username', this.props.app.username);
-
         files.forEach(file => {
-            formData.set('file', file);
+            let formData = new FormData();
+            formData.append('username', this.props.app.username);
+            formData.append('file', file);
+
             this.props.onUpload(VIDEO_UPLOAD_ENDPOINT, formData, headers)
         })
     }
@@ -360,6 +360,7 @@ class Upload extends Component {
         return (
             Object.keys(this.props.uploads).map(key => {
                 const file = this.props.uploads[key]
+                console.log(file)
                 let message;
                 switch (file.status) {
                     case UploadStatus.UPLOADING:
