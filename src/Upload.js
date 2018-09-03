@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from 'steem';
-import { Link } from 'react-router-dom';
 import Dropzone from 'react-dropzone';
 import axios from 'axios';
 import { post } from './actions/post';
@@ -32,20 +31,16 @@ class Upload extends Component {
             'generic_error_text': 'Could not upload your file. Please try again!',
             'custom_error_text': '',
             'success': false,
-            'ready_to_upload': false,
             'title': '',
             'selected_category': [],
             'categories': [],
             'loading_categories': true,
             'tags': [],
             'selected_tags': [],
-            'processing': false,
-            'processed': false,
             'progress': null,
             'permlink': '',
             'transcoding': false,
             'transcode_progress': 0,
-            'currentPostForm': '',
             'uploadVideos': [],
             'tabIndex': 0 
         }
@@ -225,12 +220,15 @@ class Upload extends Component {
         // todo: parse tags & cats
 
         if(!this.props.app.authorized) {
-            alert("Not so fast! You have to be looged in to upload your content!");
+            alert("Not so fast! You have to be logged in to upload your content!");
             return false;
         }
 
-        if (files.length > 5) {
-            toast.error("Warning! Cannnot upload more than 5 files.");
+        // do count the current pending posts and files dropped by user
+        const pendingPosts = Object.keys(this.props.uploads).length;
+
+        if (files.length + pendingPosts > 5) {
+            toast.error("Warning! Cannnot upload more than 5 files. Please post your pending ones");
             return false;
         }
 
@@ -264,25 +262,12 @@ class Upload extends Component {
         });
     }
 
-    /*
-    handleChangeTags(tags) {
-
-        if( this.state.selected_tags.length < 10 ) {
-            this.setState({
-                selected_tags: tags
-            })
-        }
-        
-    }
-    */
-
     showUploadForm(key, file) {
-        console.log('dfdf',file);
+        
         return (
             <div className="upload-form row" key={key} style={{'marginTop': '20px'}}>
                 <div className="col-md-6 col-sm-12 video-player" style={{'marginTop': '33px'}}>
                     <Player playsInline>
-                    {/*<PosterImage poster={ "https://media.vit.tube/playback/" +  thumbnail } />*/}
                         <HLSSource
                             isVideoChild
                             src={ VIDEO_THUMBNAIL_URL_PREFIX + file.vit_data.Playlist }
@@ -335,10 +320,8 @@ class Upload extends Component {
                                 type="submit"
                                 className="btn btn-danger"
                                 style={{'marginBottom': '10px'}}
-                                // disabled={!this.state.ready_to_upload || this.state.uploading}
                             >Post</button>
                             <a className="btn" style={{'marginBottom': '10px'}} onClick={() => this.setPreviewPost(key, file, 'remove')}>Cancel</a>
-                            
                         </div>
                     </Formsy>    
                 </div>
@@ -388,9 +371,6 @@ class Upload extends Component {
                             <div className="col-md-10 col-sm-12">
                                 <strong>Trancoding progress: {file.progress}%</strong> complete. Do not close/leave this page!
                                 <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
-                            </div>
-                            <div className="col-md-2 col-sm-12">
-                                <button className="btn btn-danger btn-sm progress-cancel" onClick={() => this.props.onCancel(key, file)}>Cancel</button>
                             </div>
                         </div>
                         break
