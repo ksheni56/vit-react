@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from 'steem';
 import Dropzone from 'react-dropzone';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { post } from './actions/post';
 import Formsy from 'formsy-react';
@@ -41,8 +42,7 @@ class Upload extends Component {
             'permlink': '',
             'transcoding': false,
             'transcode_progress': 0,
-            'uploadVideos': [],
-            'tabIndex': 0 
+            'uploadVideos': []
         }
 
         this.handleDrop = this.handleDrop.bind(this);
@@ -320,6 +320,7 @@ class Upload extends Component {
                                 type="submit"
                                 className="btn btn-danger"
                                 style={{'marginBottom': '10px'}}
+                                disabled={this.state.uploading}
                             >Post</button>
                             <a className="btn" style={{'marginBottom': '10px'}} onClick={() => this.setPreviewPost(key, file, 'remove')}>Cancel</a>
                         </div>
@@ -394,7 +395,7 @@ class Upload extends Component {
                                 ) : [
                                     (
                                         foundObject[key].post === 'posted'
-                                        ? <div className="alert alert-warning" role="alert" key={key}>Recently posted {file.original_filename}, please see the <button className="btn btn-primary btn-sm" onClick={() => this.setState({tabIndex: 1})}>history</button></div>
+                                        ? <div className="alert alert-warning" role="alert" key={key}>Recently posted {file.original_filename}, please see the <Link to="/history" className="btn btn-primary btn-sm">History</Link></div>
                                         : this.showUploadForm(key, file)
                                     )
                                 ]
@@ -469,52 +470,38 @@ class Upload extends Component {
 
                 <div className="col-md-10 col-sm-12 mt-4">
                     <div className="upload-wrapper">
-                        <Tabs selectedIndex={this.state.tabIndex} onSelect={tabIndex => this.setState({ tabIndex })}>
-                            <TabList>
-                                <Tab>Upload</Tab>
-                                <Tab>History</Tab>
-                            </TabList>
+                        {/* Upload Area */}
+                        <div>
+                            <h3 className="mb-4">Upload your content</h3>
 
-                            <TabPanel>
-                                {/* Upload Area */}
-                                <div>
-                                    <h3 className="text-center mb-4">Upload your content</h3>
+                            { this.showProgress() }
 
-                                    { this.showProgress() }
+                            <Dropzone 
+                                    className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
+                                    onDropAccepted={ this.handleDrop }
+                                    multiple={ true } 
+                                    onDropRejected={this.handleDropRejected }
+                                    accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
+                                    disabled={ !this.props.initialized }
+                                >
+                                    <div className="w-100 text-center">
+                                        {
+                                            !this.props.initialized ? (
+                                                <div>Please wait</div>
+                                            ) : (
+                                                <div>Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span></div>
+                                            )
+                                        }
+                                        
 
-                                    <Dropzone 
-                                            className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
-                                            onDropAccepted={ this.handleDrop }
-                                            multiple={ true } 
-                                            onDropRejected={this.handleDropRejected }
-                                            accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
-                                            disabled={ !this.props.initialized }
-                                        >
-                                            <div className="w-100 text-center">
-                                                {
-                                                    !this.props.initialized ? (
-                                                        <div>Please wait</div>
-                                                    ) : (
-                                                        <div>Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span></div>
-                                                    )
-                                                }
-                                                
-
-                                                {
-                                                    this.state.files.length > 0 ? (
-                                                        <small className="d-block text-white text-center mt-2">You are ready to upload <strong>{this.state.files[0].name}</strong></small>
-                                                    ) : null
-                                                }
-                                            </div>
-                                    </Dropzone>
-                                </div>
-                            </TabPanel>
-
-                            <TabPanel>
-                                {/* TODO: the history of user's posted articles */}
-                                <h3 className="text-center mb-4">Upload Histories</h3>
-                            </TabPanel>
-                        </Tabs>
+                                        {
+                                            this.state.files.length > 0 ? (
+                                                <small className="d-block text-white text-center mt-2">You are ready to upload <strong>{this.state.files[0].name}</strong></small>
+                                            ) : null
+                                        }
+                                    </div>
+                            </Dropzone>
+                        </div>
                     </div>
                 </div>
             </div>
