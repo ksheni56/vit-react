@@ -9,6 +9,10 @@
         background-color:#be2402 !important;
     }
 
+    .btn-like {
+        cursor: pointer;
+    }
+
     .video-info {
         background-color: #272b2e;
         padding-top:15px;
@@ -44,6 +48,10 @@
             }
         }
 
+        .post-reply-btn {
+            margin: 0 5px;
+        }
+
     }
 
     .comments {
@@ -55,7 +63,7 @@
             }
         }
 
-        h5 {
+        h6 {
             font-size:16px;
             font-weight:700;
         }
@@ -74,6 +82,17 @@
                 color:#C41502;
                 font-weight:600;
             }
+        }
+        .sub-comments {
+            margin-top: 15px;
+            // .btn-like{
+            //     font-size: 12px;
+            // }
+        }
+
+        .btn-like {
+            font-size: 95% !important;
+            margin-right: 5px;
         }
     }
 

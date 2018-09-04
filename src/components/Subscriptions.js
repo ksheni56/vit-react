@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { getSubs } from './../actions/app';
+import { AVATAR_UPLOAD_PREFIX } from '../config';
+import '../sass/Channel.scss';
 
 class Subscriptions extends Component {
 
@@ -56,15 +58,21 @@ class Subscriptions extends Component {
                         <i className="fa fa-ellipsis-v text-dark cursor-pointer"></i>
                     </div>
                 </div>,
-                <ul className="list-unstyled" ref="subscriptions" key="subscriptions-list">
+                <ul className="list-unstyled featured-channels-list" ref="subscriptions" key="subscriptions-list">
                     { 
 
                     this.props.subs.map(
                         (Subscription) =>
                             <li key={ Subscription.following } ref={ Subscription.following }>
-    
                                 <NavLink to={ '/@' + Subscription.following }>
-                                    { Subscription.following }
+                                    <div className="d-flex featured-channel-item">
+                                        <div className="avatar-holder">
+                                            <img src={ AVATAR_UPLOAD_PREFIX + Subscription.following + '/avatar/30x30'} alt="Avatar" />
+                                        </div>
+                                        <div className="data-holder">
+                                            { Subscription.following }
+                                        </div>
+                                    </div>
                                 </NavLink>
                             </li>
                         ) 

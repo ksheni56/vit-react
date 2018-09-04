@@ -27,7 +27,7 @@ class Tag extends Component {
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
 
-    } 
+    }
 
     componentDidMount() {
 
@@ -36,7 +36,7 @@ class Tag extends Component {
 
     }
 
-    componentWillReceiveProps(nextProps) {        
+    componentWillReceiveProps(nextProps) {
 
         if( nextProps.match.params.tag !== this.state.tag || nextProps.match.params.filter !== this.state.filter ) {
             this.setState({
@@ -47,7 +47,7 @@ class Tag extends Component {
             () => {
                 this.loadContent(this.state.tag, this.state.filter);
             });
-            
+
         }
 
     }
@@ -61,7 +61,7 @@ class Tag extends Component {
 
     detachScrollListener() {
         window.document.getElementById('vitContent').removeEventListener('scroll', this.scrollListener)
-    }    
+    }
 
     scrollListener = debounce(() => {
         const el = window.document.getElementById('vitContent');
@@ -71,7 +71,7 @@ class Tag extends Component {
         }
     }, 150)
 
-    loadMoreContent () { 
+    loadMoreContent () {
 
         if (this.state.loading_more || this.state.no_more_post) return;
 
@@ -89,7 +89,7 @@ class Tag extends Component {
         if(this.state.filter === 'trending') {
 
             steem.api.getDiscussionsByTrending(load_more_query, (err, result) => {
-            
+
                 result.splice(0, 1);
                 let all_posts = this.state.posts.concat(result);
 
@@ -120,7 +120,7 @@ class Tag extends Component {
         } else if(this.state.filter === 'hot') {
 
             steem.api.getDiscussionsByHot(load_more_query, (err, result) => {
-            
+
                 result.splice(0, 1);
                 let all_posts = this.state.posts.concat(result);
 
@@ -131,24 +131,8 @@ class Tag extends Component {
                 })
 
             });
-            
-        } else if(this.state.filter === 'promoted') {
 
-            steem.api.getDiscussionsByPromoted(load_more_query, (err, result) => {
-            
-                result.splice(0, 1);
-                let all_posts = this.state.posts.concat(result);
-
-                this.setState({
-                    posts: all_posts,
-                    no_more_post: result.length < this.pageSize,
-                    loading_more: false
-                })
-
-            });
-
-        }
-
+        } 
     }
 
     loadContent(tag, filter) {
@@ -161,7 +145,7 @@ class Tag extends Component {
         if(filter === 'trending') {
 
             steem.api.getDiscussionsByTrending(query, (err, result) => {
-            
+
                 this.setState({
                     posts: result,
                     no_more_post: result.length < this.pageSize,
@@ -175,7 +159,7 @@ class Tag extends Component {
             steem.api.getDiscussionsByCreated(query, (err, result) => {
 
                 console.log("err, result", err, result)
-            
+
                 this.setState({
                     posts: result,
                     no_more_post: result.length < this.pageSize,
@@ -187,19 +171,7 @@ class Tag extends Component {
         } else if(filter === 'hot') {
 
             steem.api.getDiscussionsByHot(query, (err, result) => {
-            
-                this.setState({
-                    posts: result,
-                    no_more_post: result.length < this.pageSize,
-                    loading: false
-                });
 
-            });
-            
-        } else if(filter === 'promoted') {
-
-            steem.api.getDiscussionsByPromoted(query, (err, result) => {
-            
                 this.setState({
                     posts: result,
                     no_more_post: result.length < this.pageSize,
@@ -246,12 +218,12 @@ class Tag extends Component {
 
                 return (
                     <div className="row">
-                        { 
+                        {
                         this.state.posts.map(
 
                             (Post) =>
                                 <Item key={ Post.id } ref={ Post.id } data={ Post } />
-                            ) 
+                            )
                         }
                     </div>
                 )
@@ -262,7 +234,7 @@ class Tag extends Component {
     }
 
     render() {
-        
+
         return [
             <FilterBar { ...this.props } key="filter-bar" path={ "/" + this.state.tag + "/" } />,
             <div key="posts">{ this.renderPosts() }</div>,
@@ -281,17 +253,17 @@ class Tag extends Component {
                 }
             </div>
         ]
-        
+
     }
 
 }
 
 function mapStateToProps(state) {
 
-    return { 
+    return {
         search: state.search
     };
-    
+
 }
 
 

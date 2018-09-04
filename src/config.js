@@ -23,8 +23,9 @@ export const IMAGE_UPLOAD_ENDPOINT = process.env.REACT_APP_IMAGE_UPLOAD_ENDPOINT
 export const VIDEO_HISTORY_ENDPOINT = process.env.REACT_APP_VIDEO_HISTORY_ENDPOINT ? process.env.REACT_APP_VIDEO_HISTORY_ENDPOINT : "https://media.vit.tube/history";
 export const VIDEO_UPLOAD_POSTED_ENDPOINT = process.env.REACT_APP_VIDEO_UPLOAD_POSTED_ENDPOINT ? process.env.REACT_APP_VIDEO_UPLOAD_POSTED_ENDPOINT : "https://media.vit.tube/upload/video/posted/";
 
-export const LIQUID_TOKEN = 'VIT';
 
 // DMCA endpoints
-export const DMCA_CONTENT_ENDPOINT = process.env.REACT_APP_DMCA_CONTENT_ENDPOINT ? process.env.REACT_APP_DMCA_CONTENT_ENDPOINT : "http://localhost:3000/DMCAContents";
-export const DMCA_USER_ENDPOINT = process.env.REACT_APP_DMCA_USER_ENDPOINT ? process.env.REACT_APP_DMCA_USER_ENDPOINT : "http://localhost:3000/DMCAUsers";
+export const DMCA_CONTENT_ENDPOINT = process.env.REACT_APP_DMCA_CONTENT_ENDPOINT ? process.env.REACT_APP_DMCA_CONTENT_ENDPOINT : "/blank";
+export const DMCA_USER_ENDPOINT = process.env.REACT_APP_DMCA_USER_ENDPOINT ? process.env.REACT_APP_DMCA_USER_ENDPOINT : "/blank";
+
+export const LIQUID_TOKEN = process.env.REACT_APP_LIQUID_TOKEN ? process.env.REACT_APP_LIQUID_TOKEN : 'VIT';
