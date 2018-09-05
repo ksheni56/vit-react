@@ -5,14 +5,12 @@ import { Link } from 'react-router-dom';
 import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
-import Slider, { createSliderWithTooltip } from 'rc-slider';
+import TokenAmountSlider from './components/forms/TokenAmountSlider';
 import './sass/Select.scss';
 import 'rc-slider/assets/index.css';
 import { ToastContainer, toast } from 'react-toastify';
 import { vestingSteem, numberWithCommas } from './utils/Format';
 import { LIQUID_TOKEN } from './config';
-
-const TooltipSlider = createSliderWithTooltip(Slider);
 
 class Wallet extends Component {
 
@@ -376,24 +374,17 @@ class Wallet extends Component {
                                         maxLength={100}
                                         required />
 
-                                    <label for="power_amount" class="form-label">
-                                        Power Up Amount: *
-                                    </label>
-                                    <TooltipSlider
+                                    <TokenAmountSlider
                                         name="power_amount"
                                         id="power_amount"
-                                        tipFormatter={ vitTooltipFormatter }
+                                        label="Power Up Amount"
+                                        isRequired="true"
                                         disabled={ this.state.account.raw_balance <= 0.0 }
                                         min={ 0 }
                                         value={ this.state.power_amount }
                                         max={ this.state.account.raw_balance }
                                         step={ 0.1 }
-                                        onChange={ this.onPowerUpValueChange }
-                                        />
-
-                                    <p className="vit-value-indicator">
-                                        { vitTooltipFormatter(this.state.power_amount) }
-                                    </p>
+                                        onChange={ this.onPowerUpValueChange } />
 
                                 </div>
 
@@ -482,11 +473,6 @@ class Wallet extends Component {
 
     }
 
-}
-
-function vitTooltipFormatter(v) {
-    v = v || 0;
-    return numberWithCommas(v.toFixed(3)) + ' ' + LIQUID_TOKEN;
 }
 
 function mapStateToProps(state) {
