@@ -5,10 +5,14 @@ import { Link } from 'react-router-dom';
 import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
+import Slider, { createSliderWithTooltip } from 'rc-slider';
 import './sass/Select.scss';
+import 'rc-slider/assets/index.css';
 import { ToastContainer, toast } from 'react-toastify';
 import { vestingSteem, numberWithCommas } from './utils/Format';
 import { LIQUID_TOKEN } from './config';
+
+const TooltipSlider = createSliderWithTooltip(Slider);
 
 class Wallet extends Component {
 
@@ -29,7 +33,7 @@ class Wallet extends Component {
             keys: '',
             keys_revealed: false,
             power_to: this.props.app.username,
-            power_amount: '',
+            power_amount: 0,
             power_error_text: '',
             power_error: false,
             power_success:false,
@@ -41,7 +45,7 @@ class Wallet extends Component {
         this.powerUp = this.powerUp.bind(this);
 
 
-    } 
+    }
 
     componentWillMount() {
 
@@ -66,13 +70,14 @@ class Wallet extends Component {
                     console.log("Invalid account!");
                     return false; // Handle invalid account
                 }
-    
+
                 let account_info = accounts[0];
                 try {
                     account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
                 } catch (error) {
                     // in case meta data is empty or malformed
                 }
+                account_info.raw_balance = parseFloat(account_info.balance.split(' ')[0]);
                 account_info.balance = account_info.balance.split(' ')[0] + ' ' + LIQUID_TOKEN;
                 account_info.vesting_shares = numberWithCommas(vestingSteem(account_info, gprops).toFixed(3)) + ' ' + LIQUID_TOKEN;
                 console.log("Account has been loaded", account_info);
@@ -100,7 +105,7 @@ class Wallet extends Component {
 
     powerUp(form_data) {
 
-        // use owner key 
+        // use owner key
 
         this.setState({
             //power_error_text: 'Something went wrong',
@@ -109,7 +114,7 @@ class Wallet extends Component {
             //power_success: false
         });
 
-        let amount = form_data.power_amount + " " + LIQUID_TOKEN,
+        let amount = this.state.power_amount.toFixed(3) + " " + LIQUID_TOKEN,
         confirmation = prompt("Please enter your VIT password to confirm this action", "");
 
         if(confirmation) {
@@ -191,9 +196,9 @@ class Wallet extends Component {
 
         } else {
 
-            
+
         }
-        
+
     }
 
     parseError(err) {
@@ -213,11 +218,17 @@ class Wallet extends Component {
         }
 
         return err.data.message;
-        
+
+    }
+
+    onPowerUpValueChange = (value) => {
+        this.setState({
+            power_amount: value || 0,
+        });
     }
 
     render() {
-        
+
         return (
             <div className="row justify-content-center">
 
@@ -237,28 +248,28 @@ class Wallet extends Component {
                                         <div className="row">
 
                                             <div className="col-md-4 col-sm-12">
-                                                <div className="balance-tile"> 
+                                                <div className="balance-tile">
                                                     <h4>VIT Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.balance }</span>
                                                 </div>
                                             </div>
 
                                             {/* <div className="col-3">
-                                                <div className="balance-tile"> 
+                                                <div className="balance-tile">
                                                     <h4>VBD Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.sbd_balance }</span>
                                                 </div>
                                             </div> */}
 
                                             <div className="col-md-4 col-sm-12">
-                                                <div className="balance-tile"> 
+                                                <div className="balance-tile">
                                                     <h4>VESTS Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.delegated_vesting_shares }</span>
                                                 </div>
                                             </div>
 
                                             <div className="col-md-4 col-sm-12">
-                                                <div className="balance-tile"> 
+                                                <div className="balance-tile">
                                                     <h4>VIT Power:</h4>
                                                     <span className="text-danger">{ this.state.account.vesting_shares }</span>
                                                 </div>
@@ -285,24 +296,23 @@ class Wallet extends Component {
                             <h3 className="mb-1">Transfer Your Funds</h3>
                             <p className="mb-4 text-muted">Move funds to another VIT account.</p>
 
-                            <Formsy 
-                                onValidSubmit={this.transfer} 
-                                ref="upload_form" 
+                            <Formsy
+                                onValidSubmit={this.transfer}
+                                ref="upload_form"
                                 >
 
                                 <div className="col-md-8 col-sm-12 px-0">
 
-                                    <TextField 
+                                    <TextField
                                         name="to"
                                         id="to"
                                         label="To:"
                                         value={this.state.to}
-                                        placeholder="Enter VIT username" 
+                                        placeholder="Enter VIT username"
                                         maxLength={100}
                                         required />
 
-
-                                    <TextField 
+                                    <TextField
                                         name="amount"
                                         id="amount"
                                         label="Amount:"
@@ -313,28 +323,28 @@ class Wallet extends Component {
                                         }}
                                         validationErrors={{
                                             matchRegexp: 'Incorrect amount. Please enter X.YYY. eg. 1.000 or 0.005',
-                                        }} 
+                                        }}
                                         required />
 
-                                    <TextField 
+                                    <TextField
                                         name="memo"
                                         id="memo"
                                         label="Memo:"
                                         value={this.state.memo}
-                                        placeholder="This memo is public" 
+                                        placeholder="This memo is public"
                                         maxLength={100}
                                     />
 
                                     <small className="mb-2 d-none" style={{'marginTop': '-5px'}}><a href="#transfer-all" className="text-danger">Transfer all balance</a></small>
-                                    
+
 
                                 </div>
-                                
-                               
 
-                                <button 
+
+
+                                <button
                                     type="submit"
-                                    className="btn btn-danger mt-2" 
+                                    className="btn btn-danger mt-2"
                                     disabled={this.state.transferring}
                                 >Transfer</button>
 
@@ -350,53 +360,55 @@ class Wallet extends Component {
                             <h3 className="mb-1">Power Up</h3>
                             <p className="mb-4 text-muted">Influence tokens which give you more control over post payouts and allow you to earn on curation rewards.</p>
 
-                            <Formsy 
-                                onValidSubmit={this.powerUp} 
-                                ref="powerup_form" 
+                            <Formsy
+                                onValidSubmit={this.powerUp}
+                                ref="powerup_form"
                                 >
 
                                 <div className="col-md-8 col-sm-12 px-0">
 
-                                    <TextField 
+                                    <TextField
                                         name="power_to"
                                         id="power_to"
                                         label="To:"
                                         value={this.state.power_to}
-                                        placeholder="Enter VIT username" 
+                                        placeholder="Enter VIT username"
                                         maxLength={100}
                                         required />
 
-
-                                    <TextField 
+                                    <label for="power_amount" class="form-label">
+                                        Power Up Amount: *
+                                    </label>
+                                    <TooltipSlider
                                         name="power_amount"
                                         id="power_amount"
-                                        label="Amount:"
-                                        value={this.state.power_amount}
-                                        placeholder="Enter amount"
-                                        validations={{
-                                            matchRegexp: /^[0-9]+\.[0-9]{3,3}$/
-                                        }}
-                                        validationErrors={{
-                                            matchRegexp: 'Incorrect amount. Please enter X.YYY. eg. 1.000 or 0.005',
-                                        }} 
-                                        required />
+                                        tipFormatter={ vitTooltipFormatter }
+                                        disabled={ this.state.account.raw_balance <= 0.0 }
+                                        min={ 0 }
+                                        value={ this.state.power_amount }
+                                        max={ this.state.account.raw_balance }
+                                        step={ 0.1 }
+                                        onChange={ this.onPowerUpValueChange }
+                                        />
+
+                                    <p className="vit-value-indicator">
+                                        { vitTooltipFormatter(this.state.power_amount) }
+                                    </p>
 
                                 </div>
-                                
-                               
 
-                                <button 
+                                <button
                                     type="submit"
-                                    className="btn btn-danger mt-2" 
-                                    disabled={this.state.powering}
+                                    className="btn btn-danger mt-2"
+                                    disabled={this.state.powering || this.state.power_amount <= 0 }
                                 >Power Up</button>
 
                             </Formsy>
 
                         </div>
 
-                       
-                        
+
+
                     </div>
 
                     <div className="upload-wrapper mb-4">
@@ -460,25 +472,30 @@ class Wallet extends Component {
                                 </div>
                             ) : null
                         }
-                        
+
 
                     </div>
 
                 </div>
             </div>
         )
-        
+
     }
 
 }
 
+function vitTooltipFormatter(v) {
+    v = v || 0;
+    return numberWithCommas(v.toFixed(3)) + ' ' + LIQUID_TOKEN;
+}
+
 function mapStateToProps(state) {
 
-    return { 
+    return {
         search: state.search,
         app: state.app
     };
-    
+
 }
 
 
