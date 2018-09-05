@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import { Link } from 'react-router-dom';
 import { post } from './actions/post';
+import { loginUser } from './actions/app';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 import './sass/Select.scss';
@@ -87,16 +88,20 @@ class Wallet extends Component {
     displayKeys() {
         var confirmation = prompt("Please enter your VIT password to confirm this action", "");
         if(confirmation) {
-            this.validateLogin(this.props.app.username, confirmation, (err, password) => {
-                if(err) {
-                    return;
-                }
+            loginUser({
+                username: this.props.app.username,
+                password: confirmation
+            }).then(response => {
+                console.log("login success, displaying keys");
 
                 let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"]);
                 this.setState({
                     keys: keys,
                     keys_revealed: true
                 });
+            }).catch(err => {
+                console.log("login failed when attempting to display keys", err);
+                toast.error("Password incorrect, please try again.");
             });
         } else {
             // maybe next time
@@ -119,10 +124,11 @@ class Wallet extends Component {
 
         if(confirmation) {
 
-            this.validateLogin(this.props.app.username, confirmation, (err, password) => {
-                if(err) {
-                    return;
-                }
+            loginUser({
+                username: this.props.app.username,
+                password: confirmation
+            }).then(response => {
+                console.log("login success, powering up.");
 
                 let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
 
@@ -154,6 +160,9 @@ class Wallet extends Component {
                     this.updateAccountBalance();
 
                 });
+            }).catch(err => {
+                console.log("login failed when attempting to power up", err);
+                toast.error("Password incorrect, please try again.");
             });
         }
 
@@ -165,11 +174,10 @@ class Wallet extends Component {
 
         if(confirmation) {
 
-            this.validateLogin(this.props.app.username, confirmation, (err, password) => {
-                if(err) {
-                    return;
-                }
-
+            loginUser({
+                username: this.props.app.username,
+                password: confirmation
+            }).then(response => {
                 this.setState({
                     transferring: true
                 });
@@ -203,8 +211,10 @@ class Wallet extends Component {
                     // Update balance
                     this.updateAccountBalance();
                 });
+            }).catch(err => {
+                console.log("login failed when attempting to transfer", err);
+                toast.error("Password incorrect, please try again.");
             });
-
         } else {
 
 
@@ -232,24 +242,6 @@ class Wallet extends Component {
 
     }
 
-    validateLogin(username, password, next) {
-        steem.api.getAccounts([username], (err, accounts) => {
-            if(!err && accounts && accounts.length > 0) {
-                // Same method as Login.js
-                // FIXME: Should de-duplicate this code
-                let posting_key = accounts[0]['posting'].key_auths[0][0],
-                    privateWif = steem.auth.toWif(username, password, ['posting']),
-                    publicWif = steem.auth.wifToPublic(privateWif);
-
-                if(posting_key === publicWif) {
-                    next(undefined, password);
-                }
-            }
-
-            next('Rejected');
-        });
-    }
-
     render() {
 
         return (
@@ -263,7 +255,7 @@ class Wallet extends Component {
                         <div>
 
                             {
-                                this.state.loadung ? (
+                                this.state.loading ? (
                                     <h3>Loading your balance...</h3>
                                 ) : (
                                     <div className="balance-wrapper">
