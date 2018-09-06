@@ -406,14 +406,16 @@ class Upload extends Component {
                     
                     case UploadStatus.COMPLETING:
                     case UploadStatus.COMPLETED:
-                        // TODO: It seems like never reach into this case
                         message = 
                         <div className={`alert alert-warning`} role="alert"> Recently posted {file.original_filename}, please see the 
                             <Link to="/history" target="_blank" className="btn btn-primary btn-sm"> History</Link>
                         </div>
-                        // setTimeout(() => {
-                        //     this.props.removeUpload(key);
-                        // }, 5000);
+
+                        setTimeout(() => {
+                            this.props.removeUpload(key);
+                        }, 8000);
+
+                        break
                         
                     case UploadStatus.CANCELLED:
                         message = 

@@ -110,6 +110,8 @@ export default function(state = initialState, action) {
             const uploads = Object.assign({}, state.uploads)
 
             // don't remove it when it hasn't been posted yet
+            if(!uploads.hasOwnProperty(rid)) return state
+
             if (!uploads[rid].posted) return state
 
             let {[rid]: omit, ...res} = uploads
