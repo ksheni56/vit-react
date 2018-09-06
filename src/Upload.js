@@ -199,6 +199,8 @@ class Upload extends Component {
                     uploading: false
                 });
 
+                
+
             } else {
 
                 this.setState({
@@ -209,6 +211,8 @@ class Upload extends Component {
                 });
 
             }
+
+            toast.error(this.state.custom_error_text);
         });
     }
 
@@ -389,17 +393,28 @@ class Upload extends Component {
                                             Trancoding of <strong>{file.original_filename} completed</strong>, it is now <button className="btn btn-primary btn-sm" onClick={() => this.setPreviewPost(key, file, "add")}>ready to post</button>
                                         </span>
                                     </div>
-                                ) : [
-                                    (
-                                        foundObject[key].post === 'posted'
-                                        ? <div className="alert alert-warning" role="alert" key={key}>Recently posted {file.original_filename}, please see the <Link to="/history" className="btn btn-primary btn-sm">History</Link></div>
-                                        : this.showUploadForm(key, file)
-                                    )
-                                ]
+                                ) :
+                                (
+                                    // foundObject[key].post === 'posted'
+                                    // ? <div className="alert alert-warning" role="alert" key={key}>Recently posted {file.original_filename}, please see the <Link to="/history" className="btn btn-primary btn-sm">History</Link></div>
+                                    this.showUploadForm(key, file)
+                                )
+                                
                             }
                         </div>
                         break
-
+                    
+                    case UploadStatus.COMPLETING:
+                    case UploadStatus.COMPLETED:
+                        // TODO: It seems like never reach into this case
+                        message = 
+                        <div className={`alert alert-warning`} role="alert"> Recently posted {file.original_filename}, please see the 
+                            <Link to="/history" target="_blank" className="btn btn-primary btn-sm"> History</Link>
+                        </div>
+                        // setTimeout(() => {
+                        //     this.props.removeUpload(key);
+                        // }, 5000);
+                        
                     case UploadStatus.CANCELLED:
                         message = 
                         <div className="alert alert-warning" role="alert" key={key}>
@@ -432,24 +447,6 @@ class Upload extends Component {
                 </div>
             )
         }
-    }
-
-    handleErrors() {
-
-        if(this.state.error_type === 'generic') {
-
-            return (
-                <span><strong>Error!</strong> Could not upload your file. Please try again!</span>
-            )
-
-        } else {
-
-            return (
-                <span><strong>Error!</strong> {this.state.custom_error_text }</span>
-            )
-
-        }
-
     }
 
     handleDropRejected(file) {
