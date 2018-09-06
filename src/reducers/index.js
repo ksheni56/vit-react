@@ -20,7 +20,7 @@ const saga = createSagaMiddleware();
 
 const store = createStore(
     rootReducer,
-    /* window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?
+     window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?
       compose(
         // NOTE(svitx/2018-08-19):
         //   I'm not certain why this promise is needed, however the code will
@@ -28,7 +28,7 @@ const store = createStore(
         applyMiddleware(promise),
         applyMiddleware(saga),
         window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__()
-      ) : */
+      ) : 
       compose(
         applyMiddleware(promise),
         applyMiddleware(saga),

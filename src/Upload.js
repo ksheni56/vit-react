@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import Dropzone from 'react-dropzone';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
@@ -13,8 +12,7 @@ import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
 import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_HISTORY_ENDPOINT, VIDEO_UPLOAD_POSTED_ENDPOINT } from './config'
-import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck } from './reducers/upload';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck, completeUpload, removeUpload } from './reducers/upload';
 import HLSSource from './HLS';
 import { Player, BigPlayButton } from 'video-react';
 
@@ -151,7 +149,6 @@ class Upload extends Component {
 
         // I. POST VIDEO
         this.props.post({
-
             postingWif: this.props.app.postingWif, 
             category: categories[0], // category
             username: this.props.app.username, 
@@ -165,17 +162,17 @@ class Upload extends Component {
 
             console.log("post blockchain success", response);
 
-            const signature = localStorage.getItem("signature");
-            const signUserHost = localStorage.getItem("signUserHost");
-            var self = this;
+            const headers = {
+                'Content-Type': 'text/html',
+                'X-Auth-Token': localStorage.getItem("signature"),
+                'X-Auth-UserHost': localStorage.getItem("signUserHost")
+            }
+
+            this.props.completeUpload(hash, VIDEO_UPLOAD_POSTED_ENDPOINT + hash, headers)
 
             // TODO: call URL to updated posted 
-            axios.post(VIDEO_UPLOAD_POSTED_ENDPOINT + hash, '', {
-            headers: {
-                    'Content-Type': 'text/html',
-                    'X-Auth-Token':  signature,
-                    'X-Auth-UserHost': signUserHost
-                }
+            /* axios.post(, '', {
+            
             }).then(res => {
                 console.log("update posted successfully", res);
                 // UPDATE state to notify this video is post
@@ -187,7 +184,7 @@ class Upload extends Component {
                     permlink: response.payload.operations[0][1].permlink,
                     uploading: false
                 })
-            })
+            }) */
 
         }).catch(err => {
 
@@ -377,7 +374,7 @@ class Upload extends Component {
                         </div>
                         break
 
-                    case UploadStatus.COMPLETED:
+                    case UploadStatus.TRANSCODED:
                         let foundObject = this.state.uploadVideos.find(e => {
                             return e.hasOwnProperty(key);
                         });
@@ -525,10 +522,16 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch) => ({
     post,
     onUpload: (upload_backend, formData, headers) => {
-        dispatch(uploadRequest(upload_backend, formData, headers));
+        dispatch(uploadRequest(upload_backend, formData, headers))
     },
     onCancel: (id, data) => {
-        dispatch(uploadCancel(id, data));
+        dispatch(uploadCancel(id, data))
+    },
+    completeUpload: (id, endpoint, headers) => {
+        dispatch(completeUpload(id, endpoint, headers))
+    },
+    removeUpload: (id) => {
+        dispatch(removeUpload(id))
     },
     startTranscodeCheck: (url) => {
         dispatch(startTranscodeCheck(url))

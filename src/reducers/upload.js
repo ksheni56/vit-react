@@ -9,6 +9,8 @@ export const UploadActionTypes = {
     STATUS_UPDATE: "STATUS_UPDATE",
     IPFS_HASH_UPDATE: "IPFS_HASH_UPDATE",
     DATA_UPDATE: "DATA_UPDATE",
+    UPLOAD_COMPLETE: "UPLOAD_COMPLETE",
+    UPLOAD_REMOVE: "UPLOAD_REMOVE",
     START_TRANCODING_UPDATE: "START_TRANCODING_UPDATE",
     STOP_TRANCODING_UPDATE: "STOP_TRANCODING_UPDATE"
 };
@@ -17,6 +19,8 @@ export const UploadStatus = {
     UPLOADING: "UPLOADING",
     UPLOADED: "UPLOADED",
     TRANSCODING: "TRANSCODING",
+    TRANSCODED: "TRANSCODED",
+    COMPLETING: "COMPLETING",
     COMPLETED: "COMPLETED",
     CANCELLED: "CANCELLED",
     FAILED: "FAILED"
@@ -100,6 +104,21 @@ export default function(state = initialState, action) {
             return updateObject(state, fl_id, { status: UploadStatus.FAILED, error: err })
         }
 
+        case UploadActionTypes.UPLOAD_REMOVE: {
+            const { id: rid } = action.payload
+
+            const uploads = Object.assign({}, state.uploads)
+
+            // don't remove it when it hasn't been posted yet
+            if (!uploads[rid].posted) return state
+
+            let {[rid]: omit, ...res} = uploads
+
+            return Object.assign({}, state, {
+                uploads: res
+            });
+        }
+
         default:
             return state
     }
@@ -154,6 +173,16 @@ export const updateIPFSHash = (id, ipfs_hash) => ({
 export const updateData = (data) => ({
     type: UploadActionTypes.DATA_UPDATE,
     payload: { data }
+})
+
+export const removeUpload = (id) => ({
+    type: UploadActionTypes.UPLOAD_REMOVE,
+    payload: { id }
+})
+
+export const completeUpload = (id, endpoint, headers) => ({
+    type: UploadActionTypes.UPLOAD_COMPLETE,
+    payload: { id, endpoint, headers }
 })
 
 export const startTranscodeCheck = (url) => ({
