@@ -68,4 +68,18 @@
 		border-radius: 6px;
 	}
 
+	@keyframes fadeout {
+		from { opacity: 1; max-height: 50px}
+		to   { opacity: 0; max-height: 0px}
+	}
+	  
+	.cancel-message {
+		overflow: hidden;
+		animation: fadeout 1s 1.5s ease-in-out forwards;
+	}
+
+	.complete-message {
+		overflow: hidden;
+		animation: fadeout 1s 1.75s ease-in-out forwards;
+	}
 }

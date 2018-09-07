@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import Dropzone from 'react-dropzone';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
@@ -13,8 +12,7 @@ import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
 import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_HISTORY_ENDPOINT, VIDEO_UPLOAD_POSTED_ENDPOINT } from './config'
-import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck } from './reducers/upload';
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck, completeUpload, removeUpload } from './reducers/upload';
 import HLSSource from './HLS';
 import { Player, BigPlayButton } from 'video-react';
 
@@ -151,7 +149,6 @@ class Upload extends Component {
 
         // I. POST VIDEO
         this.props.post({
-
             postingWif: this.props.app.postingWif, 
             category: categories[0], // category
             username: this.props.app.username, 
@@ -165,28 +162,16 @@ class Upload extends Component {
 
             console.log("post blockchain success", response);
 
-            const signature = localStorage.getItem("signature");
-            const signUserHost = localStorage.getItem("signUserHost");
-            var self = this;
+            const headers = {
+                'Content-Type': 'text/html',
+                'X-Auth-Token': localStorage.getItem("signature"),
+                'X-Auth-UserHost': localStorage.getItem("signUserHost")
+            }
 
-            // TODO: call URL to updated posted 
-            axios.post(VIDEO_UPLOAD_POSTED_ENDPOINT + hash, '', {
-            headers: {
-                    'Content-Type': 'text/html',
-                    'X-Auth-Token':  signature,
-                    'X-Auth-UserHost': signUserHost
-                }
-            }).then(res => {
-                console.log("update posted successfully", res);
-                // UPDATE state to notify this video is post
-                const index = uploadVideos.indexOf(updateObject);
-                uploadVideos.splice(index, 1);
-                updateObject[hash].post = 'posted';
-                self.setState({
-                    uploadVideos: [...uploadVideos, updateObject],
-                    permlink: response.payload.operations[0][1].permlink,
-                    uploading: false
-                })
+            this.props.completeUpload(hash, VIDEO_UPLOAD_POSTED_ENDPOINT + hash, headers)
+
+            this.setState({
+                uploading: false
             })
 
         }).catch(err => {
@@ -212,6 +197,8 @@ class Upload extends Component {
                 });
 
             }
+
+            toast.error(this.state.custom_error_text);
         });
     }
 
@@ -377,7 +364,7 @@ class Upload extends Component {
                         </div>
                         break
 
-                    case UploadStatus.COMPLETED:
+                    case UploadStatus.TRANSCODED:
                         let foundObject = this.state.uploadVideos.find(e => {
                             return e.hasOwnProperty(key);
                         });
@@ -392,22 +379,33 @@ class Upload extends Component {
                                             Trancoding of <strong>{file.original_filename} completed</strong>, it is now <button className="btn btn-primary btn-sm" onClick={() => this.setPreviewPost(key, file, "add")}>ready to post</button>
                                         </span>
                                     </div>
-                                ) : [
-                                    (
-                                        foundObject[key].post === 'posted'
-                                        ? <div className="alert alert-warning" role="alert" key={key}>Recently posted {file.original_filename}, please see the <Link to="/history" className="btn btn-primary btn-sm">History</Link></div>
-                                        : this.showUploadForm(key, file)
-                                    )
-                                ]
+                                ) :
+                                (
+                                    this.showUploadForm(key, file)
+                                )
+                                
                             }
                         </div>
                         break
-
+                    
+                    case UploadStatus.COMPLETING:
+                    case UploadStatus.COMPLETED:
+                        message = 
+                        <div className={file.status === UploadStatus.COMPLETED ? 'complete-message': ''}>
+                            <div className="alert alert-warning" role="alert"> Recently posted {file.original_filename}, please see the 
+                                <Link to="/history" target="_blank" className="btn btn-primary btn-sm"> History</Link>
+                            </div>
+                        </div>
+                        break
+                        
                     case UploadStatus.CANCELLED:
                         message = 
-                        <div className="alert alert-warning" role="alert" key={key}>
-                            <strong>{ file.original_filename } cancelled!</strong>
+                        <div className="cancel-message">
+                            <div className="alert alert-warning" role="alert" key={key}>
+                                <strong>{ file.original_filename } cancelled!</strong>
+                            </div>
                         </div>
+                        
                         break
 
                     default:
@@ -435,24 +433,6 @@ class Upload extends Component {
                 </div>
             )
         }
-    }
-
-    handleErrors() {
-
-        if(this.state.error_type === 'generic') {
-
-            return (
-                <span><strong>Error!</strong> Could not upload your file. Please try again!</span>
-            )
-
-        } else {
-
-            return (
-                <span><strong>Error!</strong> {this.state.custom_error_text }</span>
-            )
-
-        }
-
     }
 
     handleDropRejected(file) {
@@ -525,10 +505,16 @@ function mapStateToProps(state) {
 const mapDispatchToProps = (dispatch) => ({
     post,
     onUpload: (upload_backend, formData, headers) => {
-        dispatch(uploadRequest(upload_backend, formData, headers));
+        dispatch(uploadRequest(upload_backend, formData, headers))
     },
     onCancel: (id, data) => {
-        dispatch(uploadCancel(id, data));
+        dispatch(uploadCancel(id, data))
+    },
+    completeUpload: (id, endpoint, headers) => {
+        dispatch(completeUpload(id, endpoint, headers))
+    },
+    removeUpload: (id) => {
+        dispatch(removeUpload(id))
     },
     startTranscodeCheck: (url) => {
         dispatch(startTranscodeCheck(url))

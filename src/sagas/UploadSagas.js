@@ -1,19 +1,28 @@
-import { buffers, eventChannel, END, } from "redux-saga";
+import { buffers, eventChannel, END, delay, } from "redux-saga";
 import { call, put, take, takeEvery, fork, cancel, cancelled } from 'redux-saga/effects';
 import {
     UploadActionTypes, uploadFailure, updateStatus,
-    updateProgress, uploadRegister, UploadStatus, updateData, updateIPFSHash
+    updateProgress, uploadRegister, UploadStatus, 
+    updateData, updateIPFSHash, removeUpload
 } from './../reducers/upload'
 import axios from 'axios';
 
 const TRANSCODE_CHECK_INTERVAL = 2000
-let refreshTimeout
+const TRANSCODE_CHECK_MAX_RETRIES = 500 // set 0 for unlimited retries
+const COMPLETE_UPLOAD_RETRY_INTERVAL = 2000
+const COMPLETE_UPLOAD_MAX_RETRIES = 500 // set 0 for unlimited retries
+
+let transcodingRetries = 0
+let transcodingRefreshTimeout
+let completingUploadRetries = {}
+let completingUploadTimeout = {}
 
 // Watch for an upload request and then
 // defer to another saga to perform the actual upload
 export function* uploadRequestWatcherSaga() {
     yield takeEvery(UploadActionTypes.UPLOAD_REQUEST, uploadFileSaga)
     yield takeEvery(UploadActionTypes.UPLOAD_CANCEL, cancelUpload)
+    yield takeEvery(UploadActionTypes.UPLOAD_COMPLETE, completeUpload)
 }
 
 export function* transCodingWatcherSaga() {
@@ -110,8 +119,7 @@ function* transcodeCheck(action) {
             const { data, err } = yield take(channel)
 
             if (err) {
-                // no need if failed to request to transcoding backend?
-                // yield put(uploadFailure(uid, err));
+                console.log(err)
                 return;
             }
 
@@ -139,12 +147,15 @@ function createTranscodeCheckChannel(transcodingURL) {
         callTranscodeCheck(emitter, transcodingURL, onFailure)
         
         return () => {
-            clearTimeout(refreshTimeout)
+            clearTimeout(transcodingRefreshTimeout)
         }
     }, buffers.sliding(2))
 }
 
 function callTranscodeCheck (emitter, transcodingURL, onFailure) {
+    // ensure no other pending calls
+    clearTimeout(transcodingRefreshTimeout)
+
     axios.get(transcodingURL)
         .then(response => {
             if (response.status !== 200) return
@@ -157,7 +168,8 @@ function callTranscodeCheck (emitter, transcodingURL, onFailure) {
                 const data = {
                     original_filename: file.original_filename, 
                     progress: file.percent_complete,
-                    status: file.status !== "end" ? UploadStatus.TRANSCODING : UploadStatus.COMPLETED,
+                    status: file.status !== "end" ? UploadStatus.TRANSCODING : UploadStatus.TRANSCODED,
+                    posted: file.posted,
                     vit_data: {
                         Hash: file.ipfs_hash,
                         Playlist: file.playlist
@@ -169,13 +181,88 @@ function callTranscodeCheck (emitter, transcodingURL, onFailure) {
             emitter({data: transcodedFiles})
 
             // make sure previous request ends before new request starts
-            refreshTimeout = setTimeout(callTranscodeCheck, TRANSCODE_CHECK_INTERVAL, emitter, transcodingURL, onFailure)
+            transcodingRefreshTimeout = setTimeout(callTranscodeCheck, TRANSCODE_CHECK_INTERVAL, emitter, transcodingURL, onFailure)
+
+            // reset no of retries
+            transcodingRetries = 0
         })
-        .catch(e => onFailure(e))
+        .catch(e => {
+            if (TRANSCODE_CHECK_MAX_RETRIES === 0 || transcodingRetries < TRANSCODE_CHECK_MAX_RETRIES) {
+                transcodingRefreshTimeout = setTimeout(callTranscodeCheck, TRANSCODE_CHECK_INTERVAL * (1 + transcodingRetries), emitter, transcodingURL, onFailure)
+                transcodingRetries++;
+            } else {
+                onFailure(e)
+            }
+        })
 }
 
 function* cancelUpload(action) {
     const { id, data } = action.payload
     data.cancelToken.cancel()
     yield put(updateStatus(id, UploadStatus.CANCELLED))
+    yield call(delay, 3000)
+    yield put(removeUpload(id))
+}
+
+function* completeUpload (action) {
+    const { id, endpoint, headers } = action.payload
+    yield put(updateStatus(id, UploadStatus.COMPLETING))
+
+    const channel = yield call(createUploadCompleteChannel, id, endpoint, headers)
+    while (true) {
+        const { success, err } = yield take(channel)
+
+        if (err) {
+            console.log(err)
+            return
+        }
+
+        if (success) {
+            yield put(updateData({ [id] : { posted: true, status: UploadStatus.COMPLETED } }))
+            yield call(delay, 3000)
+            yield put(removeUpload(id))
+            return
+        }
+    }
+}
+
+function createUploadCompleteChannel(id, endpoint, headers) {
+    return eventChannel(emitter => {
+
+        const onFailure = (e) => {
+            emitter({ err: new Error("Cannot complete upload by marking it posted") })
+            emitter(END)
+        };
+
+        const onSuccess = () => {
+            emitter({ success : true})
+            emitter(END)
+        }
+
+        callCompleteUpload(id, endpoint, headers, onFailure, onSuccess)        
+        
+        return () => {}
+    }, buffers.sliding(2))
+}
+
+function callCompleteUpload(id, endpoint, headers, onFailure, onSuccess) {
+    clearTimeout(completingUploadTimeout[id])
+    axios.post(endpoint, '', {
+        headers: headers
+        })
+        .then(response => {
+            if (response.status === 200) {
+                onSuccess()
+            } else {
+                throw new Error('Unsuccessful call. Retry again!')
+            }
+        })
+        .catch(e => {
+            if (COMPLETE_UPLOAD_MAX_RETRIES === 0 || completingUploadRetries[id] < COMPLETE_UPLOAD_MAX_RETRIES) {
+                completingUploadTimeout[id] = setTimeout(callCompleteUpload, COMPLETE_UPLOAD_RETRY_INTERVAL, id, endpoint, headers, onFailure, onSuccess)
+                completingUploadRetries[id] += 1
+            } else {
+                onFailure(e)
+            }
+        })
 }
