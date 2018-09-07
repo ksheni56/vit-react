@@ -419,9 +419,12 @@ class Upload extends Component {
                         
                     case UploadStatus.CANCELLED:
                         message = 
-                        <div className="alert alert-warning" role="alert" key={key}>
-                            <strong>{ file.original_filename } cancelled!</strong>
+                        <div className="cancel-message">
+                            <div className="alert alert-warning" role="alert" key={key}>
+                                <strong>{ file.original_filename } cancelled!</strong>
+                            </div>
                         </div>
+                        
                         break
 
                     default:

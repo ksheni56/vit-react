@@ -1,8 +1,9 @@
-import { buffers, eventChannel, END, } from "redux-saga";
+import { buffers, eventChannel, END, delay, } from "redux-saga";
 import { call, put, take, takeEvery, fork, cancel, cancelled } from 'redux-saga/effects';
 import {
     UploadActionTypes, uploadFailure, updateStatus,
-    updateProgress, uploadRegister, UploadStatus, updateData, updateIPFSHash
+    updateProgress, uploadRegister, UploadStatus, 
+    updateData, updateIPFSHash, removeUpload
 } from './../reducers/upload'
 import axios from 'axios';
 
@@ -199,6 +200,8 @@ function* cancelUpload(action) {
     const { id, data } = action.payload
     data.cancelToken.cancel()
     yield put(updateStatus(id, UploadStatus.CANCELLED))
+    yield call(delay, 3000)
+    yield put(removeUpload(id))
 }
 
 function* completeUpload (action) {

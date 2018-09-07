@@ -108,11 +108,10 @@ export default function(state = initialState, action) {
             const { id: rid } = action.payload
 
             const uploads = Object.assign({}, state.uploads)
-
+            
             // don't remove it when it hasn't been posted yet
-            if(!uploads.hasOwnProperty(rid)) return state
-
-            if (!uploads[rid].posted) return state
+            if (!uploads.hasOwnProperty(rid) || 
+                (uploads[rid].status !== UploadStatus.CANCELLED && !uploads[rid].posted)) return state
 
             let {[rid]: omit, ...res} = uploads
 
