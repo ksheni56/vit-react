@@ -170,21 +170,9 @@ class Upload extends Component {
 
             this.props.completeUpload(hash, VIDEO_UPLOAD_POSTED_ENDPOINT + hash, headers)
 
-            // TODO: call URL to updated posted 
-            /* axios.post(, '', {
-            
-            }).then(res => {
-                console.log("update posted successfully", res);
-                // UPDATE state to notify this video is post
-                const index = uploadVideos.indexOf(updateObject);
-                uploadVideos.splice(index, 1);
-                updateObject[hash].post = 'posted';
-                self.setState({
-                    uploadVideos: [...uploadVideos, updateObject],
-                    permlink: response.payload.operations[0][1].permlink,
-                    uploading: false
-                })
-            }) */
+            this.setState({
+                uploading: false
+            })
 
         }).catch(err => {
 
@@ -198,8 +186,6 @@ class Upload extends Component {
                     custom_error_text: 'You may only post once every 5 minutes.',
                     uploading: false
                 });
-
-                
 
             } else {
 
@@ -395,8 +381,6 @@ class Upload extends Component {
                                     </div>
                                 ) :
                                 (
-                                    // foundObject[key].post === 'posted'
-                                    // ? <div className="alert alert-warning" role="alert" key={key}>Recently posted {file.original_filename}, please see the <Link to="/history" className="btn btn-primary btn-sm">History</Link></div>
                                     this.showUploadForm(key, file)
                                 )
                                 
@@ -407,14 +391,11 @@ class Upload extends Component {
                     case UploadStatus.COMPLETING:
                     case UploadStatus.COMPLETED:
                         message = 
-                        <div className={`alert alert-warning`} role="alert"> Recently posted {file.original_filename}, please see the 
-                            <Link to="/history" target="_blank" className="btn btn-primary btn-sm"> History</Link>
+                        <div className={file.status === UploadStatus.COMPLETED ? 'complete-message': ''}>
+                            <div className="alert alert-warning" role="alert"> Recently posted {file.original_filename}, please see the 
+                                <Link to="/history" target="_blank" className="btn btn-primary btn-sm"> History</Link>
+                            </div>
                         </div>
-
-                        setTimeout(() => {
-                            this.props.removeUpload(key);
-                        }, 8000);
-
                         break
                         
                     case UploadStatus.CANCELLED:

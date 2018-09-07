@@ -219,6 +219,8 @@ function* completeUpload (action) {
 
         if (success) {
             yield put(updateData({ [id] : { posted: true, status: UploadStatus.COMPLETED } }))
+            yield call(delay, 3000)
+            yield put(removeUpload(id))
             return
         }
     }
