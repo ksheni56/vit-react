@@ -26,18 +26,11 @@ function* bgSync(action) {
     }
 }
 
-function* pollForComments() {
+export function* pollForCommentsSaga() {
     while(true) {
         const action = yield take(START_BACKGROUND_SYNC_COMMENTS);
         const bgSyncTask = yield fork(bgSync, action);
         yield take(STOP_BACKGROUND_SYNC_COMMENTS);
         yield cancel(bgSyncTask);
     }
-}
-
-export function* rootSaga() {
-    console.log("Launching root saga.");
-    yield all([
-        pollForComments()
-    ]);
 }
