@@ -1,6 +1,6 @@
 import { delay } from 'redux-saga';
 import {
-  take, put, call, fork, cancel, cancelled, all,
+  take, put, call, fork, cancel, cancelled,
   select
 } from 'redux-saga/effects';
 

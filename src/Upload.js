@@ -336,13 +336,17 @@ class Upload extends Component {
                 switch (file.status) {
                     case UploadStatus.UPLOADING:
                         message = 
-                        <div className="row alert alert-warning" key={key}>
-                            <div className="col-md-10 col-sm-12">
-                                <strong>Uploading progress: {file.progress}%</strong> complete. Do not close/leave this page!
-                                <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
-                            </div>
-                            <div className="col-md-2 col-sm-12">
-                                <button className="btn btn-danger btn-sm progress-cancel" onClick={() => this.props.onCancel(key, file)}>Cancel</button>
+                        <div class="row alert alert-warning" key={key}>
+                            <div class="col-md-12 col-sm-12">
+                                <strong>Uploading progress of {file.original_filename}: {file.progress}%</strong> complete. Do not close/leave this page!
+                                <div class="row">
+                                    <div class="col-lg-10 col-md-9 col-sm-6">
+                                        <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
+                                    </div>
+                                    <div class="col-lg-2 col-md-3 col-sm-6">
+                                        <button className="btn btn-danger btn-sm" onClick={() => this.props.onCancel(key, file)}>Cancel</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         break
@@ -357,8 +361,8 @@ class Upload extends Component {
                     case UploadStatus.TRANSCODING:
                         message = 
                         <div className="row alert alert-warning" key={key}>
-                            <div className="col-md-10 col-sm-12">
-                                <strong>Trancoding progress: {file.progress}%</strong> complete. Do not close/leave this page!
+                            <div className="col-md-12 col-sm-12">
+                                <strong>Trancoding progress of {file.original_filename}: {file.progress}%</strong> complete.
                                 <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
                             </div>
                         </div>
