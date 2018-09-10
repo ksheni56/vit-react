@@ -248,7 +248,7 @@ class Wallet extends Component {
                                                     <h4>VBD Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.sbd_balance }</span>
                                                 </div>
-                                            </div> */}
+                                            </div>
 
                                             <div className="col-md-4 col-sm-12">
                                                 <div className="balance-tile"> 
@@ -256,6 +256,7 @@ class Wallet extends Component {
                                                     <span className="text-danger">{ this.state.account.delegated_vesting_shares }</span>
                                                 </div>
                                             </div>
+                                            */}
 
                                             <div className="col-md-4 col-sm-12">
                                                 <div className="balance-tile"> 
