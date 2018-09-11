@@ -248,8 +248,19 @@ class Upload extends Component {
     handleOnKeyDown = (event) => {
         switch(event.key) {
             case ' ':
-                this.creatableRef.select.select.selectOption(this.creatableRef.select.select.state.focusedOption);
+            case ',':
+                this.creatableRef.select.select.selectOption(
+                    //this.creatableRef.select.select.state.focusedOption
+                    //Grab the last element in the list ('Create...')
+                    this.creatableRef.select.select.state.menuOptions.focusable.slice(-1)[0]
+                );
         }
+    }
+
+    handleInputChange = (newValue) => {
+        // Filter out whitespace and commas
+        const inputValue = newValue.replace(/[\W,]/g, '');
+        return inputValue;
     }
 
     handleChangeCategory(category) {
@@ -297,6 +308,7 @@ class Upload extends Component {
                                 onKeyDown={this.handleOnKeyDown}
                                 onChange={this.handleChangeCategory}
                                 options={this.state.categories}
+                                onInputChange={this.handleInputChange}
                             />
                             
                             <TextArea 
