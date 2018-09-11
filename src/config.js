@@ -9,21 +9,23 @@ export const PAGESIZE_HOMEPAGE = 28;
 export const PAGESIZE_TAG = 28;
 export const PAGESIZE_CHANNEL = 28;
 
-export const AVATAR_PROXY = process.env.REACT_APP_AVATAR_PROXY ? process.env.REACT_APP_AVATAR_PROXY : "https://media.vit.tube/resize/";
+export const AVATAR_PROXY = process.env.REACT_APP_AVATAR_PROXY ? process.env.REACT_APP_AVATAR_PROXY : "https://media.proto.vit.tube/resize/";
 export const AVATAR_DEFAULT = 'https://proto.touchit.social/images/user.png';
 export const AVATAR_SIZE_SMALL = 64;
 export const AVATAR_SIZE_MEDIUM = 100;
 
 //export const AVATAR_UPLOAD_ENDPOINT = process.env.REACT_APP_AVATAR_UPLOAD_ENDPOINT ? process.env.REACT_APP_AVATAR_UPLOAD_ENDPOINT : "http://138.197.166.131:5000"
-export const AVATAR_UPLOAD_ENDPOINT = process.env.REACT_APP_AVATAR_UPLOAD_ENDPOINT ? process.env.REACT_APP_AVATAR_UPLOAD_ENDPOINT : "https://media.vit.tube/upload/image"
-export const AVATAR_UPLOAD_PREFIX = process.env.REACT_APP_AVATAR_UPLOAD_PREFIX ? process.env.REACT_APP_AVATAR_UPLOAD_PREFIX : "https://media.vit.tube/view/";
-export const VIDEO_THUMBNAIL_URL_PREFIX = process.env.REACT_APP_VIDEO_THUMBNAIL_URL_PREFIX ? process.env.REACT_APP_VIDEO_THUMBNAIL_URL_PREFIX : "https://media.vit.tube/playback/";
-export const VIDEO_UPLOAD_ENDPOINT = process.env.REACT_APP_VIDEO_UPLOAD_ENDPOINT ? process.env.REACT_APP_VIDEO_UPLOAD_ENDPOINT : "https://media.vit.tube/upload/video";
-export const IMAGE_UPLOAD_ENDPOINT = process.env.REACT_APP_IMAGE_UPLOAD_ENDPOINT ? process.env.REACT_APP_IMAGE_UPLOAD_ENDPOINT : "https://media.vit.tube/upload/image";
+export const AVATAR_UPLOAD_ENDPOINT = process.env.REACT_APP_AVATAR_UPLOAD_ENDPOINT ? process.env.REACT_APP_AVATAR_UPLOAD_ENDPOINT : "https://media.proto.vit.tube/upload/image"
+export const AVATAR_UPLOAD_PREFIX = process.env.REACT_APP_AVATAR_UPLOAD_PREFIX ? process.env.REACT_APP_AVATAR_UPLOAD_PREFIX : "https://media.proto.vit.tube/view/";
+export const VIDEO_THUMBNAIL_URL_PREFIX = process.env.REACT_APP_VIDEO_THUMBNAIL_URL_PREFIX ? process.env.REACT_APP_VIDEO_THUMBNAIL_URL_PREFIX : "https://media.proto.vit.tube/playback/";
+export const VIDEO_UPLOAD_ENDPOINT = process.env.REACT_APP_VIDEO_UPLOAD_ENDPOINT ? process.env.REACT_APP_VIDEO_UPLOAD_ENDPOINT : "https://media.proto.vit.tube/upload/video";
+export const IMAGE_UPLOAD_ENDPOINT = process.env.REACT_APP_IMAGE_UPLOAD_ENDPOINT ? process.env.REACT_APP_IMAGE_UPLOAD_ENDPOINT : "https://media.proto.vit.tube/upload/image";
+export const VIDEO_HISTORY_ENDPOINT = process.env.REACT_APP_VIDEO_HISTORY_ENDPOINT ? process.env.REACT_APP_VIDEO_HISTORY_ENDPOINT : "https://media.proto.vit.tube/history";
+export const VIDEO_UPLOAD_POSTED_ENDPOINT = process.env.REACT_APP_VIDEO_UPLOAD_POSTED_ENDPOINT ? process.env.REACT_APP_VIDEO_UPLOAD_POSTED_ENDPOINT : "https://media.proto.vit.tube/upload/video/posted/";
 
 
 // DMCA endpoints
 export const DMCA_CONTENT_ENDPOINT = process.env.REACT_APP_DMCA_CONTENT_ENDPOINT ? process.env.REACT_APP_DMCA_CONTENT_ENDPOINT : "/blank";
 export const DMCA_USER_ENDPOINT = process.env.REACT_APP_DMCA_USER_ENDPOINT ? process.env.REACT_APP_DMCA_USER_ENDPOINT : "/blank";
 
-export const LIQUID_TOKEN = process.env.REACT_APP_LIQUID_TOKEN ? process.env.REACT_APP_LIQUID_TOKEN : 'VIT';
+export const LIQUID_TOKEN = process.env.REACT_APP_LIQUID_TOKEN ? process.env.REACT_APP_LIQUID_TOKEN : 'WIT';

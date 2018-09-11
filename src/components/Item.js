@@ -31,7 +31,7 @@ class Item extends Component {
         return parseInt(amount.replace(' SBD',''), 10).toFixed(2);
     }
 
-    render() {
+    renderVertially() {
         return (
             <div className="col-lg-3 col-md-4 item-wrapper mb-3" key={ this.props.data.id } ref={ this.props.data.id }>
                 <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>
@@ -50,6 +50,38 @@ class Item extends Component {
                 </div>
             </div>
         )
+    }
+
+    renderHorizontally() {
+        return (
+            <div className="row item-wrapper mb-3" key={ this.props.data.id } ref={ this.props.data.id }>
+                <div className="col-3">
+                    <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>
+                        { this.renderThumbnail() }
+                    </Link>
+                </div>
+                <div className="col-9">
+                    <div className="d-flex w-100">
+                        <h6>
+                            <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>{this.truncateTitle(this.props.data.title)}</Link>
+                        </h6>
+                        <div className="earnings text-right">
+                            ${ this.displayPayoutAmount(this.props.data.pending_payout_value) }
+                        </div>
+                    </div>
+                    <div className="meta-info">
+                        <span>{ this.props.data.category }</span> &middot; { moment.utc(this.props.data.active).tz( moment.tz.guess() ).fromNow() }
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    render() {
+        if (this.props.vertical) 
+            return this.renderHorizontally()
+
+        return this.renderVertially()
     }
 }
 

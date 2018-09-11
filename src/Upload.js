@@ -1,17 +1,20 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from 'steem';
-import { Link } from 'react-router-dom';
 import Dropzone from 'react-dropzone';
-import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
-import Select from 'react-select';
+import TextArea from './components/forms/TextArea';
+import CreatableSelect from 'react-select/lib/Creatable';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
-import { VIDEO_UPLOAD_ENDPOINT } from './config'
+import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_HISTORY_ENDPOINT, VIDEO_UPLOAD_POSTED_ENDPOINT } from './config'
+import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck, completeUpload, removeUpload } from './reducers/upload';
+import HLSSource from './HLS';
+import { Player, BigPlayButton } from 'video-react';
 
 class Upload extends Component {
 
@@ -27,27 +30,28 @@ class Upload extends Component {
             'generic_error_text': 'Could not upload your file. Please try again!',
             'custom_error_text': '',
             'success': false,
-            'ready_to_upload': false,
             'title': '',
             'selected_category': [],
             'categories': [],
             'loading_categories': true,
             'tags': [],
             'selected_tags': [],
-            'processing': false,
-            'processed': false,
             'progress': null,
             'permlink': '',
             'transcoding': false,
-            'transcode_progress': 0
+            'transcode_progress': 0,
+            'uploadVideos': []
         }
 
+        this.creatableRef = null;
         this.handleDrop = this.handleDrop.bind(this);
         this.handleDropRejected = this.handleDropRejected.bind(this);
         this.handleChangeCategory = this.handleChangeCategory.bind(this);
-        //this.handleChangeTags = this.handleChangeTags.bind(this);
+        this.handleOnKeyDown = this.handleOnKeyDown.bind(this);
         this.upload = this.upload.bind(this);
-
+        this.setPreviewPost = this.setPreviewPost.bind(this);
+        this.showUploadForm = this.showUploadForm.bind(this);
+        this.postVideo = this.postVideo.bind(this);
     } 
 
     componentDidMount() {
@@ -56,6 +60,9 @@ class Upload extends Component {
             this.props.history.push("/login");
             return false;
         }
+        
+        // update transcoding progress
+        this.props.startTranscodeCheck(VIDEO_HISTORY_ENDPOINT + "/" + this.props.app.username + "?posted=false")
 
         // TODO: change 'life'
         steem.api.getTrendingTags('', 60, (err, result) => {
@@ -72,28 +79,60 @@ class Upload extends Component {
                 categories: categories,
                 loading_categories: false
             });
-        
 
         });
 
     }
 
-    componentWillReceiveProps(nextProps) {    
-
+    componentWillUnmount () {
+        this.props.stopTranscodeCheck()
     }
 
-    upload(form_data) {
+    setPreviewPost(key, file, type) {
 
-        // todo: parse tags & cats
+        if (type === 'add') {
+            // show the Upload form
+            if (this.state.uploadVideos.length === 0) {
+                this.setState({
+                    uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file} }]
+                });
+            } else {
+                let foundObject = this.state.uploadVideos.find(e => {
+                    return e.hasOwnProperty(key);
+                });
 
-        if(!this.props.app.authorized) {
-            alert("Not so fast! You have to be looged in to upload your content!");
-            return false;
+                if (!foundObject || foundObject === undefined) {
+                    this.setState({
+                        uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file} }]
+                    })
+                }
+            }
+        } else {
+            // hide the Upload form
+            const uploadVideos = [...this.state.uploadVideos];
+            const foundObject = uploadVideos.find(e => {
+                return e.hasOwnProperty(key);
+            });
+
+            const index = uploadVideos.indexOf(foundObject);
+            uploadVideos.splice(index, 1);
+            this.setState({
+                uploadVideos: uploadVideos
+            });
         }
+    }
+
+    postVideo(form) {
+        const hash = form.taskId;
+        const uploadVideos = [...this.state.uploadVideos];
+        const updateObject = uploadVideos.find(e => {
+            return e.hasOwnProperty(hash);
+        });
+
+        const vit_data = updateObject[hash].file.vit_data;
+        let slug = form.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
 
         let categories = [];
-        
-        
         if(this.state.selected_category.length > 0 ) {
        
             for(var i in this.state.selected_category) {
@@ -109,228 +148,310 @@ class Upload extends Component {
 
 
         this.setState({
-            success: false,
             error: false,
             uploading: true
         });
+
+        // I. POST VIDEO
+        this.props.post({
+            postingWif: this.props.app.postingWif, 
+            category: categories[0], // category
+            username: this.props.app.username, 
+            slug: slug, // slug
+            title: form.title, // title
+            body: form.description, // body,
+            tags: categories,
+            vit_data: vit_data
+
+        }).then( response => {
+
+            console.log("post blockchain success", response);
+
+            const headers = {
+                'Content-Type': 'text/html',
+                'X-Auth-Token': localStorage.getItem("signature"),
+                'X-Auth-UserHost': localStorage.getItem("signUserHost")
+            }
+
+            this.props.completeUpload(hash, VIDEO_UPLOAD_POSTED_ENDPOINT + hash, headers)
+
+            this.setState({
+                uploading: false
+            })
+
+        }).catch(err => {
+
+            console.log("post error", err)
+
+            if(err.payload.data && err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
+                
+                this.setState({
+                    error: true,
+                    error_type: 'timeout',
+                    custom_error_text: 'You may only post once every 5 minutes.',
+                    uploading: false
+                });
+
+            } else {
+
+                this.setState({
+                    error: true,
+                    error_type: 'other',
+                    uploading: false,
+                    custom_error_text: err.payload.data.stack[0].format
+                });
+
+            }
+
+            toast.error(this.state.custom_error_text);
+        });
+    }
+
+    upload(files) {
+
+        // todo: parse tags & cats
+
+        if(!this.props.app.authorized) {
+            alert("Not so fast! You have to be logged in to upload your content!");
+            return false;
+        }
+
+        // do count the current pending posts and files dropped by user
+        const pendingPosts = Object.keys(this.props.uploads).length;
+
+        if (files.length + pendingPosts > 5) {
+            toast.error("Warning! Cannnot upload more than 5 files. Please post your pending ones");
+            return false;
+        }
 
         // get signed signature for Video Upload Authorisation
         const signature = localStorage.getItem("signature");
         const signUserHost = localStorage.getItem("signUserHost");
 
-        let formData = new FormData();
-        formData.append('file', this.state.files[0]);
+        const headers = {
+            'Content-Type': 'multipart/form-data',
+            'X-Auth-Token':  signature,
+            'X-Auth-UserHost': signUserHost
+        }
 
-        formData.append('username', this.props.app.username);
-        axios.post(VIDEO_UPLOAD_ENDPOINT, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-                'X-Auth-Token':  signature,
-                'X-Auth-UserHost': signUserHost
-            },
-            onUploadProgress: (e) => {
-              var completed = Math.round((e.loaded * 100) / e.total);
-              this.setState({
-                progress: completed,
-                uploading: completed !== 100
-              });
-              // console.log("Completed ", completed, e);
-            }
-        }).then(response => {
+        files.forEach(file => {
+            let formData = new FormData();
+            formData.append('username', this.props.app.username);
+            formData.append('file', file);
 
-            console.log("File upload response", response);
-
-            this.setState({
-                success: true,
-                processing: true,
-                processed: false,
-                files: '',
-                ready_to_upload: false,
-                progress: null
-            });
-
-            var self = this;
-
-            if(response.data.url) {
-                let redirect_url = response.data.url;
-                console.log("redirect_url", redirect_url)
-
-                var refreshInterval = setInterval(function() {
-
-                    axios.get(redirect_url).then(response => {
-
-                        console.log("Is it done yet?", response.data.Complete)
-
-                        if(!response.data.Complete) {
-
-                            self.setState({
-                                processing: true,
-                                processed: false,
-                                transcode_progress: response.data.PercentComplete,
-                                transcoding: response.data.PercentComplete > 0 ? true : false,
-                            })
-
-                            console.log("Transcode Progress:", response.data.PercentComplete)
-
-                        } else {
-
-                            self.setState({
-                                transcode_progress: 100,
-                                transcoding: false,
-                            })
-
-                            console.log("Done!", response.data)
-
-                            clearInterval(refreshInterval);
-
-                            let slug = form_data.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
-
-                            self.props.post({
-
-                                postingWif: self.props.app.postingWif, 
-                                category: categories[0].replace(/[^a-zA-Z0-9-]/,'-').toLowerCase(), // category
-                                username: self.props.app.username, 
-                                slug: slug, // slug
-                                title: form_data.title, // title
-                                body: '...', // body,
-                                tags: categories,
-                                vit_data: response.data
-
-                            }).then( response => {
-
-                                console.log("post blockchain success", response);
-
-                                self.setState({
-                                    processing: false,
-                                    processed: true,
-                                    permlink: response.payload.operations[0][1].permlink,
-                                    uploading: false
-                                });
-
-                            }).catch(err => {
-
-                                console.log("post error", err)
-
-                                if(err.payload.data && err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
-                                    
-                                    self.setState({
-                                        processing: false,
-                                        processed: false,
-                                        error: true,
-                                        error_type: 'timeout',
-                                        custom_error_text: 'You may only post once every 5 minutes.',
-                                        uploading: false
-                                    });
-
-                                } else {
-
-                                    self.setState({
-                                        processing: false,
-                                        processed: false,
-                                        error: true,
-                                        error_type: 'other',
-                                        uploading: false,
-                                        custom_error_text: err.payload.data.stack[0].format
-                                    });
-
-                                }
-
-                                
-
-                            });
-
-                        }
-
-                    }).catch(err => {
-
-                        console.log("err GET", response);
-
-                        self.setState({
-                            processing: false,
-                            processed: false,
-                            error: true,
-                            error_type: 'generic',
-                            uploading: false
-                        });
-                    });
-
-                }, 2000);
-
-            } else {
-                self.setState({
-                    processing: false,
-                    processed: false,
-                    error: true,
-                    error_type: 'generic',
-                    uploading: false
-                });
-            }
-
-        }).catch(err => {
-
-            console.log("File err", err)
-
-            this.setState({
-                error: true
-            });
-
-        });
+            this.props.onUpload(VIDEO_UPLOAD_ENDPOINT, formData, headers)
+        })
     }
 
-    handleDrop(file) {
+    handleDrop(files) {
+        // set uploading in progress
+        this.upload(files)
+    }
 
-        this.setState({
-            files: file,
-            ready_to_upload: true
-        });
+    handleOnKeyDown = (event) => {
+        switch(event.key) {
+            //case ' ':
+            case ',':
+                this.creatableRef.select.select.selectOption(
+                    this.creatableRef.select.select.state.focusedOption
+                    //Grab the last element in the list ('Create...')
+                    //this.creatableRef.select.select.state.menuOptions.focusable.slice(-1)[0]
+                );
+        }
+    }
 
-
+    handleInputChange = (newValue) => {
+        // Filter out whitespace and commas
+        const inputValue = newValue.replace(/[^a-zA-Z0-9-_ ]/g, '');
+        //const inputValue = newValue.replace(/[,]/g, '');
+        return inputValue;
     }
 
     handleChangeCategory(category) {
-
         this.setState({
             selected_category: category
         });
     }
 
-    /*
-    handleChangeTags(tags) {
-
-        if( this.state.selected_tags.length < 10 ) {
-            this.setState({
-                selected_tags: tags
-            })
-        }
+    showUploadForm(key, file) {
         
+        return (
+            <div className="upload-form row" key={key} style={{'marginTop': '20px'}}>
+                <div className="col-md-6 col-sm-12 video-player" style={{'marginTop': '33px'}}>
+                    <Player playsInline>
+                        <HLSSource
+                            isVideoChild
+                            src={ VIDEO_THUMBNAIL_URL_PREFIX + file.vit_data.Playlist }
+                        />
+                        <BigPlayButton position="center" />
+                    </Player>
+                </div>
+                <div className="col-md-6 col-sm-12">
+                    <Formsy 
+                        onValidSubmit={this.postVideo} 
+                        ref="upload_form" 
+                        >
+
+                        <div className="col-md-12 col-sm-12 px-0">
+                            <TextField 
+                                name="title"
+                                id="title"
+                                label="Title"
+                                value={this.state.title}
+                                placeholder="" 
+                                maxLength={100}
+                                required />
+                            <small className="text-muted mb-2 d-block" style={{'marginTop': '-5px'}}>100 characters max</small>
+
+                            <CreatableSelect
+                                isMulti
+                                ref={ ref => { this.creatableRef = ref; }}
+                                name="category"
+                                classNamePrefix="Select"
+                                placeholder="Select some tags" 
+                                onKeyDown={this.handleOnKeyDown}
+                                onChange={this.handleChangeCategory}
+                                options={this.state.categories}
+                                onInputChange={this.handleInputChange}
+                            />
+                            
+                            <TextArea 
+                                name="description"
+                                id="description"
+                                placeholder="Type here..." 
+                                value={this.state.comment_text}
+                            />
+
+                            {/* TODO: Is there any way to post this form without hidden field */}
+                            <TextField 
+                                name="taskId"
+                                id="taskId"
+                                value={key}
+                                type="hidden"
+                                />
+
+                            <button 
+                                type="submit"
+                                className="btn btn-danger"
+                                style={{'marginBottom': '10px'}}
+                                disabled={this.state.uploading}
+                            >Post</button>
+                            <a className="btn" style={{'marginBottom': '10px'}} onClick={() => this.setPreviewPost(key, file, 'remove')}>Cancel</a>
+                        </div>
+                    </Formsy>    
+                </div>
+            </div>
+        )
     }
-    */
 
     showProgress() {
-        if(this.state.uploading && this.state.progress) {
+        // block UI until finishing loading transcoding videos
+        if (!this.props.initialized) 
             return (
-                <div className="alert alert-warning mt-4" role="alert">
-                    <strong>Uploading, { this.state.progress }%</strong> complete. Do not close/leave this page!
-                </div>
-            )
-        } else if(this.state.success && this.state.processing && !this.state.processed) {
-
-            return (
-                <div className="alert alert-warning mt-4" role="alert">
-                    <strong>Please stand by!</strong> Your video is currently being processed. Do not close/leave this page!
+                <div className="row text-center">
+                    <div className="col-12">
+                        <i className="fas fa-spinner fa-pulse"></i>
+                    </div>
                 </div>
             )
 
+        return (
+            Object.keys(this.props.uploads).map(key => {
+                const file = this.props.uploads[key]
+                console.log(file)
+                let message;
+                switch (file.status) {
+                    case UploadStatus.UPLOADING:
+                        message = 
+                        <div class="row alert alert-warning" key={key}>
+                            <div class="col-md-12 col-sm-12">
+                                <strong>Uploading progress of {file.original_filename}: {file.progress}%</strong> complete. Do not close/leave this page!
+                                <div class="row">
+                                    <div class="col-lg-10 col-md-9 col-sm-6">
+                                        <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
+                                    </div>
+                                    <div class="col-lg-2 col-md-3 col-sm-6">
+                                        <button className="btn btn-danger btn-sm" onClick={() => this.props.onCancel(key, file)}>Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        break
 
-        } else if(this.state.success && !this.state.processing && this.state.processed) {
+                    case UploadStatus.UPLOADED:
+                        message = 
+                        <div className="alert alert-warning" role="alert" key={key}>
+                            <strong>{ file.original_filename } uploaded! Waiting for transcoding!</strong>
+                        </div>
+                        break;
 
-            return (
-                <div className="alert alert-success mt-4" role="alert">
-                    <strong>Success!</strong> Your video is now processed and available <strong><Link to={ "/@" + this.props.app.username + "/" + this.state.permlink }>here</Link></strong>
-                </div>
-            )
+                    case UploadStatus.TRANSCODING:
+                        message = 
+                        <div className="row alert alert-warning" key={key}>
+                            <div className="col-md-12 col-sm-12">
+                                <strong>Trancoding progress of {file.original_filename}: {file.progress}%</strong> complete.
+                                <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
+                            </div>
+                        </div>
+                        break
 
-        }
+                    case UploadStatus.TRANSCODED:
+                        let foundObject = this.state.uploadVideos.find(e => {
+                            return e.hasOwnProperty(key);
+                        });
+                        
+                        message = 
+                        <div key={key}>
+                            {
+                                foundObject === undefined ?
+                                (
+                                    <div className="row alert alert-warning" role="alert" key={key}>
+                                        <span>
+                                            Trancoding of <strong>{file.original_filename} completed</strong>, it is now <button className="btn btn-primary btn-sm" onClick={() => this.setPreviewPost(key, file, "add")}>ready to post</button>
+                                        </span>
+                                    </div>
+                                ) :
+                                (
+                                    this.showUploadForm(key, file)
+                                )
+                                
+                            }
+                        </div>
+                        break
+                    
+                    case UploadStatus.COMPLETING:
+                    case UploadStatus.COMPLETED:
+                        message = 
+                        <div className={file.status === UploadStatus.COMPLETED ? 'complete-message': ''}>
+                            <div className="alert alert-warning" role="alert"> Recently posted {file.original_filename}, please see the 
+                                <Link to="/history" target="_blank" className="btn btn-primary btn-sm"> History</Link>
+                            </div>
+                        </div>
+                        break
+                        
+                    case UploadStatus.CANCELLED:
+                        message = 
+                        <div className="cancel-message">
+                            <div className="alert alert-warning" role="alert" key={key}>
+                                <strong>{ file.original_filename } cancelled!</strong>
+                            </div>
+                        </div>
+                        
+                        break
+
+                    default:
+                        message = 
+                        <div className="alert alert-warning" role="alert">
+                            <strong>Upload failed!</strong>
+                        </div>
+                }
+                return (
+                    <div key={key}>
+                        {message}
+                    </div>
+                )
+            })
+        )
 
     }
 
@@ -343,24 +464,6 @@ class Upload extends Component {
                 </div>
             )
         }
-    }
-
-    handleErrors() {
-
-        if(this.state.error_type === 'generic') {
-
-            return (
-                <span><strong>Error!</strong> Could not upload your file. Please try again!</span>
-            )
-
-        } else {
-
-            return (
-                <span><strong>Error!</strong> {this.state.custom_error_text }</span>
-            )
-
-        }
-
     }
 
     handleDropRejected(file) {
@@ -376,84 +479,31 @@ class Upload extends Component {
 
                 <ToastContainer />
 
-                <div className="col-md-8 col-sm-12 mt-4">
+                <div className="col-md-10 col-sm-12 mt-4">
                     <div className="upload-wrapper">
+                        {/* Upload Area */}
                         <div>
+                            <h3 className="mb-4">Upload your content</h3>
 
-                            <h3 className="text-center mb-4">Upload your content</h3>
+                            { this.showProgress() }
 
-                            <Formsy 
-                                onValidSubmit={this.upload} 
-                                ref="upload_form" 
-                                >
-
-                                <div className="col-md-8 col-sm-12 px-0">
-
-                                    <TextField 
-                                        name="title"
-                                        id="title"
-                                        label="Title"
-                                        value={this.state.title}
-                                        placeholder="" 
-                                        maxLength={100}
-                                        required />
-                                    <small className="text-muted mb-2 d-block" style={{'marginTop': '-5px'}}>100 characters max</small>
-
-                                    <label>Category</label>
-                                    <Select
-                                        isMulti
-                                        name="category"
-                                        classNamePrefix="Select"
-                                        onChange={this.handleChangeCategory}
-                                        options={this.state.categories}
-                                    />
-
-                                    {/*<label className="mt-3">Tags</label>
-                                    
-                                    <CreatableSelect
-                                        isMulti
-                                        className="Select"
-                                        
-                                        onChange={this.handleChangeTags}
-                                    />
-                                    <small className="text-muted mb-2 d-block" style={{'marginTop': '11px'}}>Up to 10 tags</small>
-                                    */}
-                                </div>
-
-                                {
-                                    this.state.error ? (
-                                        <div className="alert alert-danger mt-4" role="alert">
-                                            { this.handleErrors() }
-                                        </div>
-                                    ) : null
-                                }
-
-                                {
-                                    this.state.success || this.state.uploading ? (
-                                        <span>
-                                            { this.showProgress() }
-                                        </span>
-                                    ) : null
-                                }
-
-                                {
-                                    this.state.success || this.state.transcoding ? (
-                                        <span>
-                                            { this.showTranscoding() }
-                                        </span>
-                                    ) : null
-                                }
-
-                                <Dropzone 
+                            <Dropzone 
                                     className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
-                                    onDrop={ this.handleDrop }
-                                    multiple={ false } 
+                                    onDropAccepted={ this.handleDrop }
+                                    multiple={ true } 
                                     onDropRejected={this.handleDropRejected }
                                     accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
-                                    disabled={ this.state.uploading }
+                                    disabled={ !this.props.initialized }
                                 >
                                     <div className="w-100 text-center">
-                                        Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span>
+                                        {
+                                            !this.props.initialized ? (
+                                                <div>Please wait</div>
+                                            ) : (
+                                                <div>Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span></div>
+                                            )
+                                        }
+                                        
 
                                         {
                                             this.state.files.length > 0 ? (
@@ -461,16 +511,7 @@ class Upload extends Component {
                                             ) : null
                                         }
                                     </div>
-                                </Dropzone>
-
-                                <button 
-                                    type="submit"
-                                    className="btn btn-danger mt-4" 
-                                    disabled={!this.state.ready_to_upload || this.state.uploading}
-                                >Upload</button>
-
-                            </Formsy>
-
+                            </Dropzone>
                         </div>
                     </div>
                 </div>
@@ -485,10 +526,33 @@ function mapStateToProps(state) {
 
     return { 
         search: state.search,
-        app: state.app
+        app: state.app,
+        uploads: state.upload.uploads,
+        initialized: state.upload.initialized
     };
     
 }
 
+const mapDispatchToProps = (dispatch) => ({
+    post,
+    onUpload: (upload_backend, formData, headers) => {
+        dispatch(uploadRequest(upload_backend, formData, headers))
+    },
+    onCancel: (id, data) => {
+        dispatch(uploadCancel(id, data))
+    },
+    completeUpload: (id, endpoint, headers) => {
+        dispatch(completeUpload(id, endpoint, headers))
+    },
+    removeUpload: (id) => {
+        dispatch(removeUpload(id))
+    },
+    startTranscodeCheck: (url) => {
+        dispatch(startTranscodeCheck(url))
+    },
+    stopTranscodeCheck: () => {
+        dispatch(stopTranscodeCheck())
+    }
+});
 
-export default connect(mapStateToProps, { post })(Upload);
+export default connect(mapStateToProps, mapDispatchToProps)(Upload);

@@ -1,3 +1,5 @@
+@import '../../node_modules/react-tabs/style/react-tabs.scss';
+
 .upload-wrapper {
 	background:#272C2F;
 	border-radius:4px;
@@ -7,6 +9,15 @@
 	h3 {
 		margin:0 0 0 0;
 		font-size:22px;
+	}
+
+	.transcoder-progress {
+		background-color: #fff3cd;
+		border-color: #ffeeba;
+	}
+
+	.progress-cancel {
+		margin: 10px 0px;
 	}
 
 	.dropzone {
@@ -50,6 +61,25 @@
     	padding:5px;
         border-radius: 18%/18%;
         background:#1C2023;
-    }
+	}
+	
+	.upload-form {
+		background-color: #383d41;
+		border-radius: 6px;
+	}
 
+	@keyframes fadeout {
+		from { opacity: 1; max-height: 50px}
+		to   { opacity: 0; max-height: 0px}
+	}
+	  
+	.cancel-message {
+		overflow: hidden;
+		animation: fadeout 1s 1.5s ease-in-out forwards;
+	}
+
+	.complete-message {
+		overflow: hidden;
+		animation: fadeout 1s 1.75s ease-in-out forwards;
+	}
 }

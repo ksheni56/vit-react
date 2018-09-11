@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import axios from 'axios';
+import steem from 'steem';
 import { post } from './actions/post';
 import './sass/Select.scss';
 import './sass/History.scss';
-import { ToastContainer } from 'react-toastify';
+import Item from './components/Item';
+import debounce from 'lodash.debounce';
 
 class History extends Component {
 
@@ -12,11 +13,14 @@ class History extends Component {
 
         super(props);
 
+        this.pageSize = 10;
+
+        this.scrollThreshold = 10;
+
         this.state = {
+            posts: [],
             loading: true,
-            uploads: [],
-            panel: false,
-            status: [],
+            loading_more: false
         };
     } 
 
@@ -28,123 +32,142 @@ class History extends Component {
     }
 
     componentDidMount() {
-        this.getUploadHistory()
-        setInterval(function(){
-            this.getUploadHistory();
-        }.bind(this), 2000)
+        this.loadContent()
+        this.attachScrollListener()
     }
 
-    getUploadHistory() {
-        axios.get("https://media.vit.tube/history/" + this.props.app.username).then(response => {
+    componentWillUnmount() {
+        this.detachScrollListener();
+    }
+
+    attachScrollListener() {
+        window.document.getElementById('vitContent').addEventListener('scroll', this.scrollListener, {
+            capture: false,
+            passive: true,
+        });
+    }
+
+    detachScrollListener() {
+        window.document.getElementById('vitContent').removeEventListener('scroll', this.scrollListener)
+    }    
+
+    scrollListener = debounce(() => {
+        const el = window.document.getElementById('vitContent');
+        if (!el) return;
+        if(el.offsetHeight + el.scrollTop + this.scrollThreshold >= el.scrollHeight) {
+            this.loadMoreContent();
+        }
+    }, 150)
+
+    loadContent() {
+
+        let query = {
+            'tag': this.props.app.username,
+            'limit': this.pageSize
+        };
+
+        steem.api.getDiscussionsByBlog(query, (err, result) => {
+
+            console.log("getDiscussionsByBlog", err, result);
+
+            if(err) {
+
+                this.setState({
+                    posts: [],
+                    no_more_post: true,
+                    loading: false
+                });
+
+                return;
+            }
+
             this.setState({
-                loading: false,
-                uploads: response.data.uploads
-            })
-        })
+                no_more_post: result.length < this.pageSize,
+                posts: result,
+                loading: false
+            });
+
+        });
     }
 
-    displayHistory() {
+    loadMoreContent() {
 
-        if(Object.keys(this.state.uploads).length === 0) {
+        if (this.state.loading_more || this.state.no_more_post) return;
+
+        this.setState({
+            loading_more: true
+        })
+
+        let load_more_query = {
+            'tag': this.props.app.username,
+            'limit': this.pageSize + 1,
+            'start_author': this.props.app.username,
+            'start_permlink': this.state.posts[this.state.posts.length - 1].permlink
+        };
+
+
+        steem.api.getDiscussionsByBlog(load_more_query, (err, result) => {
+            if(err) {
+                this.setState({
+                    no_more_post: true,
+                    loading: false
+                });
+                return false; // add some sort of alert notifying about the end of the loop
+            }
+
+            result.splice(0, 1);
+
+            let all_posts = this.state.posts.concat(result);
+
+            this.setState({
+                loading_more: false,
+                no_more_post: result.length < this.pageSize,
+                posts: all_posts
+            });
+        });
+    }
+
+    renderPosts() {
+        if(this.state.loading) {
             return (
-                <div className="text-left" role="alert">
-                    <strong>You don't have any uploads to display yet...</strong>
+                <div className="row w-100 h-100 justify-content-center mt-5">
+
+                    <div className="loader">Loading...</div>
+
                 </div>
             )
-        } 
-
-        return (
-            <div className="table-responsive">
-                <table className="table table-dark">
-
-                    <tbody>
-
+        } else {
+            return (
+                <div className="row justify-content-center">
+                    <div className="col-md-8 col-sm-12 mt-4 upload-wrapper">
+                        <h3 className="mb-4">Your History</h3>
                         { 
+                        this.state.posts.map(
 
-                            Object.keys(this.state.uploads).map(
-
-                                (Item) =>
-                                    <tr key={Item} className="upload-item">
-                                        <td>
-                                            {Item}
-                                        </td>
-                                        <td>
-                                            {
-                                                this.state.uploads[Item].percent_complete ? 
-                                                    this.state.uploads[Item].percent_complete + "% Complete" : "Pending"
-                                            }
-                                        </td>
-                                    </tr>
-                            )
-
+                            (Post) =>
+                                <Item key={ Post.id } ref={ Post.id } data={ Post } vertical="true" />
+                            ) 
                         }
-
-                    </tbody>
-                </table>
-            </div>
-        )
+                    </div>
+                </div>
+            )
+        }
     }
 
     render() {
-
-        // const customStyles = {
-        //     overlay: {
-        //         position: 'fixed',
-        //         top: 0,
-        //         left: 0,
-        //         right: 0,
-        //         bottom: 0,
-        //         backgroundColor: 'rgba(255, 255, 255, 0.25)'
-        //     },
-        //     content : {
-        //         top: '50%',
-        //         left: '50%',
-        //         right: 'auto',
-        //         bottom: 'auto',
-        //         marginRight: '-50%',
-        //         transform: 'translate(-50%, -50%)',
-        //         backgroundColor: '#272C2F',
-        //         borderRadius: '4px',
-        //         padding: '20px',
-        //         border: '1px solid #000',
-        //         color: '#fff',
-        //         h3 : {
-        //             color: '#fff',
-        //         }
-        //     },
-        // };
-
-        return (
-            <div className="row justify-content-center">
-
-                <ToastContainer />
-
-                <div className="col-8 mt-4">
-
-                    <div className="upload-wrapper mb-4">
-                        <div>
-
-                            <h3 className="mb-1">Upload History</h3>
-                            <p className="mb-4 text-muted">View your video upload history</p>
-
-                            {
-                                this.state.loading ? (
-                                    <div className="text-center" role="alert">
-                                        <strong>Loading...</strong>
-                                    </div>
-                                ) : (
-                                    <div>{this.displayHistory()}</div>
-                                )
-                            }
-
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-        )
         
+        return [
+            <div key="posts">{ this.renderPosts() }</div>,
+            <div className="mb-4 mt-1 text-center" key="load-more">
+                {
+                    !this.state.loading && this.state.loading_more ? (
+                        <i className="fas fa-spinner fa-pulse"></i>
+                    ) : (
+                        null
+                    )
+                }
+            </div>
+        ]
     }
 
 }
