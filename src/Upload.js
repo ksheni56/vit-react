@@ -91,7 +91,7 @@ class Upload extends Component {
             return false;
         }
 
-        let categories = [];
+        let categories = ['app:touch_tube'];
         
         
         if(this.state.selected_category.length > 0 ) {

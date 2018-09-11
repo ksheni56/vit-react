@@ -113,7 +113,21 @@ class Home extends Component {
                 }
 
                 result.splice(0, 1);
-                let all_posts = this.state.posts.concat(result);
+
+                var related_posts = []
+                var all_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if(JSON.parse(post.json_metadata.tags.indexOf('app-touch-tube') < 0)) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
+                all_posts = this.state.posts.concat(related_posts);
 
                 this.setState({
                     posts: all_posts,
@@ -127,8 +141,34 @@ class Home extends Component {
 
             steem.api.getDiscussionsByCreated(load_more_query, (err, result) => {
 
+                if(err) {
+                    console.log("Error:(", err)
+
+                    this.setState({
+                        posts: [],
+                        no_more_post: true,
+                        loading_more: false
+                    });
+
+                    return;
+                }
+
                 result.splice(0, 1);
-                let all_posts = this.state.posts.concat(result);
+
+                var related_posts = []
+                var all_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if(JSON.parse(post.json_metadata.tags.indexOf('app-touch-tube') < 0)) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
+                all_posts = this.state.posts.concat(related_posts);
 
                 this.setState({
                     posts: all_posts,
@@ -141,8 +181,34 @@ class Home extends Component {
 
             steem.api.getDiscussionsByHot(load_more_query, (err, result) => {
 
+                if(err) {
+                    console.log("Error:(", err)
+
+                    this.setState({
+                        posts: [],
+                        no_more_post: true,
+                        loading_more: false
+                    });
+
+                    return;
+                }
+
                 result.splice(0, 1);
-                let all_posts = this.state.posts.concat(result);
+
+                var related_posts = []
+                var all_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if(JSON.parse(post.json_metadata.tags.indexOf('app-touch-tube') < 0)) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
+                all_posts = this.state.posts.concat(related_posts);
 
                 this.setState({
                     posts: all_posts,
@@ -181,8 +247,22 @@ class Home extends Component {
                     return;
                 }
 
+                var related_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags) {
+                            if(JSON.parse(post.json_metadata).tags.indexOf('app:touch_tube') >= 0) {
+                                related_posts.push(post)
+                            }
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
                 this.setState({
-                    posts: result,
+                    posts: related_posts,
                     no_more_post: result.length < this.pageSize,
                     loading: false
                 });
@@ -204,8 +284,22 @@ class Home extends Component {
                     return;
                 }
 
+                var related_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags) {
+                            if(JSON.parse(post.json_metadata).tags.indexOf('app:touch_tube') >= 0) {
+                                related_posts.push(post)
+                            }
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
                 this.setState({
-                    posts: result,
+                    posts: related_posts,
                     no_more_post: result.length < this.pageSize,
                     loading: false
                 });
@@ -227,8 +321,22 @@ class Home extends Component {
                     return;
                 }
 
+                var related_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags) {
+                            if(JSON.parse(post.json_metadata).tags.indexOf('app:touch_tube') >= 0) {
+                                related_posts.push(post)
+                            }
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
                 this.setState({
-                    posts: result,
+                    posts: related_posts,
                     no_more_post: result.length < this.pageSize,
                     loading: false
                 });
