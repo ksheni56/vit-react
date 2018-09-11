@@ -119,8 +119,10 @@ class Home extends Component {
 
                 result.forEach((post) => {
                     try {
-                        if(JSON.parse(post.json_metadata.tags.indexOf('app-touch-tube') < 0)) {
-                            related_posts.push(post)
+                        if (JSON.parse(post.json_metadata).tags) {
+                            if(JSON.parse(post.json_metadata).tags.indexOf('app:touch_tube') >= 0) {
+                                related_posts.push(post)
+                            }
                         }
                     } catch(e) {
                         // do something?; likely not a related post anyway
@@ -160,8 +162,10 @@ class Home extends Component {
 
                 result.forEach((post) => {
                     try {
-                        if(JSON.parse(post.json_metadata.tags.indexOf('app-touch-tube') < 0)) {
-                            related_posts.push(post)
+                        if (JSON.parse(post.json_metadata).tags) {
+                            if(JSON.parse(post.json_metadata).tags.indexOf('app:touch_tube') >= 0) {
+                                related_posts.push(post)
+                            }
                         }
                     } catch(e) {
                         // do something?; likely not a related post anyway
@@ -200,8 +204,10 @@ class Home extends Component {
 
                 result.forEach((post) => {
                     try {
-                        if(JSON.parse(post.json_metadata.tags.indexOf('app-touch-tube') < 0)) {
-                            related_posts.push(post)
+                        if (JSON.parse(post.json_metadata).tags) {
+                            if(JSON.parse(post.json_metadata).tags.indexOf('app:touch_tube') >= 0) {
+                                related_posts.push(post)
+                            }
                         }
                     } catch(e) {
                         // do something?; likely not a related post anyway
