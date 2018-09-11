@@ -247,19 +247,20 @@ class Upload extends Component {
 
     handleOnKeyDown = (event) => {
         switch(event.key) {
-            case ' ':
+            //case ' ':
             case ',':
                 this.creatableRef.select.select.selectOption(
-                    //this.creatableRef.select.select.state.focusedOption
+                    this.creatableRef.select.select.state.focusedOption
                     //Grab the last element in the list ('Create...')
-                    this.creatableRef.select.select.state.menuOptions.focusable.slice(-1)[0]
+                    //this.creatableRef.select.select.state.menuOptions.focusable.slice(-1)[0]
                 );
         }
     }
 
     handleInputChange = (newValue) => {
         // Filter out whitespace and commas
-        const inputValue = newValue.replace(/[\W,]/g, '');
+        const inputValue = newValue.replace(/[^a-zA-Z0-9-_ ]/g, '');
+        //const inputValue = newValue.replace(/[,]/g, '');
         return inputValue;
     }
 
