@@ -91,7 +91,7 @@ class Upload extends Component {
             return false;
         }
 
-        let categories = ['app:touch_tube'];
+        let categories = [];
         
         
         if(this.state.selected_category.length > 0 ) {
@@ -104,7 +104,9 @@ class Upload extends Component {
             toast.error("Please select at least 1 category!");
             return false;
         }
-        
+
+        categories.push('touch-tube')
+
 
         this.setState({
             success: false,
@@ -186,7 +188,7 @@ class Upload extends Component {
                             self.props.post({
 
                                 postingWif: self.props.app.postingWif, 
-                                category: categories[0], // category
+                                category: categories[0].replace(/[^a-z0-9-]/,'-'), // category
                                 username: self.props.app.username, 
                                 slug: slug, // slug
                                 title: form_data.title, // title
