@@ -7,7 +7,7 @@ import { post } from './actions/post';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 import TextArea from './components/forms/TextArea';
-import Select from 'react-select';
+import CreatableSelect from 'react-select/lib/Creatable';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
@@ -43,9 +43,11 @@ class Upload extends Component {
             'uploadVideos': []
         }
 
+        this.creatableRef = null;
         this.handleDrop = this.handleDrop.bind(this);
         this.handleDropRejected = this.handleDropRejected.bind(this);
         this.handleChangeCategory = this.handleChangeCategory.bind(this);
+        this.handleOnKeyDown = this.handleOnKeyDown.bind(this);
         this.upload = this.upload.bind(this);
         this.setPreviewPost = this.setPreviewPost.bind(this);
         this.showUploadForm = this.showUploadForm.bind(this);
@@ -243,6 +245,25 @@ class Upload extends Component {
         this.upload(files)
     }
 
+    handleOnKeyDown = (event) => {
+        switch(event.key) {
+            //case ' ':
+            case ',':
+                this.creatableRef.select.select.selectOption(
+                    this.creatableRef.select.select.state.focusedOption
+                    //Grab the last element in the list ('Create...')
+                    //this.creatableRef.select.select.state.menuOptions.focusable.slice(-1)[0]
+                );
+        }
+    }
+
+    handleInputChange = (newValue) => {
+        // Filter out whitespace and commas
+        const inputValue = newValue.replace(/[^a-zA-Z0-9-_ ]/g, '');
+        //const inputValue = newValue.replace(/[,]/g, '');
+        return inputValue;
+    }
+
     handleChangeCategory(category) {
         this.setState({
             selected_category: category
@@ -279,13 +300,16 @@ class Upload extends Component {
                                 required />
                             <small className="text-muted mb-2 d-block" style={{'marginTop': '-5px'}}>100 characters max</small>
 
-                            <Select
+                            <CreatableSelect
                                 isMulti
+                                ref={ ref => { this.creatableRef = ref; }}
                                 name="category"
                                 classNamePrefix="Select"
                                 placeholder="Select some tags" 
+                                onKeyDown={this.handleOnKeyDown}
                                 onChange={this.handleChangeCategory}
                                 options={this.state.categories}
+                                onInputChange={this.handleInputChange}
                             />
                             
                             <TextArea 
