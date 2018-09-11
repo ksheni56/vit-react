@@ -188,7 +188,7 @@ class Upload extends Component {
                             self.props.post({
 
                                 postingWif: self.props.app.postingWif, 
-                                category: categories[0].replace(/[^a-z0-9-]/,'-'), // category
+                                category: categories[0].replace(/[^a-zA-Z0-9-]/,'-').toLowerCase(), // category
                                 username: self.props.app.username, 
                                 slug: slug, // slug
                                 title: form_data.title, // title
