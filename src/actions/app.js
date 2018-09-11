@@ -277,6 +277,7 @@ function fetchData(endpoint) {
 			resolve(response.data.split("\n"));
 		})
 		.catch(error => {
+			reject(error);
 			console.log(error);
 		});
 	})        

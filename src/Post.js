@@ -67,7 +67,7 @@ class Post extends Component {
         if (data.net_votes > 0) {
             let voted;
             voted = votes.filter(vote => {
-                return (vote.voter == this.props.app.username ? vote : null);
+                return (vote.voter === this.props.app.username ? vote : null);
             })
             
             // AS DOWNVOTE does not remove a record out of the active_votes
