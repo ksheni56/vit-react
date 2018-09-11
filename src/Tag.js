@@ -91,7 +91,22 @@ class Tag extends Component {
             steem.api.getDiscussionsByTrending(load_more_query, (err, result) => {
 
                 result.splice(0, 1);
-                let all_posts = this.state.posts.concat(result);
+
+                var related_posts = []
+                var all_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
+                all_posts = this.state.posts.concat(related_posts);
 
                 this.setState({
                     posts: all_posts,
@@ -106,7 +121,22 @@ class Tag extends Component {
             steem.api.getDiscussionsByCreated(load_more_query, (err, result) => {
 
                 result.splice(0, 1);
-                let all_posts = this.state.posts.concat(result);
+
+                var related_posts = []
+                var all_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
+                all_posts = this.state.posts.concat(related_posts);
 
                 this.setState({
                     posts: all_posts,
@@ -122,7 +152,22 @@ class Tag extends Component {
             steem.api.getDiscussionsByHot(load_more_query, (err, result) => {
 
                 result.splice(0, 1);
-                let all_posts = this.state.posts.concat(result);
+
+                var related_posts = []
+                var all_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
+                all_posts = this.state.posts.concat(related_posts);
 
                 this.setState({
                     posts: all_posts,
@@ -146,8 +191,32 @@ class Tag extends Component {
 
             steem.api.getDiscussionsByTrending(query, (err, result) => {
 
+                if(err) {
+
+                    this.setState({
+                        posts: [],
+                        no_more_post: true,
+                        loading: false
+                    });
+
+                    return;
+                }
+
+                var related_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
                 this.setState({
-                    posts: result,
+                    posts: related_posts,
                     no_more_post: result.length < this.pageSize,
                     loading: false
                 });
@@ -158,10 +227,32 @@ class Tag extends Component {
 
             steem.api.getDiscussionsByCreated(query, (err, result) => {
 
-                console.log("err, result", err, result)
+                if(err) {
+
+                    this.setState({
+                        posts: [],
+                        no_more_post: true,
+                        loading: false
+                    });
+
+                    return;
+                }
+
+                var related_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
 
                 this.setState({
-                    posts: result,
+                    posts: related_posts,
                     no_more_post: result.length < this.pageSize,
                     loading: false
                 });
@@ -172,8 +263,32 @@ class Tag extends Component {
 
             steem.api.getDiscussionsByHot(query, (err, result) => {
 
+                if(err) {
+
+                    this.setState({
+                        posts: [],
+                        no_more_post: true,
+                        loading: false
+                    });
+
+                    return;
+                }
+
+                var related_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
                 this.setState({
-                    posts: result,
+                    posts: related_posts,
                     no_more_post: result.length < this.pageSize,
                     loading: false
                 });
