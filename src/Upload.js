@@ -43,6 +43,7 @@ class Upload extends Component {
             'uploadVideos': []
         }
 
+        this.creatableRef = null;
         this.handleDrop = this.handleDrop.bind(this);
         this.handleDropRejected = this.handleDropRejected.bind(this);
         this.handleChangeCategory = this.handleChangeCategory.bind(this);
@@ -244,17 +245,10 @@ class Upload extends Component {
         this.upload(files)
     }
 
-    handleOnKeyDown = (event, other) => {
-        const {
-            focusedOption
-        } = this.state;
+    handleOnKeyDown = (event) => {
         switch(event.key) {
             case ' ':
-                debugger;
-                console.log('OMG SPACE');
-                this.selectOption(focusedOption);
-                break;
-
+                this.creatableRef.select.select.selectOption(this.creatableRef.select.select.state.focusedOption);
         }
     }
 
@@ -296,6 +290,7 @@ class Upload extends Component {
 
                             <CreatableSelect
                                 isMulti
+                                ref={ ref => { this.creatableRef = ref; }}
                                 name="category"
                                 classNamePrefix="Select"
                                 placeholder="Select some tags" 
