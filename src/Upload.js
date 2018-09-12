@@ -144,6 +144,9 @@ class Upload extends Component {
             return false;
         }
 
+        categories.push('touch-tube')
+
+
         this.setState({
             error: false,
             uploading: true
@@ -152,7 +155,7 @@ class Upload extends Component {
         // I. POST VIDEO
         this.props.post({
             postingWif: this.props.app.postingWif, 
-            category: categories[0], // category
+            category: categories[0].replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase(), // category
             username: this.props.app.username, 
             slug: slug, // slug
             title: form.title, // title

@@ -189,9 +189,22 @@ class Channel extends Component {
                 return;
             }
 
+            var related_posts = []
+
+            result.forEach((post) => {
+                try {
+                    if (JSON.parse(post.json_metadata).tags &&
+                            JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                        related_posts.push(post)
+                    }
+                } catch(e) {
+                    // do something?; likely not a related post anyway
+                }
+            })
+
             this.setState({
                 no_more_post: result.length < this.pageSize,
-                posts: result,
+                posts: related_posts,
                 loading: false
             });
 
@@ -227,7 +240,21 @@ class Channel extends Component {
 
             result.splice(0, 1);
 
-            let all_posts = this.state.posts.concat(result);
+            var related_posts = []
+            var all_posts = []
+
+            result.forEach((post) => {
+                try {
+                    if (JSON.parse(post.json_metadata).tags &&
+                            JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                        related_posts.push(post)
+                    }
+                } catch(e) {
+                    // do something?; likely not a related post anyway
+                }
+            })
+
+            all_posts = this.state.posts.concat(related_posts);
 
             this.setState({
                 loading_more: false,

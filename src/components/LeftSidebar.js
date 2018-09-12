@@ -35,7 +35,7 @@ class LeftSidebar extends Component {
 
                     
             this.setState({
-                tags: result,
+                tags: result.filter(function(e) { return ['touch-tube','touchit-social'].indexOf(e.name) < 0 }),
                 loading: false
             });
 
