@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import { Link } from 'react-router-dom';
 import { post } from './actions/post';
+import { loginUser } from './actions/app';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 import './sass/Select.scss';
@@ -41,7 +42,7 @@ class Wallet extends Component {
         this.powerUp = this.powerUp.bind(this);
 
 
-    } 
+    }
 
     componentWillMount() {
 
@@ -66,7 +67,7 @@ class Wallet extends Component {
                     console.log("Invalid account!");
                     return false; // Handle invalid account
                 }
-    
+
                 let account_info = accounts[0];
                 try {
                     account_info.json_metadata = JSON.parse(accounts[0].json_metadata);
@@ -87,12 +88,21 @@ class Wallet extends Component {
     displayKeys() {
         var confirmation = prompt("Please enter your VIT password to confirm this action", "");
         if(confirmation) {
+            loginUser({
+                username: this.props.app.username,
+                password: confirmation
+            }).then(response => {
+                console.log("login success, displaying keys");
 
-            let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"]);
-            this.setState({
-                keys: keys,
-                keys_revealed: true
-            })
+                let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"]);
+                this.setState({
+                    keys: keys,
+                    keys_revealed: true
+                });
+            }).catch(err => {
+                console.log("login failed when attempting to display keys", err);
+                toast.error("Password incorrect, please try again.");
+            });
         } else {
             // maybe next time
         }
@@ -100,7 +110,7 @@ class Wallet extends Component {
 
     powerUp(form_data) {
 
-        // use owner key 
+        // use owner key
 
         this.setState({
             //power_error_text: 'Something went wrong',
@@ -114,37 +124,46 @@ class Wallet extends Component {
 
         if(confirmation) {
 
-            let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
+            loginUser({
+                username: this.props.app.username,
+                password: confirmation
+            }).then(response => {
+                console.log("login success, powering up.");
 
-            steem.broadcast.transferToVesting(keys.owner, this.props.app.username, form_data.power_to, amount, (err, result) => {
+                let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
 
-                console.log(err, result)
+                steem.broadcast.transferToVesting(keys.owner, this.props.app.username, form_data.power_to, amount, (err, result) => {
 
-                if(err) {
+                    console.log(err, result)
 
-                    let error_message = this.parseError(err);
+                    if(err) {
 
-                    toast.error(error_message);
+                        let error_message = this.parseError(err);
+
+                        toast.error(error_message);
+
+                        this.setState({
+                            powering: false,
+                        });
+
+                        return;
+                    }
 
                     this.setState({
-                        powering: false,
+                        //power_success: true,
+                        powering: false
                     });
 
-                    return;
-                }
+                    toast.success("Power is now upped!");
 
-                this.setState({
-                    //power_success: true,
-                    powering: false
+                    // Update balance
+                    this.updateAccountBalance();
+
                 });
-
-                toast.success("Power is now upped!");
-
-                // Update balance
-                this.updateAccountBalance();
-
+            }).catch(err => {
+                console.log("login failed when attempting to power up", err);
+                toast.error("Password incorrect, please try again.");
             });
-
         }
 
     }
@@ -155,45 +174,52 @@ class Wallet extends Component {
 
         if(confirmation) {
 
-            this.setState({
-                transferring: true
-            });
+            loginUser({
+                username: this.props.app.username,
+                password: confirmation
+            }).then(response => {
+                this.setState({
+                    transferring: true
+                });
 
-            let amount = form_data.amount + " " + LIQUID_TOKEN,
-            keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
+                let amount = form_data.amount + " " + LIQUID_TOKEN,
+                    keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
 
-            steem.broadcast.transfer(keys.active, this.props.app.username, form_data.to, amount, form_data.memo, (err, result) => {
-                if(err) {
-                    console.log(err)
+                steem.broadcast.transfer(keys.active, this.props.app.username, form_data.to, amount, form_data.memo, (err, result) => {
+                    if(err) {
+                        console.log(err)
+                        this.setState({
+                            transferring: false
+                        });
+
+                        let error_message = this.parseError(err);
+                        console.log("error_message",error_message)
+
+                        toast.error(error_message);
+
+                        return;
+                    }
+
+                    console.log("Transfer results", result);
+
+                    toast.success("Your transaction is now completed!");
+
                     this.setState({
                         transferring: false
                     });
 
-                    let error_message = this.parseError(err);
-                    console.log("error_message",error_message)
-
-                    toast.error(error_message);
-
-                    return;
-                }
-
-                console.log("Transfer results", result);
-
-                toast.success("Your transaction is now completed!");
-
-                this.setState({
-                    transferring: false
+                    // Update balance
+                    this.updateAccountBalance();
                 });
-
-                // Update balance
-                this.updateAccountBalance();
+            }).catch(err => {
+                console.log("login failed when attempting to transfer", err);
+                toast.error("Password incorrect, please try again.");
             });
-
         } else {
 
-            
+
         }
-        
+
     }
 
     parseError(err) {
@@ -213,11 +239,11 @@ class Wallet extends Component {
         }
 
         return err.data.message;
-        
+
     }
 
     render() {
-        
+
         return (
             <div className="row justify-content-center">
 
@@ -229,7 +255,7 @@ class Wallet extends Component {
                         <div>
 
                             {
-                                this.state.loadung ? (
+                                this.state.loading ? (
                                     <h3>Loading your balance...</h3>
                                 ) : (
                                     <div className="balance-wrapper">
@@ -237,21 +263,21 @@ class Wallet extends Component {
                                         <div className="row">
 
                                             <div className="col-md-4 col-sm-12">
-                                                <div className="balance-tile"> 
+                                                <div className="balance-tile">
                                                     <h4>VIT Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.balance }</span>
                                                 </div>
                                             </div>
 
                                             {/* <div className="col-3">
-                                                <div className="balance-tile"> 
+                                                <div className="balance-tile">
                                                     <h4>VBD Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.sbd_balance }</span>
                                                 </div>
                                             </div>
 
                                             <div className="col-md-4 col-sm-12">
-                                                <div className="balance-tile"> 
+                                                <div className="balance-tile">
                                                     <h4>VESTS Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.delegated_vesting_shares }</span>
                                                 </div>
@@ -259,7 +285,7 @@ class Wallet extends Component {
                                             */}
 
                                             <div className="col-md-4 col-sm-12">
-                                                <div className="balance-tile"> 
+                                                <div className="balance-tile">
                                                     <h4>VIT Power:</h4>
                                                     <span className="text-danger">{ this.state.account.vesting_shares }</span>
                                                 </div>
@@ -286,24 +312,24 @@ class Wallet extends Component {
                             <h3 className="mb-1">Transfer Your Funds</h3>
                             <p className="mb-4 text-muted">Move funds to another VIT account.</p>
 
-                            <Formsy 
-                                onValidSubmit={this.transfer} 
-                                ref="upload_form" 
+                            <Formsy
+                                onValidSubmit={this.transfer}
+                                ref="upload_form"
                                 >
 
                                 <div className="col-md-8 col-sm-12 px-0">
 
-                                    <TextField 
+                                    <TextField
                                         name="to"
                                         id="to"
                                         label="To:"
                                         value={this.state.to}
-                                        placeholder="Enter VIT username" 
+                                        placeholder="Enter VIT username"
                                         maxLength={100}
                                         required />
 
 
-                                    <TextField 
+                                    <TextField
                                         name="amount"
                                         id="amount"
                                         label="Amount:"
@@ -314,28 +340,28 @@ class Wallet extends Component {
                                         }}
                                         validationErrors={{
                                             matchRegexp: 'Incorrect amount. Please enter X.YYY. eg. 1.000 or 0.005',
-                                        }} 
+                                        }}
                                         required />
 
-                                    <TextField 
+                                    <TextField
                                         name="memo"
                                         id="memo"
                                         label="Memo:"
                                         value={this.state.memo}
-                                        placeholder="This memo is public" 
+                                        placeholder="This memo is public"
                                         maxLength={100}
                                     />
 
                                     <small className="mb-2 d-none" style={{'marginTop': '-5px'}}><a href="#transfer-all" className="text-danger">Transfer all balance</a></small>
-                                    
+
 
                                 </div>
-                                
-                               
 
-                                <button 
+
+
+                                <button
                                     type="submit"
-                                    className="btn btn-danger mt-2" 
+                                    className="btn btn-danger mt-2"
                                     disabled={this.state.transferring}
                                 >Transfer</button>
 
@@ -351,24 +377,24 @@ class Wallet extends Component {
                             <h3 className="mb-1">Power Up</h3>
                             <p className="mb-4 text-muted">Influence tokens which give you more control over post payouts and allow you to earn on curation rewards.</p>
 
-                            <Formsy 
-                                onValidSubmit={this.powerUp} 
-                                ref="powerup_form" 
+                            <Formsy
+                                onValidSubmit={this.powerUp}
+                                ref="powerup_form"
                                 >
 
                                 <div className="col-md-8 col-sm-12 px-0">
 
-                                    <TextField 
+                                    <TextField
                                         name="power_to"
                                         id="power_to"
                                         label="To:"
                                         value={this.state.power_to}
-                                        placeholder="Enter VIT username" 
+                                        placeholder="Enter VIT username"
                                         maxLength={100}
                                         required />
 
 
-                                    <TextField 
+                                    <TextField
                                         name="power_amount"
                                         id="power_amount"
                                         label="Amount:"
@@ -379,16 +405,16 @@ class Wallet extends Component {
                                         }}
                                         validationErrors={{
                                             matchRegexp: 'Incorrect amount. Please enter X.YYY. eg. 1.000 or 0.005',
-                                        }} 
+                                        }}
                                         required />
 
                                 </div>
-                                
-                               
 
-                                <button 
+
+
+                                <button
                                     type="submit"
-                                    className="btn btn-danger mt-2" 
+                                    className="btn btn-danger mt-2"
                                     disabled={this.state.powering}
                                 >Power Up</button>
 
@@ -396,8 +422,8 @@ class Wallet extends Component {
 
                         </div>
 
-                       
-                        
+
+
                     </div>
 
                     <div className="upload-wrapper mb-4">
@@ -461,25 +487,25 @@ class Wallet extends Component {
                                 </div>
                             ) : null
                         }
-                        
+
 
                     </div>
 
                 </div>
             </div>
         )
-        
+
     }
 
 }
 
 function mapStateToProps(state) {
 
-    return { 
+    return {
         search: state.search,
         app: state.app
     };
-    
+
 }
 
 
