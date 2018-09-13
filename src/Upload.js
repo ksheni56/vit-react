@@ -285,6 +285,7 @@ class Upload extends Component {
                         />
                         <BigPlayButton position="center" />
                     </Player>
+                    <div><img style={{'max-width': '100%', 'max-height': '100%', 'margin-top': '1em', 'margin-bottom': '1em'}} src={ VIDEO_THUMBNAIL_URL_PREFIX + file.vit_data.Hash + "/thumbnail-01.jpg" } /></div>
                 </div>
                 <div className="col-md-6 col-sm-12">
                     <Formsy 
