@@ -27,7 +27,7 @@ class Wallet extends Component {
             loading: true,
             account: '',
             to: '',
-            transfer_amount: '',
+            transfer_amount: 0,
             memo: '',
             keys: '',
             keys_revealed: false,
