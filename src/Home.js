@@ -26,7 +26,7 @@ class Home extends Component {
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
 
-    } 
+    }
 
     componentDidMount() {
 
@@ -41,7 +41,7 @@ class Home extends Component {
         this.attachScrollListener();
     }
 
-    componentWillReceiveProps(nextProps) {    
+    componentWillReceiveProps(nextProps) {
 
         if( nextProps.match.params.filter !== this.state.filter ) {
             this.setState({
@@ -51,7 +51,7 @@ class Home extends Component {
             () => {
                 this.loadContent(this.state.filter);
             });
-            
+
         }
 
     }
@@ -65,7 +65,7 @@ class Home extends Component {
 
     detachScrollListener() {
         window.document.getElementById('vitContent').removeEventListener('scroll', this.scrollListener)
-    }    
+    }
 
     scrollListener = debounce(() => {
         const el = window.document.getElementById('vitContent');
@@ -102,7 +102,7 @@ class Home extends Component {
 
                 if(err) {
                     console.log("Error:(", err)
-                    
+
                     this.setState({
                         posts: [],
                         no_more_post: true,
@@ -111,9 +111,24 @@ class Home extends Component {
 
                     return;
                 }
-            
+
                 result.splice(0, 1);
-                let all_posts = this.state.posts.concat(result);
+
+                var related_posts = []
+                var all_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
+                all_posts = this.state.posts.concat(related_posts);
 
                 this.setState({
                     posts: all_posts,
@@ -126,9 +141,36 @@ class Home extends Component {
         } else if(this.state.filter === 'new') {
 
             steem.api.getDiscussionsByCreated(load_more_query, (err, result) => {
-            
+
+                if(err) {
+                    console.log("Error:(", err)
+
+                    this.setState({
+                        posts: [],
+                        no_more_post: true,
+                        loading_more: false
+                    });
+
+                    return;
+                }
+
                 result.splice(0, 1);
-                let all_posts = this.state.posts.concat(result);
+
+                var related_posts = []
+                var all_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
+                all_posts = this.state.posts.concat(related_posts);
 
                 this.setState({
                     posts: all_posts,
@@ -140,24 +182,36 @@ class Home extends Component {
         } else if(this.state.filter === 'hot') {
 
             steem.api.getDiscussionsByHot(load_more_query, (err, result) => {
-            
-                result.splice(0, 1);
-                let all_posts = this.state.posts.concat(result);
 
-                this.setState({
-                    posts: all_posts,
-                    no_more_post: result.length < this.pageSize,
-                    'loading_more': false
+                if(err) {
+                    console.log("Error:(", err)
+
+                    this.setState({
+                        posts: [],
+                        no_more_post: true,
+                        loading_more: false
+                    });
+
+                    return;
+                }
+
+                result.splice(0, 1);
+
+                var related_posts = []
+                var all_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
                 })
 
-            });
-            
-        } else if(this.state.filter === 'promoted') {
-
-            steem.api.getDiscussionsByPromoted(load_more_query, (err, result) => {
-            
-                result.splice(0, 1);
-                let all_posts = this.state.posts.concat(result);
+                all_posts = this.state.posts.concat(related_posts);
 
                 this.setState({
                     posts: all_posts,
@@ -186,7 +240,7 @@ class Home extends Component {
             steem.api.getDiscussionsByTrending(query, (err, result) => {
 
                 if(err) {
-                    
+
                     this.setState({
                         posts: [],
                         no_more_post: true,
@@ -195,9 +249,22 @@ class Home extends Component {
 
                     return;
                 }
-            
+
+                var related_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
                 this.setState({
-                    posts: result,
+                    posts: related_posts,
                     no_more_post: result.length < this.pageSize,
                     loading: false
                 });
@@ -207,9 +274,9 @@ class Home extends Component {
         } else if(filter === 'new') {
 
             steem.api.getDiscussionsByCreated(query, (err, result) => {
-                
+
                 if(err) {
-                    
+
                     this.setState({
                         posts: [],
                         no_more_post: true,
@@ -219,8 +286,21 @@ class Home extends Component {
                     return;
                 }
 
+                var related_posts = []
+
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
+
                 this.setState({
-                    posts: result,
+                    posts: related_posts,
                     no_more_post: result.length < this.pageSize,
                     loading: false
                 });
@@ -230,9 +310,9 @@ class Home extends Component {
         } else if(filter === 'hot') {
 
             steem.api.getDiscussionsByHot(query, (err, result) => {
-                
+
                 if(err) {
-                    
+
                     this.setState({
                         posts: [],
                         no_more_post: true,
@@ -242,31 +322,21 @@ class Home extends Component {
                     return;
                 }
 
-                this.setState({
-                    posts: result,
-                    no_more_post: result.length < this.pageSize,
-                    loading: false
-                });
+                var related_posts = []
 
-            });
-            
-        } else if(filter === 'promoted') {
-
-            steem.api.getDiscussionsByPromoted(query, (err, result) => {
-                
-                if(err) {
-                    
-                    this.setState({
-                        posts: [],
-                        no_more_post: true,
-                        loading: false
-                    });
-
-                    return;
-                }
+                result.forEach((post) => {
+                    try {
+                        if (JSON.parse(post.json_metadata).tags &&
+                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                            related_posts.push(post)
+                        }
+                    } catch(e) {
+                        // do something?; likely not a related post anyway
+                    }
+                })
 
                 this.setState({
-                    posts: result,
+                    posts: related_posts,
                     no_more_post: result.length < this.pageSize,
                     loading: false
                 });
@@ -308,18 +378,18 @@ class Home extends Component {
 
                 return (
                     <div className="row">
-                        { 
+                        {
                         this.state.posts.map(
 
                             (Post) =>
                                 <Item key={ Post.id } ref={ Post.id } data={ Post } />
-                            ) 
+                            )
                         }
                     </div>
                 )
             }
 
-            
+
         }
     }
 
@@ -343,17 +413,17 @@ class Home extends Component {
                 }
             </div>
         ]
-        
+
     }
 
 }
 
 function mapStateToProps(state) {
 
-    return { 
+    return {
         search: state.search
     };
-    
+
 }
 
 

@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import steem from 'steem';
 import { Link } from 'react-router-dom';
 import { post } from './actions/post';
+import { loginUser } from './actions/app';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 import TokenAmountSlider from './components/forms/TokenAmountSlider';
@@ -90,12 +91,21 @@ class Wallet extends Component {
     displayKeys() {
         var confirmation = prompt("Please enter your VIT password to confirm this action", "");
         if(confirmation) {
+            loginUser({
+                username: this.props.app.username,
+                password: confirmation
+            }).then(response => {
+                console.log("login success, displaying keys");
 
-            let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"]);
-            this.setState({
-                keys: keys,
-                keys_revealed: true
-            })
+                let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"]);
+                this.setState({
+                    keys: keys,
+                    keys_revealed: true
+                });
+            }).catch(err => {
+                console.log("login failed when attempting to display keys", err);
+                toast.error("Password incorrect, please try again.");
+            });
         } else {
             // maybe next time
         }
@@ -117,37 +127,46 @@ class Wallet extends Component {
 
         if(confirmation) {
 
-            let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
+            loginUser({
+                username: this.props.app.username,
+                password: confirmation
+            }).then(response => {
+                console.log("login success, powering up.");
 
-            steem.broadcast.transferToVesting(keys.owner, this.props.app.username, form_data.power_to, amount, (err, result) => {
+                let keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
 
-                console.log(err, result)
+                steem.broadcast.transferToVesting(keys.owner, this.props.app.username, form_data.power_to, amount, (err, result) => {
 
-                if(err) {
+                    console.log(err, result)
 
-                    let error_message = this.parseError(err);
+                    if(err) {
 
-                    toast.error(error_message);
+                        let error_message = this.parseError(err);
+
+                        toast.error(error_message);
+
+                        this.setState({
+                            powering: false,
+                        });
+
+                        return;
+                    }
 
                     this.setState({
-                        powering: false,
+                        //power_success: true,
+                        powering: false
                     });
 
-                    return;
-                }
+                    toast.success("Power is now upped!");
 
-                this.setState({
-                    //power_success: true,
-                    powering: false
+                    // Update balance
+                    this.updateAccountBalance();
+
                 });
-
-                toast.success("Power is now upped!");
-
-                // Update balance
-                this.updateAccountBalance();
-
+            }).catch(err => {
+                console.log("login failed when attempting to power up", err);
+                toast.error("Password incorrect, please try again.");
             });
-
         }
 
     }
@@ -158,40 +177,47 @@ class Wallet extends Component {
 
         if(confirmation) {
 
-            this.setState({
-                transferring: true
-            });
+            loginUser({
+                username: this.props.app.username,
+                password: confirmation
+            }).then(response => {
+                this.setState({
+                    transferring: true
+                });
 
-            let amount = form_data.amount + " " + LIQUID_TOKEN,
-            keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
+                let amount = form_data.amount + " " + LIQUID_TOKEN,
+                    keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
 
-            steem.broadcast.transfer(keys.active, this.props.app.username, form_data.to, amount, form_data.memo, (err, result) => {
-                if(err) {
-                    console.log(err)
+                steem.broadcast.transfer(keys.active, this.props.app.username, form_data.to, amount, form_data.memo, (err, result) => {
+                    if(err) {
+                        console.log(err)
+                        this.setState({
+                            transferring: false
+                        });
+
+                        let error_message = this.parseError(err);
+                        console.log("error_message",error_message)
+
+                        toast.error(error_message);
+
+                        return;
+                    }
+
+                    console.log("Transfer results", result);
+
+                    toast.success("Your transaction is now completed!");
+
                     this.setState({
                         transferring: false
                     });
 
-                    let error_message = this.parseError(err);
-                    console.log("error_message",error_message)
-
-                    toast.error(error_message);
-
-                    return;
-                }
-
-                console.log("Transfer results", result);
-
-                toast.success("Your transaction is now completed!");
-
-                this.setState({
-                    transferring: false
+                    // Update balance
+                    this.updateAccountBalance();
                 });
-
-                // Update balance
-                this.updateAccountBalance();
+            }).catch(err => {
+                console.log("login failed when attempting to transfer", err);
+                toast.error("Password incorrect, please try again.");
             });
-
         } else {
 
 
@@ -238,7 +264,7 @@ class Wallet extends Component {
                         <div>
 
                             {
-                                this.state.loadung ? (
+                                this.state.loading ? (
                                     <h3>Loading your balance...</h3>
                                 ) : (
                                     <div className="balance-wrapper">
@@ -257,7 +283,7 @@ class Wallet extends Component {
                                                     <h4>VBD Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.sbd_balance }</span>
                                                 </div>
-                                            </div> */}
+                                            </div>
 
                                             <div className="col-md-4 col-sm-12">
                                                 <div className="balance-tile">
@@ -265,6 +291,7 @@ class Wallet extends Component {
                                                     <span className="text-danger">{ this.state.account.delegated_vesting_shares }</span>
                                                 </div>
                                             </div>
+                                            */}
 
                                             <div className="col-md-4 col-sm-12">
                                                 <div className="balance-tile">
@@ -309,6 +336,7 @@ class Wallet extends Component {
                                         placeholder="Enter VIT username"
                                         maxLength={100}
                                         required />
+
 
                                     <TextField
                                         name="amount"
@@ -387,6 +415,8 @@ class Wallet extends Component {
                                         onChange={ this.onPowerUpValueChange } />
 
                                 </div>
+
+
 
                                 <button
                                     type="submit"
