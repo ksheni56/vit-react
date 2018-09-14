@@ -42,7 +42,7 @@ class Item extends Component {
                         <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>{this.truncateTitle(this.props.data.title)}</Link>
                     </div>
                     <div className="earnings text-right">
-                        ${ this.displayPayoutAmount(this.props.data.pending_payout_value) }
+                        { this.displayPayoutAmount(this.props.data.pending_payout_value) } VIT
                     </div>
                 </div>
                 <div className="meta-info">
