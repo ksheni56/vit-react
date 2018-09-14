@@ -335,7 +335,7 @@ class Post extends Component {
         } else {
             // skip displaying video if blocked
             const { category, author, permlink } = this.state.post;
-            const url = `/${category}/@${author}/${permlink}`;
+            const url = `@${author}/${permlink}`;
 
             if (this.props.dmcaContents.includes(url) || 
                     this.props.blockedUsers.includes(author)) {

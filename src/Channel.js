@@ -28,7 +28,9 @@ class Channel extends Component {
             account_info: [],
             followers: '---',
             subscribing: false,
-            is_subbed: false
+            is_subbed: false,
+            blockedUsers: [],
+            dmcaContents: [],
         }
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
@@ -52,7 +54,20 @@ class Channel extends Component {
                 this.checkIfSubbed();
             });
 
+        }
 
+        if( nextProps.blockedUsers !== this.state.blockedUsers ) {
+            this.setState({
+                blockedUsers: nextProps.blockedUsers,
+                loading: true
+            })
+        }
+
+        if( nextProps.dmcaContents !== this.state.dmcaContents ) {
+            this.setState({
+                dmcaContents: nextProps.dmcaContents,
+                loading: true
+            })
         }
 
     }
@@ -75,6 +90,23 @@ class Channel extends Component {
             this.loadMoreContent();
         }
     }, 150)
+
+    shouldDisplayPost(post) {
+        let displayPost = false;
+
+        try {
+            if ((JSON.parse(post.json_metadata).tags &&
+                    JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) &&
+                    !this.state.blockedUsers.includes(post.author) &&
+                    !this.state.dmcaContents.includes(`@${post.author}/${post.permlink}`)) {
+                displayPost = true
+            }
+        } catch(e) {
+            // do something?; likely not a related post anyway
+        }
+
+        return displayPost
+    }
 
     getAccount() {
 
@@ -192,13 +224,8 @@ class Channel extends Component {
             var related_posts = []
 
             result.forEach((post) => {
-                try {
-                    if (JSON.parse(post.json_metadata).tags &&
-                            JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                        related_posts.push(post)
-                    }
-                } catch(e) {
-                    // do something?; likely not a related post anyway
+                if (this.shouldDisplayPost(post)) {
+                    related_posts.push(post)
                 }
             })
 
@@ -244,13 +271,8 @@ class Channel extends Component {
             var all_posts = []
 
             result.forEach((post) => {
-                try {
-                    if (JSON.parse(post.json_metadata).tags &&
-                            JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                        related_posts.push(post)
-                    }
-                } catch(e) {
-                    // do something?; likely not a related post anyway
+                if (this.shouldDisplayPost(post)) {
+                    related_posts.push(post)
                 }
             })
 
@@ -448,7 +470,9 @@ class Channel extends Component {
 
 function mapStateToProps(state) {
     return { 
-        app: state.app
+        app: state.app,
+        blockedUsers: state.app.blockedUsers,
+        dmcaContents: state.app.dmcaContents,
     };
 }
 

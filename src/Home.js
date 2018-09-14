@@ -21,7 +21,9 @@ class Home extends Component {
             'loading': true,
             'posts': [],
             'loading_more': false,
-            no_more_post: false
+            'no_more_post': false,
+            'blockedUsers': [],
+            'dmcaContents': [],
         }
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
@@ -54,6 +56,20 @@ class Home extends Component {
 
         }
 
+        if( nextProps.blockedUsers !== this.state.blockedUsers ) {
+            this.setState({
+                blockedUsers: nextProps.blockedUsers,
+                loading: true
+            })
+        }
+
+        if( nextProps.dmcaContents !== this.state.dmcaContents ) {
+            this.setState({
+                dmcaContents: nextProps.dmcaContents,
+                loading: true
+            })
+        }
+
     }
 
     attachScrollListener() {
@@ -74,6 +90,23 @@ class Home extends Component {
             this.loadMoreContent();
         }
     }, 150)
+
+    shouldDisplayPost(post) {
+        let displayPost = false;
+
+        try {
+            if ((JSON.parse(post.json_metadata).tags &&
+                    JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) &&
+                    !this.state.blockedUsers.includes(post.author) &&
+                    !this.state.dmcaContents.includes(`@${post.author}/${post.permlink}`)) {
+                displayPost = true
+            }
+        } catch(e) {
+            // do something?; likely not a related post anyway
+        }
+
+        return displayPost
+    }
 
     loadMoreContent() {
 
@@ -118,13 +151,8 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (this.shouldDisplayPost(post)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -160,13 +188,8 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (this.shouldDisplayPost(post)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -201,13 +224,8 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (this.shouldDisplayPost(post)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -253,13 +271,8 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (this.shouldDisplayPost(post)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -289,13 +302,8 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (this.shouldDisplayPost(post)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -325,13 +333,8 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (this.shouldDisplayPost(post)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -421,7 +424,9 @@ class Home extends Component {
 function mapStateToProps(state) {
 
     return {
-        search: state.search
+        search: state.search,
+        blockedUsers: state.app.blockedUsers,
+        dmcaContents: state.app.dmcaContents
     };
 
 }

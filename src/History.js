@@ -20,7 +20,9 @@ class History extends Component {
         this.state = {
             posts: [],
             loading: true,
-            loading_more: false
+            loading_more: false,
+            'blockedUsers': [],
+            'dmcaContents': [],
         };
     } 
 
@@ -38,6 +40,24 @@ class History extends Component {
 
     componentWillUnmount() {
         this.detachScrollListener();
+    }
+
+    componentWillReceiveProps(nextProps) {
+
+        if( nextProps.blockedUsers !== this.state.blockedUsers ) {
+            this.setState({
+                blockedUsers: nextProps.blockedUsers,
+                loading: true
+            })
+        }
+
+        if( nextProps.dmcaContents !== this.state.dmcaContents ) {
+            this.setState({
+                dmcaContents: nextProps.dmcaContents,
+                loading: true
+            })
+        }
+
     }
 
     attachScrollListener() {
@@ -58,6 +78,23 @@ class History extends Component {
             this.loadMoreContent();
         }
     }, 150)
+
+    shouldDisplayPost(post) {
+        let displayPost = false;
+
+        try {
+            if ((JSON.parse(post.json_metadata).tags &&
+                    JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) &&
+                    !this.state.blockedUsers.includes(post.author) &&
+                    !this.state.dmcaContents.includes(`@${post.author}/${post.permlink}`)) {
+                displayPost = true
+            }
+        } catch(e) {
+            // do something?; likely not a related post anyway
+        }
+
+        return displayPost
+    }
 
     loadContent() {
 
@@ -81,9 +118,17 @@ class History extends Component {
                 return;
             }
 
+            var related_posts = []
+
+            result.forEach((post) => {
+                if (this.shouldDisplayPost(post)) {
+                    related_posts.push(post)
+                }
+            })
+
             this.setState({
                 no_more_post: result.length < this.pageSize,
-                posts: result,
+                posts: related_posts,
                 loading: false
             });
 
@@ -117,7 +162,16 @@ class History extends Component {
 
             result.splice(0, 1);
 
-            let all_posts = this.state.posts.concat(result);
+            var related_posts = []
+            var all_posts = []
+
+            result.forEach((post) => {
+                if (this.shouldDisplayPost(post)) {
+                    related_posts.push(post)
+                }
+            })
+
+            all_posts = this.state.posts.concat(related_posts);
 
             this.setState({
                 loading_more: false,
@@ -176,7 +230,9 @@ function mapStateToProps(state) {
 
     return { 
         search: state.search,
-        app: state.app
+        app: state.app,
+        blockedUsers: state.app.blockedUsers,
+        dmcaContents: state.app.dmcaContents,
     };
     
 }
