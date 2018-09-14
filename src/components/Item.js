@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import moment from 'moment'
-import { VIDEO_THUMBNAIL_URL_PREFIX } from '../config'
+import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN } from '../config'
 
 class Item extends Component {
     renderThumbnail() {
@@ -42,7 +42,7 @@ class Item extends Component {
                         <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>{this.truncateTitle(this.props.data.title)}</Link>
                     </div>
                     <div className="earnings text-right">
-                        { this.displayPayoutAmount(this.props.data.pending_payout_value) } VIT
+                        { this.displayPayoutAmount(this.props.data.pending_payout_value) } { LIQUID_TOKEN }
                     </div>
                 </div>
                 <div className="meta-info">
