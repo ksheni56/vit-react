@@ -353,7 +353,8 @@ class Wallet extends Component {
                                         value={ this.state.transfer_amount }
                                         max={ this.state.account.raw_balance }
                                         step={ 0.001 }
-                                        onChange={ this.onTransferValueChange } />
+                                        onChange={ this.onTransferValueChange }
+                                        userCanType/>
 
                                     <TextField
                                         name="memo"

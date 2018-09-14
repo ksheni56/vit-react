@@ -58,7 +58,7 @@ html, body {
       .data-holder {
           width:calc(100% - 40px);
       }
-  } 
+  }
 }
 
 /* Misc */
@@ -171,6 +171,15 @@ html, body {
         a {
           text-decoration:underline;
         }
+    }
+}
+
+.vit-typeable-value-indicator {
+    margin-top: 5px;
+    margin-left: 10px;
+
+    input {
+        width: 80px;
     }
 }
 
