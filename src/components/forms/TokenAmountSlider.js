@@ -12,11 +12,8 @@ class TokenAmountSlider extends TooltipSlider {
         super(props);
 
         this.state = {
-            maybeNewValue: 0
+            proposedNewValue: 0
         };
-
-        // 1. subscribe to parent 'value' changing
-        // 2. push our changes to the parent 'value' iff they pass
     }
 
     isValidProposedValue = (v) => {
@@ -34,7 +31,7 @@ class TokenAmountSlider extends TooltipSlider {
         let v = e.target.value;
 
         this.setState({
-            maybeNewValue: v
+            proposedNewValue: v
         });
 
         if(this.isValidProposedValue(v)) {
@@ -47,7 +44,7 @@ class TokenAmountSlider extends TooltipSlider {
         // the slider changed, update our proposed value first,
         // overriding whatever the user has typed, valid or not...
         this.setState({
-            maybeNewValue: v
+            proposedNewValue: v
         });
 
         // Pass it along to the consumer's change method.
@@ -69,7 +66,8 @@ class TokenAmountSlider extends TooltipSlider {
             valueIndicator =
                 <p className="vit-typeable-value-indicator">
                     <input
-                        value={ this.state.maybeNewValue }
+                        className="form-control-sm"
+                        value={ this.state.proposedNewValue }
                         onChange={ this.proposedValueChanged }
                     />
                     &nbsp;{ LIQUID_TOKEN }
