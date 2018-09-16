@@ -52,6 +52,7 @@ class Upload extends Component {
         this.setPreviewPost = this.setPreviewPost.bind(this);
         this.showUploadForm = this.showUploadForm.bind(this);
         this.postVideo = this.postVideo.bind(this);
+        this.handleThumnailScreenShot = this.handleThumnailScreenShot.bind(this);
     } 
 
     componentDidMount() {
@@ -94,7 +95,7 @@ class Upload extends Component {
             // show the Upload form
             if (this.state.uploadVideos.length === 0) {
                 this.setState({
-                    uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file} }]
+                    uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file, 'videoThumbnail': ''} }]
                 });
             } else {
                 let foundObject = this.state.uploadVideos.find(e => {
@@ -103,7 +104,7 @@ class Upload extends Component {
 
                 if (!foundObject || foundObject === undefined) {
                     this.setState({
-                        uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file} }]
+                        uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file, 'videoThumbnail': ''} }]
                     })
                 }
             }
@@ -273,19 +274,66 @@ class Upload extends Component {
         });
     }
 
+    handleThumnailScreenShot(key, file) {
+        // draw a video thumbnail
+        const videoElement = this.refs['video_' + key].video.video;
+        const videoWidth = videoElement.videoWidth;
+        const videoHeight = videoElement.videoHeight;
+        const canvasElement = this.refs['canvas_' + key]
+        
+        const context = canvasElement.getContext('2d');
+        context.drawImage(videoElement, 0, 0, videoWidth, videoHeight);
+        const videoThumbnailURL = canvasElement.toDataURL(); // this data will be posted along with the form
+
+        // update videoThumbnail which is used later on for posting 
+        const uploadVideos = [...this.state.uploadVideos];
+        const foundObject = uploadVideos.find(e => {
+            return e.hasOwnProperty(key);
+        });
+
+        const index = uploadVideos.indexOf(foundObject);
+        uploadVideos.splice(index, 1);
+        foundObject.videoThumbnail = videoThumbnailURL;
+
+        this.setState({
+            uploadVideos: [...uploadVideos, foundObject]
+        });
+    }
+
     showUploadForm(key, file) {
         
+        let foundObject = this.state.uploadVideos.find(e => {
+            return e.hasOwnProperty(key);
+        });
+
+        console.log(foundObject.videoThumbnail);
+
         return (
             <div className="upload-form row" key={key} style={{'marginTop': '20px'}}>
                 <div className="col-md-6 col-sm-12 video-player" style={{'marginTop': '33px'}}>
-                    <Player playsInline>
+                    <Player ref={'video_' + key} playsInline videoId={'video_' + key}>
                         <HLSSource
                             isVideoChild
                             src={ VIDEO_THUMBNAIL_URL_PREFIX + file.vit_data.Playlist }
                         />
                         <BigPlayButton position="center" />
                     </Player>
-                    <div><img style={{'max-width': '100%', 'max-height': '100%', 'margin-top': '1em', 'margin-bottom': '1em'}} src={ VIDEO_THUMBNAIL_URL_PREFIX + file.vit_data.Hash + "/thumbnail-01.jpg" } /></div>
+
+                    <div style={{'textAlign': 'center', 'marginTop': '10px', 'marginBottom': '10px'}}>
+                        {/* <img style={{'max-width': '100%', 'max-height': '100%', 'margin-top': '1em', 'margin-bottom': '1em'}} src={ VIDEO_THUMBNAIL_URL_PREFIX + file.vit_data.Hash + "/thumbnail-01.jpg" } /> */}
+                        
+                        {
+                            foundObject.videoThumbnail === undefined ?
+                            (
+                                <canvas ref={'canvas_' + key} style={{'height': 0}}></canvas>
+                            ) : (
+                                <canvas ref={'canvas_' + key} style={{'maxWidth': '100%', 'maxHeight': '100%', 'marginTop': '1em', 'marginBottom': '1em'}}></canvas>
+                            )
+                        }
+                        
+                        <button className="btn btn-info btn-sm" onClick={() => this.handleThumnailScreenShot(key)}>Capture</button>
+                    </div>
+                    {/* <div><img style={{'max-width': '100%', 'max-height': '100%', 'margin-top': '1em', 'margin-bottom': '1em'}} src={ VIDEO_THUMBNAIL_URL_PREFIX + file.vit_data.Hash + "/thumbnail-01.jpg" } /></div> */}
                 </div>
                 <div className="col-md-6 col-sm-12">
                     <Formsy 
