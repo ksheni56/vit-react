@@ -5,10 +5,15 @@ html, body {
 
 /* Layout */
 
-.content-wrapper {
-    min-height: calc(100% - 70px);
-    max-height: calc(100% - 70px);
+#root {
+    padding-top: 70px;
 }
+
+/* .content-wrapper {
+    overflow: auto
+    // min-height: calc(100% - 70px);
+    // max-height: calc(100% - 70px);
+} */
 
 .loader-wrapper {
     background: #1C2023;
@@ -21,6 +26,7 @@ html, body {
     color:#fff;
     min-width:calc(100% - 250px);
     max-width:calc(100% - 250px);
+    // -webkit-overflow-scrolling: touch;
 }
 
 .left-sidebar-off {
@@ -104,7 +110,7 @@ html, body {
 
 /* Scrollbar */
 
-::-webkit-scrollbar {
+/* ::-webkit-scrollbar {
   	width: 5px;
   	height: 5px;
 }
@@ -143,7 +149,7 @@ html, body {
 
 ::-webkit-scrollbar-corner {
   	background: transparent;
-}
+} */
 
 /* Wallet */
 

@@ -57,20 +57,18 @@ class Home extends Component {
     }
 
     attachScrollListener() {
-        window.document.getElementById('vitContent').addEventListener('scroll', this.scrollListener, {
+        window.addEventListener('scroll', this.scrollListener, {
             capture: false,
             passive: true,
         });
     }
 
     detachScrollListener() {
-        window.document.getElementById('vitContent').removeEventListener('scroll', this.scrollListener)
+        window.removeEventListener('scroll', this.scrollListener)
     }
 
     scrollListener = debounce(() => {
-        const el = window.document.getElementById('vitContent');
-        if (!el) return;
-        if(el.offsetHeight + el.scrollTop + this.scrollThreshold >= el.scrollHeight) {
+        if(window.innerHeight + window.scrollY + this.scrollThreshold >= document.documentElement.scrollHeight) {
             this.loadMoreContent();
         }
     }, 150)
