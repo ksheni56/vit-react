@@ -174,12 +174,16 @@ html, body {
     }
 }
 
+.token-amount-slider {
+    .row {
+        margin-left: -4px;
+    }
+}
+
 .vit-typeable-value-indicator {
-    margin-top: 5px;
-    margin-left: 10px;
-    text-align: center;
     input {
-        text-align: center;
+        text-align: right;
+        width: 60%;
     }
 }
 

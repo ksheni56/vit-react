@@ -59,19 +59,32 @@ class TokenAmountSlider extends TooltipSlider {
     render() {
         let { sliderLabel, tipFormatter, onChange, userCanType, ...restProps } = this.props;
 
+        let sliderLabelControl =
+            <label htmlFor={this.props.id} className="form-label">
+                {this.props.label}: {this.props.isRequired ? '*' : null }
+            </label>;
+
+        let sliderControl =
+            <TooltipSlider
+                id={this.props.id}
+                tipFormatter={ this.vitTooltipFormatter }
+                onChange={ this.handleSliderChanged }
+                {...restProps}
+                />;
+
         let valueIndicator;
 
         if(userCanType) {
             // use the "typeable" value indicator
             valueIndicator =
-                <p className="vit-typeable-value-indicator">
+                <span className="vit-typeable-value-indicator">
                     <input
                         className="form-control-sm"
                         value={ this.state.proposedNewValue }
                         onChange={ this.proposedValueChanged }
                     />
                     &nbsp;{ LIQUID_TOKEN }
-                </p>;
+                </span>;
         } else {
             // use the normal fixed value indicator
             valueIndicator =
@@ -80,22 +93,32 @@ class TokenAmountSlider extends TooltipSlider {
                 </p>;
         }
 
-        return(
-            <span className="token-amount-slider">
-                <label htmlFor={this.props.id} className="form-label">
-                    {this.props.label}: {this.props.isRequired ? '*' : null }
-                </label>
+        if(userCanType) {
+            // Typeable value indicator on right
+            return (
+                <span className="token-amount-slider">
+                    { sliderLabelControl }
 
-                <TooltipSlider
-                    id={this.props.id}
-                    tipFormatter={ this.vitTooltipFormatter }
-                    onChange={ this.handleSliderChanged }
-                    {...restProps}
-                    />
-
-                { valueIndicator }
-            </span>
-        )
+                    <div className="row align-items-center">
+                        <div className="col-8">
+                            { sliderControl }
+                        </div>
+                        <div className="col-4">
+                            { valueIndicator }
+                        </div>
+                    </div>
+                </span>
+            );
+        } else {
+            // Regular read-only value indicator on the bottom
+            return (
+                <span className="token-amount-slider">
+                    { sliderLabelControl }
+                    { sliderControl }
+                    { valueIndicator }
+                </span>
+            );
+        }
     }
 }
 
