@@ -4,6 +4,7 @@ import steem from 'steem';
 import Dropzone from 'react-dropzone';
 import { Link } from 'react-router-dom';
 import { post } from './actions/post';
+import axios from 'axios';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 import TextArea from './components/forms/TextArea';
@@ -11,7 +12,7 @@ import CreatableSelect from 'react-select/lib/Creatable';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
-import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_HISTORY_ENDPOINT, VIDEO_UPLOAD_POSTED_ENDPOINT } from './config'
+import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_HISTORY_ENDPOINT, AVATAR_UPLOAD_ENDPOINT } from './config'
 import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck, completeUpload, removeUpload } from './reducers/upload';
 import HLSSource from './HLS';
 import { Player, BigPlayButton } from 'video-react';
@@ -53,6 +54,7 @@ class Upload extends Component {
         this.showUploadForm = this.showUploadForm.bind(this);
         this.postVideo = this.postVideo.bind(this);
         this.handleThumnailScreenShot = this.handleThumnailScreenShot.bind(this);
+        this.b64toBlob = this.b64toBlob.bind(this);
     } 
 
     componentDidMount() {
@@ -123,6 +125,30 @@ class Upload extends Component {
         }
     }
 
+    b64toBlob(b64Data, contentType, sliceSize) {
+        contentType = contentType || '';
+        sliceSize = sliceSize || 512;
+
+        var byteCharacters = atob(b64Data);
+        var byteArrays = [];
+
+        for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+            var byteNumbers = new Array(slice.length);
+            for (var i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+
+            var byteArray = new Uint8Array(byteNumbers);
+
+            byteArrays.push(byteArray);
+        }
+
+        var blob = new Blob(byteArrays, {type: contentType});
+        return blob;
+    }
+
     postVideo(form) {
         const hash = form.taskId;
         const uploadVideos = [...this.state.uploadVideos];
@@ -146,8 +172,32 @@ class Upload extends Component {
         }
 
         categories.push('touch-tube')
+        
+        
+        // post video thumnail, then return the IPFS hash store into metajson
+        
+        const imageURL = updateObject.videoThumbnail;
+        const block = imageURL.split(";");
+        const contentType = block[0].split(":")[1];
+        const realData = block[1].split(",")[1];
+        // Convert to blob
+        var videoBlob = this.b64toBlob(realData, contentType);
+        var videoBlobURL = URL.createObjectURL(videoBlob);
+        console.log(videoBlob);
+        let formData = new FormData();
+        formData.append('file', videoBlobURL, 'thumbnail_001.jpg');   
+        // TODO BACKEND API do not accept this type of data???     
+        // axios.post(AVATAR_UPLOAD_ENDPOINT, formData, {
+        //     headers: {
+        //         'Content-Type': 'application/octet-stream',
+        //         'X-Auth-Token':  localStorage.getItem("signature"),
+        //         'X-Auth-UserHost': localStorage.getItem("signUserHost")
+        //     }
+        // }).then(response => {
+        //     console.log("Vidoe Thumbnail upload response", response);
+        // })
 
-
+        /*
         this.setState({
             error: false,
             uploading: true
@@ -206,6 +256,7 @@ class Upload extends Component {
 
             toast.error(this.state.custom_error_text);
         });
+        */
     }
 
     upload(files) {
@@ -274,7 +325,7 @@ class Upload extends Component {
         });
     }
 
-    handleThumnailScreenShot(key, file) {
+    handleThumnailScreenShot(key) {
         // draw a video thumbnail
         const videoElement = this.refs['video_' + key].video.video;
         const videoWidth = videoElement.videoWidth;
@@ -283,7 +334,7 @@ class Upload extends Component {
         
         const context = canvasElement.getContext('2d');
         context.drawImage(videoElement, 0, 0, videoWidth, videoHeight);
-        const videoThumbnailURL = canvasElement.toDataURL(); // this data will be posted along with the form
+        const videoThumbnailURL = canvasElement.toDataURL('image/png');
 
         // update videoThumbnail which is used later on for posting 
         const uploadVideos = [...this.state.uploadVideos];
@@ -305,8 +356,6 @@ class Upload extends Component {
         let foundObject = this.state.uploadVideos.find(e => {
             return e.hasOwnProperty(key);
         });
-
-        console.log(foundObject.videoThumbnail);
 
         return (
             <div className="upload-form row" key={key} style={{'marginTop': '20px'}}>
