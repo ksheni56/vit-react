@@ -12,7 +12,7 @@ import CreatableSelect from 'react-select/lib/Creatable';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
-import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_HISTORY_ENDPOINT, AVATAR_UPLOAD_ENDPOINT } from './config'
+import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_HISTORY_ENDPOINT, AVATAR_UPLOAD_ENDPOINT, SCREENSHOT_IMAGE, VIDEO_UPLOAD_POSTED_ENDPOINT } from './config'
 import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck, completeUpload, removeUpload } from './reducers/upload';
 import HLSSource from './HLS';
 import { Player, BigPlayButton } from 'video-react';
@@ -156,7 +156,7 @@ class Upload extends Component {
             return e.hasOwnProperty(hash);
         });
 
-        const vit_data = updateObject[hash].file.vit_data;
+        let vit_data = updateObject[hash].file.vit_data;
         let slug = form.title.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
 
         let categories = [];
@@ -171,92 +171,94 @@ class Upload extends Component {
             return false;
         }
 
-        categories.push('touch-tube')
-        
-        
+        categories.push('touch-tube');
+
         // post video thumnail, then return the IPFS hash store into metajson
-        
         const imageURL = updateObject.videoThumbnail;
         const block = imageURL.split(";");
         const contentType = block[0].split(":")[1];
         const realData = block[1].split(",")[1];
+
         // Convert to blob
         var videoBlob = this.b64toBlob(realData, contentType);
-        var videoBlobURL = URL.createObjectURL(videoBlob);
-        console.log(videoBlob);
         let formData = new FormData();
-        formData.append('file', videoBlobURL, 'thumbnail_001.jpg');   
-        // TODO BACKEND API do not accept this type of data???     
-        // axios.post(AVATAR_UPLOAD_ENDPOINT, formData, {
-        //     headers: {
-        //         'Content-Type': 'application/octet-stream',
-        //         'X-Auth-Token':  localStorage.getItem("signature"),
-        //         'X-Auth-UserHost': localStorage.getItem("signUserHost")
-        //     }
-        // }).then(response => {
-        //     console.log("Vidoe Thumbnail upload response", response);
-        // })
+        formData.append('file', videoBlob, SCREENSHOT_IMAGE);
 
-        /*
+        // Start to upload post process
         this.setState({
             error: false,
             uploading: true
         });
 
-        // I. POST VIDEO
-        this.props.post({
-            postingWif: this.props.app.postingWif, 
-            category: categories[0].replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase(), // category
-            username: this.props.app.username, 
-            slug: slug, // slug
-            title: form.title, // title
-            body: form.description, // body,
-            tags: categories,
-            vit_data: vit_data
-
-        }).then( response => {
-
-            console.log("post blockchain success", response);
-
-            const headers = {
-                'Content-Type': 'text/html',
-                'X-Auth-Token': localStorage.getItem("signature"),
+        axios.post(AVATAR_UPLOAD_ENDPOINT, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'X-Auth-Token':  localStorage.getItem("signature"),
                 'X-Auth-UserHost': localStorage.getItem("signUserHost")
             }
+        }).then(res => {
+            console.log("Upload video thumnail", res);
+            // get return video thumbnail screenshot
+            vit_data = {...vit_data, 'Screenshot': res.data.Hash};
+            var self = this;
 
-            this.props.completeUpload(hash, VIDEO_UPLOAD_POSTED_ENDPOINT + hash, headers)
+            // post to block chain
+            this.props.post({
+                postingWif: this.props.app.postingWif, 
+                category: categories[0].replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase(), // category
+                username: this.props.app.username, 
+                slug: slug, // slug
+                title: form.title, // title
+                body: form.description, // body,
+                tags: categories,
+                vit_data: vit_data
+            }).then( response => {
+                console.log("post blockchain success", response);
 
-            this.setState({
-                uploading: false
-            })
+                const headers = {
+                    'Content-Type': 'text/html',
+                    'X-Auth-Token': localStorage.getItem("signature"),
+                    'X-Auth-UserHost': localStorage.getItem("signUserHost")
+                }
+    
+                self.props.completeUpload(hash, VIDEO_UPLOAD_POSTED_ENDPOINT + hash, headers)
+    
+                self.setState({
+                    uploading: false
+                })
+    
+            }).catch(err => {
+                console.log("post error", err);
+    
+                if(err.payload.data && err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
+                    self.setState({
+                        error: true,
+                        error_type: 'timeout',
+                        custom_error_text: 'You may only post once every 5 minutes.',
+                        uploading: false
+                    });
+                } else {
+                    self.setState({
+                        error: true,
+                        error_type: 'other',
+                        uploading: false,
+                        custom_error_text: err.payload.data.stack[0].format
+                    });
+                }
+    
+                toast.error(self.state.custom_error_text);
+            });
 
         }).catch(err => {
+            console.log("Something's wrong", err);
+            this.setState({
+                error: true,
+                error_type: 'other',
+                uploading: false,
+            });
 
-            console.log("post error", err)
-
-            if(err.payload.data && err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
-                
-                this.setState({
-                    error: true,
-                    error_type: 'timeout',
-                    custom_error_text: 'You may only post once every 5 minutes.',
-                    uploading: false
-                });
-
-            } else {
-
-                this.setState({
-                    error: true,
-                    error_type: 'other',
-                    uploading: false,
-                    custom_error_text: err.payload.data.stack[0].format
-                });
-
-            }
-
-            toast.error(this.state.custom_error_text);
+            toast.error('Something went wrong!');
         });
-        */
     }
 
     upload(files) {
@@ -328,12 +330,11 @@ class Upload extends Component {
     handleThumnailScreenShot(key) {
         // draw a video thumbnail
         const videoElement = this.refs['video_' + key].video.video;
-        const videoWidth = videoElement.videoWidth;
-        const videoHeight = videoElement.videoHeight;
         const canvasElement = this.refs['canvas_' + key]
-        
+        canvasElement.width = 1920;
+        canvasElement.height = 1080;
         const context = canvasElement.getContext('2d');
-        context.drawImage(videoElement, 0, 0, videoWidth, videoHeight);
+        context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
         const videoThumbnailURL = canvasElement.toDataURL('image/png');
 
         // update videoThumbnail which is used later on for posting 
@@ -369,7 +370,6 @@ class Upload extends Component {
                     </Player>
 
                     <div style={{'textAlign': 'center', 'marginTop': '10px', 'marginBottom': '10px'}}>
-                        {/* <img style={{'max-width': '100%', 'max-height': '100%', 'margin-top': '1em', 'margin-bottom': '1em'}} src={ VIDEO_THUMBNAIL_URL_PREFIX + file.vit_data.Hash + "/thumbnail-01.jpg" } /> */}
                         
                         {
                             foundObject.videoThumbnail === undefined ?
@@ -382,7 +382,6 @@ class Upload extends Component {
                         
                         <button className="btn btn-info btn-sm" onClick={() => this.handleThumnailScreenShot(key)}>Capture</button>
                     </div>
-                    {/* <div><img style={{'max-width': '100%', 'max-height': '100%', 'margin-top': '1em', 'margin-bottom': '1em'}} src={ VIDEO_THUMBNAIL_URL_PREFIX + file.vit_data.Hash + "/thumbnail-01.jpg" } /></div> */}
                 </div>
                 <div className="col-md-6 col-sm-12">
                     <Formsy 
