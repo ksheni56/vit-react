@@ -6,7 +6,9 @@ import { post } from './actions/post';
 import { loginUser } from './actions/app';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
+import TokenAmountSlider from './components/forms/TokenAmountSlider';
 import './sass/Select.scss';
+import 'rc-slider/assets/index.css';
 import { ToastContainer, toast } from 'react-toastify';
 import { vestingSteem, numberWithCommas } from './utils/Format';
 import { LIQUID_TOKEN } from './config';
@@ -30,7 +32,7 @@ class Wallet extends Component {
             keys: '',
             keys_revealed: false,
             power_to: this.props.app.username,
-            power_amount: '',
+            power_amount: 0,
             power_error_text: '',
             power_error: false,
             power_success:false,
@@ -74,6 +76,7 @@ class Wallet extends Component {
                 } catch (error) {
                     // in case meta data is empty or malformed
                 }
+                account_info.raw_balance = parseFloat(account_info.balance.split(' ')[0]);
                 account_info.balance = account_info.balance.split(' ')[0] + ' ' + LIQUID_TOKEN;
                 account_info.vesting_shares = numberWithCommas(vestingSteem(account_info, gprops).toFixed(3)) + ' ' + LIQUID_TOKEN;
                 console.log("Account has been loaded", account_info);
@@ -119,7 +122,7 @@ class Wallet extends Component {
             //power_success: false
         });
 
-        let amount = form_data.power_amount + " " + LIQUID_TOKEN,
+        let amount = this.state.power_amount.toFixed(3) + " " + LIQUID_TOKEN,
         confirmation = prompt("Please enter your VIT password to confirm this action", "");
 
         if(confirmation) {
@@ -240,6 +243,12 @@ class Wallet extends Component {
 
         return err.data.message;
 
+    }
+
+    onPowerUpValueChange = (value) => {
+        this.setState({
+            power_amount: value || 0,
+        });
     }
 
     render() {
@@ -393,20 +402,17 @@ class Wallet extends Component {
                                         maxLength={100}
                                         required />
 
-
-                                    <TextField
+                                    <TokenAmountSlider
                                         name="power_amount"
                                         id="power_amount"
-                                        label="Amount:"
-                                        value={this.state.power_amount}
-                                        placeholder="Enter amount"
-                                        validations={{
-                                            matchRegexp: /^[0-9]+\.[0-9]{3,3}$/
-                                        }}
-                                        validationErrors={{
-                                            matchRegexp: 'Incorrect amount. Please enter X.YYY. eg. 1.000 or 0.005',
-                                        }}
-                                        required />
+                                        label="Power Up Amount"
+                                        isRequired="true"
+                                        disabled={ this.state.account.raw_balance <= 0.0 }
+                                        min={ 0 }
+                                        value={ this.state.power_amount }
+                                        max={ this.state.account.raw_balance }
+                                        step={ 0.1 }
+                                        onChange={ this.onPowerUpValueChange } />
 
                                 </div>
 
@@ -415,7 +421,7 @@ class Wallet extends Component {
                                 <button
                                     type="submit"
                                     className="btn btn-danger mt-2"
-                                    disabled={this.state.powering}
+                                    disabled={this.state.powering || this.state.power_amount <= 0 }
                                 >Power Up</button>
 
                             </Formsy>

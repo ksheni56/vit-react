@@ -9,7 +9,7 @@ import HLSSource from './HLS';
 import Item from './components/Item';
 import Avatar from './components/Avatar';
 import Comments from './components/Comments';
-import { VIDEO_THUMBNAIL_URL_PREFIX } from './config';
+import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN } from './config';
 
 class Post extends Component {
 
@@ -309,7 +309,7 @@ class Post extends Component {
                             <div className="col-9 col-md-10">
                                 <h2>{ this.state.post.title }</h2>
                                 <div className="payout small">
-                                    Pending Payout: <span className="font-weight-bold">${ this.displayPayoutAmount(this.state.post.pending_payout_value) }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
+                                    Pending Payout: <span className="font-weight-bold">{ this.displayPayoutAmount(this.state.post.pending_payout_value) } { LIQUID_TOKEN }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
                                 </div>
                                 <div className="votes">
                                     {/* <button className="btn btn-danger btn-sm">Like</button> */}

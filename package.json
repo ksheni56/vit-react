@@ -17,6 +17,7 @@
     "promise": "^8.0.1",
     "raf": "3.4.0",
     "rc-progress": "^2.2.5",
+    "rc-slider": "^8.6.2",
     "react": "^16.4.1",
     "react-collapsible": "^2.2.0",
     "react-dev-utils": "^5.0.1",
@@ -43,6 +44,7 @@
     "redux-promise-middleware": "^5.1.1",
     "redux-saga": "^0.16.0",
     "redux-thunk": "^2.3.0",
+    "rheostat": "^3.0.1",
     "steem": "^0.7.1",
     "video-react": "^0.13.0"
   },
