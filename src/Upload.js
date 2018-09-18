@@ -331,8 +331,8 @@ class Upload extends Component {
         // draw a video thumbnail
         const videoElement = this.refs['video_' + key].video.video;
         const canvasElement = this.refs['canvas_' + key]
-        canvasElement.width = 1920;
-        canvasElement.height = 1080;
+        canvasElement.width = videoElement.videoWidth;
+        canvasElement.height = videoElement.videoHeight;
         const context = canvasElement.getContext('2d');
         context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
         const videoThumbnailURL = canvasElement.toDataURL('image/png');
