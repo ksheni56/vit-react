@@ -79,7 +79,8 @@ class TokenAmountSlider extends TooltipSlider {
             valueIndicator =
                 <span className="vit-typeable-value-indicator">
                     <input
-                        className="form-control-sm"
+                        className="form-control form-control-sm"
+                        style={{ display: 'inline' }}
                         value={ this.state.proposedNewValue }
                         onChange={ this.proposedValueChanged }
                     />
