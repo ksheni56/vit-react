@@ -100,10 +100,10 @@ class TokenAmountSlider extends TooltipSlider {
                     { sliderLabelControl }
 
                     <div className="row align-items-center">
-                        <div className="col-8">
+                        <div className="col-8" style={{ paddingLeft: '5px' }}>
                             { sliderControl }
                         </div>
-                        <div className="col-4" style={{ 'padding-left': '0px' }}>
+                        <div className="col-4" style={{ paddingLeft: '0px' }}>
                             { valueIndicator }
                         </div>
                     </div>

@@ -409,14 +409,15 @@ class Wallet extends Component {
                                     <TokenAmountSlider
                                         name="power_amount"
                                         id="power_amount"
-                                        label="Power Up Amount"
+                                        label={ `Power Up Amount (${LIQUID_TOKEN})` }
                                         isRequired="true"
                                         disabled={ this.state.account.raw_balance <= 0.0 }
                                         min={ 0 }
                                         value={ this.state.power_amount }
                                         max={ this.state.account.raw_balance }
                                         step={ 0.1 }
-                                        onChange={ this.onPowerUpValueChange } />
+                                        onChange={ this.onPowerUpValueChange }
+                                        userCanType/>
 
                                 </div>
 
