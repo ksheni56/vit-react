@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import moment from 'moment'
 import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN } from '../config'
+import proxifyImage from '../utils/ProxifyImage';
 
 class Item extends Component {
     renderThumbnail() {
@@ -12,7 +13,7 @@ class Item extends Component {
         } catch (e) { }
 
         if(json_metadata && json_metadata.vit_data && json_metadata.vit_data.Hash) {
-            let URL = VIDEO_THUMBNAIL_URL_PREFIX + json_metadata.vit_data.Hash + "/thumbnail-01.jpg";
+            let URL = proxifyImage(VIDEO_THUMBNAIL_URL_PREFIX + json_metadata.vit_data.Hash + "/thumbnail-01.jpg", '600x400');
             console.log("URL", URL);
             return <img
               onError={ e => {e.target.src="/images/thumbnail.jpg" }}
