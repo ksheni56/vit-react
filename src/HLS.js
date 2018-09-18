@@ -6,7 +6,14 @@ class HLS extends Component {
 
     constructor(props, context) {
         super(props, context);
-        this.hls = new Hls();
+        /*
+            There are lots of configuration options avialable here:
+            https://github.com/video-dev/hls.js/blob/master/docs/API.md#fine-tuning
+        */
+        let config = {
+            startLevel: 10,
+        }
+        this.hls = new Hls(config);
     } 
 
     componentWillReceiveProps(nextProps) {}

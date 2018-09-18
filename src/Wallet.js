@@ -27,7 +27,7 @@ class Wallet extends Component {
             loading: true,
             account: '',
             to: '',
-            amount: '',
+            transfer_amount: 0,
             memo: '',
             keys: '',
             keys_revealed: false,
@@ -166,6 +166,10 @@ class Wallet extends Component {
             }).catch(err => {
                 console.log("login failed when attempting to power up", err);
                 toast.error("Password incorrect, please try again.");
+
+                this.setState({
+                    powering: false
+                });
             });
         }
 
@@ -185,7 +189,7 @@ class Wallet extends Component {
                     transferring: true
                 });
 
-                let amount = form_data.amount + " " + LIQUID_TOKEN,
+                let amount = this.state.transfer_amount.toFixed(3) + " " + LIQUID_TOKEN,
                     keys = steem.auth.getPrivateKeys(this.props.app.username, confirmation, ["owner", "memo", "active", "posting"])
 
                 steem.broadcast.transfer(keys.active, this.props.app.username, form_data.to, amount, form_data.memo, (err, result) => {
@@ -217,6 +221,10 @@ class Wallet extends Component {
             }).catch(err => {
                 console.log("login failed when attempting to transfer", err);
                 toast.error("Password incorrect, please try again.");
+
+                this.setState({
+                    transferring: false
+                });
             });
         } else {
 
@@ -243,6 +251,12 @@ class Wallet extends Component {
 
         return err.data.message;
 
+    }
+
+    onTransferValueChange = (value) => {
+        this.setState({
+            transfer_amount: value || 0,
+        });
     }
 
     onPowerUpValueChange = (value) => {
@@ -337,20 +351,18 @@ class Wallet extends Component {
                                         maxLength={100}
                                         required />
 
-
-                                    <TextField
-                                        name="amount"
-                                        id="amount"
-                                        label="Amount:"
-                                        value={this.state.amount}
-                                        placeholder="Enter amount"
-                                        validations={{
-                                            matchRegexp: /^[0-9]+\.[0-9]{3,3}$/
-                                        }}
-                                        validationErrors={{
-                                            matchRegexp: 'Incorrect amount. Please enter X.YYY. eg. 1.000 or 0.005',
-                                        }}
-                                        required />
+                                    <TokenAmountSlider
+                                        name="transfer_amount"
+                                        id="transfer_amount"
+                                        label={ `Amount to Transfer (${LIQUID_TOKEN})` }
+                                        isRequired="true"
+                                        disabled={ this.state.account.raw_balance <= 0.0 }
+                                        min={ 0 }
+                                        value={ this.state.transfer_amount }
+                                        max={ this.state.account.raw_balance }
+                                        step={ 0.001 }
+                                        onChange={ this.onTransferValueChange }
+                                        userCanType/>
 
                                     <TextField
                                         name="memo"
@@ -371,7 +383,7 @@ class Wallet extends Component {
                                 <button
                                     type="submit"
                                     className="btn btn-danger mt-2"
-                                    disabled={this.state.transferring}
+                                    disabled={this.state.transferring || this.state.transfer_amount <= 0 }
                                 >Transfer</button>
 
                             </Formsy>
@@ -405,14 +417,15 @@ class Wallet extends Component {
                                     <TokenAmountSlider
                                         name="power_amount"
                                         id="power_amount"
-                                        label="Power Up Amount"
+                                        label={ `Power Up Amount (${LIQUID_TOKEN})` }
                                         isRequired="true"
                                         disabled={ this.state.account.raw_balance <= 0.0 }
                                         min={ 0 }
                                         value={ this.state.power_amount }
                                         max={ this.state.account.raw_balance }
                                         step={ 0.1 }
-                                        onChange={ this.onPowerUpValueChange } />
+                                        onChange={ this.onPowerUpValueChange }
+                                        userCanType/>
 
                                 </div>
 
