@@ -346,7 +346,7 @@ class Wallet extends Component {
                                     <TokenAmountSlider
                                         name="transfer_amount"
                                         id="transfer_amount"
-                                        label="Amount to Transfer"
+                                        label={ `Amount to Transfer (${LIQUID_TOKEN})` }
                                         isRequired="true"
                                         disabled={ this.state.account.raw_balance <= 0.0 }
                                         min={ 0 }

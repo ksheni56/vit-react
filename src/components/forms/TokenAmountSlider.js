@@ -80,11 +80,10 @@ class TokenAmountSlider extends TooltipSlider {
                 <span className="vit-typeable-value-indicator">
                     <input
                         className="form-control form-control-sm"
-                        style={{ display: 'inline' }}
+                        style={{ display: 'inline', width: '100%' }}
                         value={ this.state.proposedNewValue }
                         onChange={ this.proposedValueChanged }
                     />
-                    &nbsp;{ LIQUID_TOKEN }
                 </span>;
         } else {
             // use the normal fixed value indicator
@@ -104,7 +103,7 @@ class TokenAmountSlider extends TooltipSlider {
                         <div className="col-8">
                             { sliderControl }
                         </div>
-                        <div className="col-4">
+                        <div className="col-4" style={{ 'padding-left': '0px' }}>
                             { valueIndicator }
                         </div>
                     </div>
