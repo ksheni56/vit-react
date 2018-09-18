@@ -170,6 +170,10 @@ class Upload extends Component {
             toast.error("Please select at least 1 category!");
             return false;
         }
+        if(!updateObject.videoThumbnail) {
+            toast.error("Please take a screenshot!");
+            return false;
+        }
 
         categories.push('touch-tube');
 
@@ -417,6 +421,7 @@ class Upload extends Component {
                                 id="description"
                                 placeholder="Type here..." 
                                 value={this.state.comment_text}
+                                required
                             />
 
                             {/* TODO: Is there any way to post this form without hidden field */}
