@@ -12,7 +12,7 @@ class TokenAmountSlider extends TooltipSlider {
         super(props);
 
         this.state = {
-            proposedNewValue: 0
+            proposedNewValue: "0.000"
         };
     }
 
@@ -44,7 +44,7 @@ class TokenAmountSlider extends TooltipSlider {
         // the slider changed, update our proposed value first,
         // overriding whatever the user has typed, valid or not...
         this.setState({
-            proposedNewValue: v
+            proposedNewValue: v.toFixed(3)
         });
 
         // Pass it along to the consumer's change method.
