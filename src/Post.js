@@ -234,7 +234,9 @@ class Post extends Component {
 
     renderVideoPlayer() {
 
-        if(this.state.post.json_metadata.vit_data) {
+        if(this.state.post.json_metadata.vit_data &&
+            this.state.post.json_metadata.vit_data.Hash &&
+            this.state.post.json_metadata.vit_data.Playlist) {
 
             //let hash = this.state.post.json_metadata.vit_data.Hash;
             //let filename = this.state.post.json_metadata.vit_data.Name;

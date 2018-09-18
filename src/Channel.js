@@ -96,7 +96,9 @@ class Channel extends Component {
 
         try {
             if ((JSON.parse(post.json_metadata).tags &&
-                    JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) &&
+                    JSON.parse(post.json_metadata).tags.includes('touch-tube')) &&
+                    JSON.parse(post.json_metadata).vit_data.Hash &&
+                    JSON.parse(post.json_metadata).vit_data.Playlist &&
                     !this.state.blockedUsers.includes(post.author) &&
                     !this.state.dmcaContents.includes(`@${post.author}/${post.permlink}`)) {
                 displayPost = true
