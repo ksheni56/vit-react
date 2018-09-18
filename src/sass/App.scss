@@ -58,7 +58,7 @@ html, body {
       .data-holder {
           width:calc(100% - 40px);
       }
-  } 
+  }
 }
 
 /* Misc */
@@ -171,6 +171,19 @@ html, body {
         a {
           text-decoration:underline;
         }
+    }
+}
+
+.token-amount-slider {
+    .row {
+        margin-left: 0px !important;
+    }
+}
+
+.vit-typeable-value-indicator {
+    input {
+        text-align: right;
+        width: 60%;
     }
 }
 
