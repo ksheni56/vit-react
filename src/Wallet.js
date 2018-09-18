@@ -166,6 +166,10 @@ class Wallet extends Component {
             }).catch(err => {
                 console.log("login failed when attempting to power up", err);
                 toast.error("Password incorrect, please try again.");
+
+                this.setState({
+                    powering: false
+                });
             });
         }
 
@@ -217,6 +221,10 @@ class Wallet extends Component {
             }).catch(err => {
                 console.log("login failed when attempting to transfer", err);
                 toast.error("Password incorrect, please try again.");
+
+                this.setState({
+                    transferring: false
+                });
             });
         } else {
 
