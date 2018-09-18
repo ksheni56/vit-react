@@ -13,6 +13,7 @@ export const AVATAR_PROXY = process.env.REACT_APP_AVATAR_PROXY ? process.env.REA
 export const AVATAR_DEFAULT = 'https://proto.touchit.social/images/user.png';
 export const AVATAR_SIZE_SMALL = 64;
 export const AVATAR_SIZE_MEDIUM = 100;
+export const SCREENSHOT_IMAGE = 'screenshot-01.jpg'
 
 //export const AVATAR_UPLOAD_ENDPOINT = process.env.REACT_APP_AVATAR_UPLOAD_ENDPOINT ? process.env.REACT_APP_AVATAR_UPLOAD_ENDPOINT : "http://138.197.166.131:5000"
 export const AVATAR_UPLOAD_ENDPOINT = process.env.REACT_APP_AVATAR_UPLOAD_ENDPOINT ? process.env.REACT_APP_AVATAR_UPLOAD_ENDPOINT : "https://media.proto.vit.tube/upload/image"
