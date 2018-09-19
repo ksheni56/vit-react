@@ -6,6 +6,7 @@ import './sass/Select.scss';
 import './sass/History.scss';
 import Item from './components/Item';
 import debounce from 'lodash.debounce';
+import { shouldDisplayPost } from './utils/Filter'
 
 class History extends Component {
 
@@ -20,7 +21,9 @@ class History extends Component {
         this.state = {
             posts: [],
             loading: true,
-            loading_more: false
+            loading_more: false,
+            'blockedUsers': [],
+            'dmcaContents': [],
         };
     } 
 
@@ -38,6 +41,24 @@ class History extends Component {
 
     componentWillUnmount() {
         this.detachScrollListener();
+    }
+
+    componentWillReceiveProps(nextProps) {
+
+        if( nextProps.blockedUsers !== this.state.blockedUsers ) {
+            this.setState({
+                blockedUsers: nextProps.blockedUsers,
+                loading: true
+            })
+        }
+
+        if( nextProps.dmcaContents !== this.state.dmcaContents ) {
+            this.setState({
+                dmcaContents: nextProps.dmcaContents,
+                loading: true
+            })
+        }
+
     }
 
     attachScrollListener() {
@@ -81,9 +102,17 @@ class History extends Component {
                 return;
             }
 
+            var related_posts = []
+
+            result.forEach((post) => {
+                if (shouldDisplayPost(this.state, post, related_posts)) {
+                    related_posts.push(post)
+                }
+            })
+
             this.setState({
                 no_more_post: result.length < this.pageSize,
-                posts: result,
+                posts: related_posts,
                 loading: false
             });
 
@@ -117,7 +146,16 @@ class History extends Component {
 
             result.splice(0, 1);
 
-            let all_posts = this.state.posts.concat(result);
+            var related_posts = []
+            var all_posts = []
+
+            result.forEach((post) => {
+                if (shouldDisplayPost(this.state, post, this.state.posts)) {
+                    related_posts.push(post)
+                }
+            })
+
+            all_posts = this.state.posts.concat(related_posts);
 
             this.setState({
                 loading_more: false,
@@ -176,7 +214,9 @@ function mapStateToProps(state) {
 
     return { 
         search: state.search,
-        app: state.app
+        app: state.app,
+        blockedUsers: state.app.blockedUsers,
+        dmcaContents: state.app.dmcaContents,
     };
     
 }

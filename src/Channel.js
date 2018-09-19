@@ -7,6 +7,7 @@ import { subscribe, unsubscribe, getSubs } from './actions/app';
 import debounce from 'lodash.debounce';
 import Avatar from './components/Avatar';
 import { PAGESIZE_CHANNEL } from './config'
+import { shouldDisplayPost } from './utils/Filter'
 
 class Channel extends Component {
 
@@ -28,7 +29,9 @@ class Channel extends Component {
             account_info: [],
             followers: '---',
             subscribing: false,
-            is_subbed: false
+            is_subbed: false,
+            blockedUsers: [],
+            dmcaContents: [],
         }
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
@@ -52,7 +55,20 @@ class Channel extends Component {
                 this.checkIfSubbed();
             });
 
+        }
 
+        if( nextProps.blockedUsers !== this.state.blockedUsers ) {
+            this.setState({
+                blockedUsers: nextProps.blockedUsers,
+                loading: true
+            })
+        }
+
+        if( nextProps.dmcaContents !== this.state.dmcaContents ) {
+            this.setState({
+                dmcaContents: nextProps.dmcaContents,
+                loading: true
+            })
         }
 
     }
@@ -192,13 +208,8 @@ class Channel extends Component {
             var related_posts = []
 
             result.forEach((post) => {
-                try {
-                    if (JSON.parse(post.json_metadata).tags &&
-                            JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                        related_posts.push(post)
-                    }
-                } catch(e) {
-                    // do something?; likely not a related post anyway
+                if (shouldDisplayPost(this.state, post, related_posts)) {
+                    related_posts.push(post)
                 }
             })
 
@@ -244,13 +255,8 @@ class Channel extends Component {
             var all_posts = []
 
             result.forEach((post) => {
-                try {
-                    if (JSON.parse(post.json_metadata).tags &&
-                            JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                        related_posts.push(post)
-                    }
-                } catch(e) {
-                    // do something?; likely not a related post anyway
+                if (shouldDisplayPost(this.state, post, this.state.posts)) {
+                    related_posts.push(post)
                 }
             })
 
@@ -448,7 +454,9 @@ class Channel extends Component {
 
 function mapStateToProps(state) {
     return { 
-        app: state.app
+        app: state.app,
+        blockedUsers: state.app.blockedUsers,
+        dmcaContents: state.app.dmcaContents,
     };
 }
 

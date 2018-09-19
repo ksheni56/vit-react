@@ -234,7 +234,9 @@ class Post extends Component {
 
     renderVideoPlayer() {
 
-        if(this.state.post.json_metadata.vit_data) {
+        if(this.state.post.json_metadata.vit_data &&
+            this.state.post.json_metadata.vit_data.Hash &&
+            this.state.post.json_metadata.vit_data.Playlist) {
             const vit_data = this.state.post.json_metadata.vit_data;
             let playlist = vit_data.Playlist;
             let screenShot;
@@ -339,8 +341,8 @@ class Post extends Component {
             loading = true
         } else {
             // skip displaying video if blocked
-            const { category, author, permlink } = this.state.post;
-            const url = `/${category}/@${author}/${permlink}`;
+            const { author, permlink } = this.state.post;
+            const url = `@${author}/${permlink}`;
 
             if (this.props.dmcaContents.includes(url) || 
                     this.props.blockedUsers.includes(author)) {
