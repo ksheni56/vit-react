@@ -7,6 +7,7 @@ import { subscribe, unsubscribe, getSubs } from './actions/app';
 import debounce from 'lodash.debounce';
 import Avatar from './components/Avatar';
 import { PAGESIZE_CHANNEL } from './config'
+import { shouldDisplayPost } from './utils/Filter'
 
 class Channel extends Component {
 
@@ -90,25 +91,6 @@ class Channel extends Component {
             this.loadMoreContent();
         }
     }, 150)
-
-    shouldDisplayPost(post) {
-        let displayPost = false;
-
-        try {
-            if ((JSON.parse(post.json_metadata).tags &&
-                    JSON.parse(post.json_metadata).tags.includes('touch-tube')) &&
-                    JSON.parse(post.json_metadata).vit_data.Hash &&
-                    JSON.parse(post.json_metadata).vit_data.Playlist &&
-                    !this.state.blockedUsers.includes(post.author) &&
-                    !this.state.dmcaContents.includes(`@${post.author}/${post.permlink}`)) {
-                displayPost = true
-            }
-        } catch(e) {
-            // do something?; likely not a related post anyway
-        }
-
-        return displayPost
-    }
 
     getAccount() {
 
@@ -226,7 +208,7 @@ class Channel extends Component {
             var related_posts = []
 
             result.forEach((post) => {
-                if (this.shouldDisplayPost(post)) {
+                if (shouldDisplayPost(this.state, post)) {
                     related_posts.push(post)
                 }
             })
@@ -273,7 +255,7 @@ class Channel extends Component {
             var all_posts = []
 
             result.forEach((post) => {
-                if (this.shouldDisplayPost(post)) {
+                if (shouldDisplayPost(this.state, post)) {
                     related_posts.push(post)
                 }
             })

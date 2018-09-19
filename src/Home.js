@@ -5,6 +5,7 @@ import Item from './components/Item';
 import steem from 'steem';
 import debounce from 'lodash.debounce';
 import { PAGESIZE_HOMEPAGE } from './config'
+import { shouldDisplayPost } from './utils/Filter'
 
 class Home extends Component {
 
@@ -91,25 +92,6 @@ class Home extends Component {
         }
     }, 150)
 
-    shouldDisplayPost(post) {
-        let displayPost = false;
-
-        try {
-            if ((JSON.parse(post.json_metadata).tags &&
-                    JSON.parse(post.json_metadata).tags.includes('touch-tube')) &&
-                    JSON.parse(post.json_metadata).vit_data.Hash &&
-                    JSON.parse(post.json_metadata).vit_data.Playlist &&
-                    !this.state.blockedUsers.includes(post.author) &&
-                    !this.state.dmcaContents.includes(`@${post.author}/${post.permlink}`)) {
-                displayPost = true
-            }
-        } catch(e) {
-            // do something?; likely not a related post anyway
-        }
-
-        return displayPost
-    }
-
     loadMoreContent() {
 
         if (this.state.loading_more || this.state.no_more_post) return;
@@ -153,7 +135,7 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    if (this.shouldDisplayPost(post)) {
+                    if (shouldDisplayPost(this.state, post)) {
                         related_posts.push(post)
                     }
                 })
@@ -190,7 +172,7 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    if (this.shouldDisplayPost(post)) {
+                    if (shouldDisplayPost(this.state, post)) {
                         related_posts.push(post)
                     }
                 })
@@ -226,7 +208,7 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    if (this.shouldDisplayPost(post)) {
+                    if (shouldDisplayPost(this.state, post)) {
                         related_posts.push(post)
                     }
                 })
@@ -273,7 +255,7 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    if (this.shouldDisplayPost(post)) {
+                    if (shouldDisplayPost(this.state, post)) {
                         related_posts.push(post)
                     }
                 })
@@ -304,7 +286,7 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    if (this.shouldDisplayPost(post)) {
+                    if (shouldDisplayPost(this.state, post)) {
                         related_posts.push(post)
                     }
                 })
@@ -335,7 +317,7 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    if (this.shouldDisplayPost(post)) {
+                    if (shouldDisplayPost(this.state, post)) {
                         related_posts.push(post)
                     }
                 })
