@@ -135,7 +135,7 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    if (shouldDisplayPost(this.state, post)) {
+                    if (shouldDisplayPost(this.state, post, this.state.posts)) {
                         related_posts.push(post)
                     }
                 })
@@ -145,7 +145,7 @@ class Home extends Component {
                 this.setState({
                     posts: all_posts,
                     no_more_post: result.length < this.pageSize,
-                    'loading_more': false
+                    loading_more: false
                 })
 
             });
@@ -172,7 +172,7 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    if (shouldDisplayPost(this.state, post)) {
+                    if (shouldDisplayPost(this.state, post, this.state.posts)) {
                         related_posts.push(post)
                     }
                 })
@@ -182,7 +182,7 @@ class Home extends Component {
                 this.setState({
                     posts: all_posts,
                     no_more_post: result.length < this.pageSize,
-                    'loading_more': false
+                    loading_more: false
                 })
             });
 
@@ -208,7 +208,7 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    if (shouldDisplayPost(this.state, post)) {
+                    if (shouldDisplayPost(this.state, post, this.state.posts)) {
                         related_posts.push(post)
                     }
                 })
@@ -218,7 +218,7 @@ class Home extends Component {
                 this.setState({
                     posts: all_posts,
                     no_more_post: result.length < this.pageSize,
-                    'loading_more': false
+                    loading_more: false
                 })
 
             });
@@ -255,7 +255,7 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    if (shouldDisplayPost(this.state, post)) {
+                    if (shouldDisplayPost(this.state, post, related_posts)) {
                         related_posts.push(post)
                     }
                 })
@@ -286,7 +286,7 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    if (shouldDisplayPost(this.state, post)) {
+                    if (shouldDisplayPost(this.state, post, related_posts)) {
                         related_posts.push(post)
                     }
                 })
@@ -317,7 +317,7 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    if (shouldDisplayPost(this.state, post)) {
+                    if (shouldDisplayPost(this.state, post, related_posts)) {
                         related_posts.push(post)
                     }
                 })

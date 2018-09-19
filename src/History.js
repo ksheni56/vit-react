@@ -105,7 +105,7 @@ class History extends Component {
             var related_posts = []
 
             result.forEach((post) => {
-                if (shouldDisplayPost(this.state, post)) {
+                if (shouldDisplayPost(this.state, post, related_posts)) {
                     related_posts.push(post)
                 }
             })
@@ -150,7 +150,7 @@ class History extends Component {
             var all_posts = []
 
             result.forEach((post) => {
-                if (shouldDisplayPost(this.state, post)) {
+                if (shouldDisplayPost(this.state, post, this.state.posts)) {
                     related_posts.push(post)
                 }
             })
