@@ -11,6 +11,10 @@ class DmcaInformation extends Component {
         super(props);
 
         this.state = {
+            infringements: [{
+                url: '',
+                description: ''
+            }],
             firstname: '',
             lastname: '',
             address: '',
@@ -31,6 +35,27 @@ class DmcaInformation extends Component {
         });
     }
 
+    changeInfringementDescription(infringement_idx, newDescription) {
+        let infringements = this.state.infringements.slice();
+        infringements[infringement_idx].description = newDescription;
+        this.setState({
+            infringements: infringements
+        });
+    }
+
+    addExtraUrl() {
+        // User needs to append more URLs to this complaint
+        let infringements = this.state.infringements.slice();
+        infringements.push({
+            url: '',
+            description: ''
+        });
+
+        this.setState({
+            infringements: infringements
+        });
+    }
+
     render() {
         return (
             <div className="row justify-content-center">
@@ -38,22 +63,60 @@ class DmcaInformation extends Component {
 
                 <div className="col-md-8 col-sm-12 mt-4">
                     <div className="upload-wrapper mb-4">
-                        <h3>DMCA Notice of Copyright Infringement</h3>
+                        <h2>DMCA Notice of Copyright Infringement</h2>
                         Click <a href="#takedown-form">here</a> to notify us of copyright infringement.
                         <p>Legal text goes here</p>
                     </div>
 
                     <div className="upload-wrapper mb-4">
                         <a name="takedown-form">
-                            <h3>DMCA Takedown Form</h3>
+                            <h2>DMCA Takedown Form</h2>
                         </a>
 
                         <Formsy
                             onValidSubmit={this.submitTakedownRequest}
                             ref="upload_form">
 
-                            // TODO: url list
+                            <h4>Infringing Content</h4>
+                            {
+                                this.state.infringements.map((infringement, idx) => {
+                                    return (
+                                        <div className="col-md-8 col-sm-12 px-0" key={idx}>
+                                            <h4>Content #{ idx + 1 }</h4>
+                                            <TextField
+                                                name={ `infringement-${idx}-url` }
+                                                value={ infringement.url }
+                                                label="Location (URL) of the allegedly infringing material:"
+                                                required/>
 
+                                            <div className="form-group">
+                                                <label htmlFor={`infringement-${idx}-description`} className="form-label">
+                                                    Description of the work claimed to be infringed:
+                                                </label>
+                                                <select
+                                                    className="form-control"
+                                                    value={ infringement.description }
+                                                    onChange={ (e) => this.changeInfringementDescription(idx, e.target.value) }
+                                                    name={ `infringement-${idx}-description` }>
+                                                    <option value="1">My or my company's, organization's or client's video</option>
+                                                    <option value="2">My or my company's, organization's or client's photo</option>
+                                                    <option value="3">My or my company's, organization's or client's original music or song</option>
+                                                    <option value="4">My or my company's, organization's or client's software</option>
+                                                    <option value="5">My or my company’s, organization’s or client’s artwork</option>
+                                                    <option value="6">Other</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    )
+                                })
+                            }
+                            <button type="button"
+                                className="btn mt-2"
+                                onClick={ this.addExtraUrl.bind(this) }>
+                                Add another URL
+                            </button>
+
+                            <h4>Your Details</h4>
                             <div className="col-md-8 col-sm-12 px-0">
                                 <TextField
                                     name="firstname"
