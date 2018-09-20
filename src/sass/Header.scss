@@ -1,6 +1,10 @@
 .header {
     height:70px;
     background: #fff;
+    position: fixed;
+    width: 100%;
+    z-index: 3;
+    top: 0px;
 
     .logo-wrapper {
         max-width:250px;

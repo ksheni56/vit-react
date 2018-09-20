@@ -62,13 +62,17 @@ class Login extends Component {
 
 
     componentDidMount() {
+        document.body.classList.add('login')
 
         if(this.props.match.params.username) {
             this.setState({
                 username: this.props.match.params.username
             })
         }
+    }
 
+    componentWillUnmount() {
+        document.body.classList.remove('login')
     }
 
     render() {

@@ -3,30 +3,24 @@ html, body {
     height: 100%;
 }
 
+body:not(.login) {
+    background: #1C2023;
+
+    #root {
+        padding-top: 70px;
+    }
+}
+
 /* Layout */
-
-.content-wrapper {
-    min-height: calc(100% - 70px);
-    max-height: calc(100% - 70px);
-}
-
-.loader-wrapper {
-    background: #1C2023;
-}
-
 .content {
-    background: #1C2023;
     overflow-y: auto;
-    height: 100%;
     color:#fff;
-    min-width:calc(100% - 250px);
-    max-width:calc(100% - 250px);
+    margin-left: 250px;
 }
 
 .left-sidebar-off {
     .content {
-        min-width:100%;
-        max-width:100%;
+        margin-left: 0px;
     }
 
     .left-sidebar {
@@ -59,6 +53,49 @@ html, body {
           width:calc(100% - 40px);
       }
   }
+}
+
+/* Scrollbar */
+
+div.left-sidebar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+div.left-sidebar::-webkit-scrollbar-button {
+    width: 0px;
+    height: 0px;
+}
+
+div.left-sidebar::-webkit-scrollbar-thumb {
+    background: #999999;
+    border-radius: 28px;
+}
+
+div.left-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #666666;
+}
+
+div.left-sidebar::-webkit-scrollbar-thumb:active {
+    background: #666666;
+}
+
+div.left-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+    border: 0px none #ffffff;
+    border-radius: 0px;
+}
+
+div.left-sidebar::-webkit-scrollbar-track:hover {
+    background: #1b2023;
+}
+
+div.left-sidebar::-webkit-scrollbar-track:active {
+    background: #1b2023;
+}
+
+div.left-sidebar::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 /* Misc */
@@ -100,49 +137,6 @@ html, body {
         }
     }
 
-}
-
-/* Scrollbar */
-
-::-webkit-scrollbar {
-  	width: 5px;
-  	height: 5px;
-}
-
-::-webkit-scrollbar-button {
-  	width: 0px;
-  	height: 0px;
-}
-
-::-webkit-scrollbar-thumb {
-  	background: #999999;
-  	border-radius: 28px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  	background: #666666;
-}
-
-::-webkit-scrollbar-thumb:active {
-  	background: #666666;
-}
-
-::-webkit-scrollbar-track {
-	background: transparent;
-	border: 0px none #ffffff;
-	border-radius: 0px;
-}
-
-::-webkit-scrollbar-track:hover {
-  	background: #1b2023;
-}
-
-::-webkit-scrollbar-track:active {
-  	background: #1b2023;
-}
-
-::-webkit-scrollbar-corner {
-  	background: transparent;
 }
 
 /* Wallet */
@@ -273,4 +267,8 @@ code {
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
   }
+}
+
+.loader-more {
+    height: 40px;
 }

@@ -41,8 +41,9 @@ import Categories from './Categories';
 import Wallet from './Wallet';
 import Profile from './Profile';
 import Transfers from './Transfers';
+import ScrollToTop from './components/ScrollToTop ';
 
-// Connect to Vit Testnet
+// Connect to Vit
 steem.api.setOptions({
     url: API_URL,
     address_prefix: API_ADDRESS_PREFIX,
@@ -52,15 +53,11 @@ steem.api.setOptions({
 // Fetch DMCA data
 reducers.dispatch(getDMCAContents());
 reducers.dispatch(getBlockedUsers());
-/* getBlockedUsers()
-    .then(response => {
-        reducers.dispatch(response)
-    });
- */
 
 ReactDOM.render((
     <Provider store={reducers}>
         <Router>
+            <ScrollToTop>
             <Switch>
 
                 <Route exact path="/login/:username?" component={ Login } />
@@ -105,6 +102,7 @@ ReactDOM.render((
                 </Bootstrap>
 
             </Switch>
+            </ScrollToTop>
         </Router>
     </Provider>
 ), document.getElementById('root'));

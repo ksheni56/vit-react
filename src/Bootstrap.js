@@ -107,7 +107,7 @@ class Bootstrap extends Component {
 
         return [
             <Header {...this.props} key="header" toggle={ this.toggleLeftSidebarCallback }/>,
-            <div className="row mx-0 content-wrapper h-100" key="content-wrapper" ref="content_wrapper">
+            <div className="row mx-0 content-wrapper" key="content-wrapper" ref="content_wrapper">
 
                 {
                     this.state.initializing ? (

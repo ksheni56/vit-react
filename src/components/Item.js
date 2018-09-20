@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import moment from 'moment'
-import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, SCREENSHOT_IMAGE, AVATAR_UPLOAD_PREFIX} from '../config'
+import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, VIDEO_THUMBNAIL_LIST_SIZE, SCREENSHOT_IMAGE, AVATAR_UPLOAD_PREFIX} from '../config'
+import proxifyImage from '../utils/ProxifyImage';
 
 class Item extends Component {
     renderThumbnail() {
@@ -19,6 +20,7 @@ class Item extends Component {
             } else {
                 URL = AVATAR_UPLOAD_PREFIX + json_metadata.vit_data.Screenshot + '/' + SCREENSHOT_IMAGE;
             }
+            URL = proxifyImage(URL, VIDEO_THUMBNAIL_LIST_SIZE)
             
             console.log("URL", URL);
             return <img
@@ -62,12 +64,12 @@ class Item extends Component {
     renderHorizontally() {
         return (
             <div className="row item-wrapper mb-3" key={ this.props.data.id } ref={ this.props.data.id }>
-                <div className="col-3">
+                <div className="col-5">
                     <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>
                         { this.renderThumbnail() }
                     </Link>
                 </div>
-                <div className="col-9">
+                <div className="col-7">
                     <div className="d-flex w-100">
                         <h6>
                             <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>{this.truncateTitle(this.props.data.title)}</Link>

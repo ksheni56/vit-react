@@ -74,27 +74,25 @@ class Home extends Component {
     }
 
     attachScrollListener() {
-        window.document.getElementById('vitContent').addEventListener('scroll', this.scrollListener, {
+        window.addEventListener('scroll', this.scrollListener, {
             capture: false,
             passive: true,
         });
     }
 
     detachScrollListener() {
-        window.document.getElementById('vitContent').removeEventListener('scroll', this.scrollListener)
+        window.removeEventListener('scroll', this.scrollListener)
     }
 
     scrollListener = debounce(() => {
-        const el = window.document.getElementById('vitContent');
-        if (!el) return;
-        if(el.offsetHeight + el.scrollTop + this.scrollThreshold >= el.scrollHeight) {
+        if(window.innerHeight + window.scrollY + this.scrollThreshold >= document.documentElement.scrollHeight) {
             this.loadMoreContent();
         }
     }, 150)
 
     loadMoreContent() {
 
-        if (this.state.loading_more || this.state.no_more_post) return;
+        if (this.state.loading || this.state.loading_more || this.state.no_more_post) return;
 
         if(this.state.posts.length === 0) {
             return;
@@ -385,12 +383,12 @@ class Home extends Component {
         return [
             <FilterBar { ...this.props } key="filter-bar" path="/"/>,
             <div key="posts">{ this.renderPosts() }</div>,
-            <div className="mb-4 mt-1 text-center" key="load-more">
+            <div className="mb-4 mt-3 text-center loader-more" key="load-more">
 
                 {
                     !this.state.loading && this.state.loading_more && !this.state.no_more_post? (
 
-                        <i className="fas fa-spinner fa-pulse"></i>
+                        <i className="fas fa-circle-notch fa-spin fa-lg"></i>
 
                     ) : (
 

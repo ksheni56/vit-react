@@ -7,6 +7,7 @@
     .content {
         min-width: 100%;
         max-width: 100%;
+        margin-left: 0;
     }
 
     .filter-bar {
@@ -22,7 +23,7 @@
     }
 
     .sidebar-overlay {
-        position: absolute;
+        position: fixed;
         top: 70px;
         right: 0;
         bottom: 0;
@@ -36,15 +37,12 @@
 
     #root { 
         .left-sidebar {
-            position: absolute;
             z-index: 2;
             display: block;
-            left: 0;
             visibility: hidden;
             transition-property: transform, visibility;
             transform: translate3d(-100%, 0, 0);
             transition-duration: 200ms;
-            max-height: calc(100% - 70px);
         }
 
         .left-sidebar-off {
