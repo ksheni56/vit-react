@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import moment from 'moment'
-import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, VIDEO_THUMBNAIL_LIST_SIZE } from '../config'
+import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, VIDEO_THUMBNAIL_LIST_SIZE, SCREENSHOT_IMAGE, AVATAR_UPLOAD_PREFIX} from '../config'
 import proxifyImage from '../utils/ProxifyImage';
 
 class Item extends Component {
@@ -13,8 +13,15 @@ class Item extends Component {
         } catch (e) { }
 
         if(json_metadata && json_metadata.vit_data && json_metadata.vit_data.Hash) {
-            let URL = (VIDEO_THUMBNAIL_URL_PREFIX + json_metadata.vit_data.Hash + "/thumbnail-01.jpg");
+            let URL;
+            if (json_metadata.vit_data.Screenshot === undefined) {
+                // for videos already on production, we use the default one
+                URL = VIDEO_THUMBNAIL_URL_PREFIX + json_metadata.vit_data.Hash + "/thumbnail-01.jpg";
+            } else {
+                URL = AVATAR_UPLOAD_PREFIX + json_metadata.vit_data.Screenshot + '/' + SCREENSHOT_IMAGE;
+            }
             URL = proxifyImage(URL, VIDEO_THUMBNAIL_LIST_SIZE)
+            
             console.log("URL", URL);
             return <img
               onError={ e => {e.target.src="/images/thumbnail.jpg" }}
@@ -48,7 +55,7 @@ class Item extends Component {
                     </div>
                 </div>
                 <div className="meta-info">
-                    <Link to={ "/@" + this.props.data.author }>{ this.props.data.author }</Link> &middot; { moment.utc(this.props.data.active).tz( moment.tz.guess() ).fromNow() }
+                    <Link to={ "/@" + this.props.data.author }>{ this.props.data.author }</Link> &middot; { moment.utc(this.props.data.created).tz( moment.tz.guess() ).fromNow() }
                 </div>
             </div>
         )
@@ -72,7 +79,7 @@ class Item extends Component {
                         </div>
                     </div>
                     <div className="meta-info">
-                        <span>{ this.props.data.category }</span> &middot; { moment.utc(this.props.data.active).tz( moment.tz.guess() ).fromNow() }
+                        <span>{ this.props.data.category }</span> &middot; { moment.utc(this.props.data.created).tz( moment.tz.guess() ).fromNow() }
                     </div>
                 </div>
             </div>

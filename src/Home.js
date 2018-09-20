@@ -5,6 +5,7 @@ import Item from './components/Item';
 import steem from 'steem';
 import debounce from 'lodash.debounce';
 import { PAGESIZE_HOMEPAGE } from './config'
+import { shouldDisplayPost } from './utils/Filter'
 
 class Home extends Component {
 
@@ -21,7 +22,9 @@ class Home extends Component {
             'loading': true,
             'posts': [],
             'loading_more': false,
-            no_more_post: false
+            'no_more_post': false,
+            'blockedUsers': [],
+            'dmcaContents': [],
         }
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
@@ -52,6 +55,20 @@ class Home extends Component {
                 this.loadContent(this.state.filter);
             });
 
+        }
+
+        if( nextProps.blockedUsers !== this.state.blockedUsers ) {
+            this.setState({
+                blockedUsers: nextProps.blockedUsers,
+                loading: true
+            })
+        }
+
+        if( nextProps.dmcaContents !== this.state.dmcaContents ) {
+            this.setState({
+                dmcaContents: nextProps.dmcaContents,
+                loading: true
+            })
         }
 
     }
@@ -116,13 +133,8 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (shouldDisplayPost(this.state, post, this.state.posts)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -131,7 +143,7 @@ class Home extends Component {
                 this.setState({
                     posts: all_posts,
                     no_more_post: result.length < this.pageSize,
-                    'loading_more': false
+                    loading_more: false
                 })
 
             });
@@ -158,13 +170,8 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (shouldDisplayPost(this.state, post, this.state.posts)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -173,7 +180,7 @@ class Home extends Component {
                 this.setState({
                     posts: all_posts,
                     no_more_post: result.length < this.pageSize,
-                    'loading_more': false
+                    loading_more: false
                 })
             });
 
@@ -199,13 +206,8 @@ class Home extends Component {
                 var all_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (shouldDisplayPost(this.state, post, this.state.posts)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -214,7 +216,7 @@ class Home extends Component {
                 this.setState({
                     posts: all_posts,
                     no_more_post: result.length < this.pageSize,
-                    'loading_more': false
+                    loading_more: false
                 })
 
             });
@@ -251,13 +253,8 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (shouldDisplayPost(this.state, post, related_posts)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -287,13 +284,8 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (shouldDisplayPost(this.state, post, related_posts)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -323,13 +315,8 @@ class Home extends Component {
                 var related_posts = []
 
                 result.forEach((post) => {
-                    try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
-                            related_posts.push(post)
-                        }
-                    } catch(e) {
-                        // do something?; likely not a related post anyway
+                    if (shouldDisplayPost(this.state, post, related_posts)) {
+                        related_posts.push(post)
                     }
                 })
 
@@ -419,7 +406,9 @@ class Home extends Component {
 function mapStateToProps(state) {
 
     return {
-        search: state.search
+        search: state.search,
+        blockedUsers: state.app.blockedUsers,
+        dmcaContents: state.app.dmcaContents
     };
 
 }

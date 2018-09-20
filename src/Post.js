@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from 'steem';
-import { Player, BigPlayButton } from 'video-react';
+import { Player, BigPlayButton, PosterImage } from 'video-react';
 import { Link } from 'react-router-dom';
 import { vote, comment } from './actions/post';
 import moment from 'moment';
@@ -9,7 +9,7 @@ import HLSSource from './HLS';
 import Item from './components/Item';
 import Avatar from './components/Avatar';
 import Comments from './components/Comments';
-import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN } from './config';
+import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
 
 class Post extends Component {
 
@@ -234,16 +234,23 @@ class Post extends Component {
 
     renderVideoPlayer() {
 
-        if(this.state.post.json_metadata.vit_data) {
-
-            //let hash = this.state.post.json_metadata.vit_data.Hash;
-            //let filename = this.state.post.json_metadata.vit_data.Name;
-            let playlist = this.state.post.json_metadata.vit_data.Playlist;
-
+        if(this.state.post.json_metadata.vit_data &&
+            this.state.post.json_metadata.vit_data.Hash &&
+            this.state.post.json_metadata.vit_data.Playlist) {
+            const vit_data = this.state.post.json_metadata.vit_data;
+            let playlist = vit_data.Playlist;
+            let screenShot;
+            if (vit_data.Screenshot === undefined) {
+                // for videos already on production, we use the default one
+                screenShot = VIDEO_THUMBNAIL_URL_PREFIX + vit_data.Hash + "/thumbnail-01.jpg";
+            } else {
+                screenShot = AVATAR_UPLOAD_PREFIX + vit_data.Screenshot + '/' + SCREENSHOT_IMAGE;
+            }
             return (
 
-                <Player playsInline>
-                {/*<PosterImage poster={ "https://media.vit.tube/playback/" +  thumbnail } />*/}
+                <Player playsInline 
+                    poster={screenShot}
+                >
                     <HLSSource
                         isVideoChild
                         src={ VIDEO_THUMBNAIL_URL_PREFIX + playlist }
@@ -334,8 +341,8 @@ class Post extends Component {
             loading = true
         } else {
             // skip displaying video if blocked
-            const { category, author, permlink } = this.state.post;
-            const url = `/${category}/@${author}/${permlink}`;
+            const { author, permlink } = this.state.post;
+            const url = `@${author}/${permlink}`;
 
             if (this.props.dmcaContents.includes(url) || 
                     this.props.blockedUsers.includes(author)) {
