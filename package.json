@@ -82,6 +82,7 @@
     "object-assign": "4.1.1",
     "postcss-flexbugs-fixes": "^4.1.0",
     "postcss-loader": "^3.0.0",
+    "react-country-region-selector": "^1.4.1",
     "react-error-overlay": "^1.0.10",
     "react-styleguidist": "^7.2.1",
     "sass-loader": "^7.1.0",
