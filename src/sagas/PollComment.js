@@ -8,7 +8,7 @@ export const START_BACKGROUND_SYNC_COMMENTS = 'START_BACKGROUND_SYNC_COMMENTS';
 export const STOP_BACKGROUND_SYNC_COMMENTS = 'STOP_BACKGROUND_SYNC_COMMENTS';
 export const CANCELLED_BACKGROUND_SYNC = 'CANCELLED_BACKGROUND_SYNC';
 
-const POLLING_INTERVAL = 5000; // 5 second polling interval
+const POLLING_INTERVAL = 2500; // 2.5 second polling interval
 
 function* bgSync(action) {
     try {

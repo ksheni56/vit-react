@@ -38,7 +38,9 @@ class Post extends Component {
         if(nextProps.match.params.permalink !== this.state.permalink) {
 
             this.setState({
-                loading: true
+                loading: true,
+                author: nextProps.match.params.author,
+                permalink: nextProps.match.params.permalink
             })
 
             this.loadContent(nextProps.match.params.author, nextProps.match.params.permalink)
@@ -377,7 +379,7 @@ class Post extends Component {
                     }
 
                     {
-                        this.state.post ? (
+                        !loading && this.state.post ? (
 
                             <Comments
                                 matchParams={this.props.match.params}

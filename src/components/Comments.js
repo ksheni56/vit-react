@@ -47,6 +47,30 @@ class Comments extends Component {
         });
     }
 
+    componentWillReceiveProps(nextProps) {
+        if(nextProps.matchParams.permalink !== this.state.permalink) {
+
+            this.props.dispatch({
+                type: 'STOP_BACKGROUND_SYNC_COMMENTS',
+            });
+
+            this.setState({
+                author: nextProps.matchParams.author,
+                permalink: nextProps.matchParams.permalink,
+                comments: [],
+                loading_comments: true
+            });
+
+            this.props.dispatch({
+                type: 'START_BACKGROUND_SYNC_COMMENTS',
+                callback: () => {
+                    console.log("Syncing comments on " + nextProps.matchParams.permalink);
+                    this.loadComments();
+                }
+            });
+        }
+    }
+
     setReplyTarget(value) {
         
         // set state to reply target with value
