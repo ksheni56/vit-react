@@ -94,6 +94,7 @@ class Header extends Component {
                                             <Link to="/wallet" className="dropdown-item" onClick={this.toggle}>Wallet</Link> 
                                             <Link to="/profile" className="dropdown-item" onClick={this.toggle}>Profile</Link> 
                                             <Link to="/history" className="dropdown-item" onClick={this.toggle}>History</Link> 
+                                            <Link to="//explore.vit.tube" target="_new" className="dropdown-item" onClick={this.toggle}>Chain Explorer</Link>
                                             <DropdownItem onClick={this.logout}>Logout</DropdownItem>
                                         </DropdownMenu>
                                     </ButtonDropdown>
