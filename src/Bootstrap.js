@@ -26,9 +26,11 @@ class Bootstrap extends Component {
             publicWif = localStorage.getItem("publicWif"),
             postingWif = localStorage.getItem("postingWif");
 
-        if(!username || !publicWif || !postingWif) {
+        if(!username || !publicWif || !postingWif 
+            || (username && publicWif && this.props.app.authorized)) {
 
             // not logged in, nothing in Local Storage. Just show the UI
+            // OR logged in, show the UI
 
             this.setState({
                 initializing: false
