@@ -379,7 +379,7 @@ class Post extends Component {
                     }
 
                     {
-                        this.state.post ? (
+                        !loading && this.state.post ? (
 
                             <Comments
                                 matchParams={this.props.match.params}
