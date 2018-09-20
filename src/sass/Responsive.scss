@@ -7,6 +7,7 @@
     .content {
         min-width: 100%;
         max-width: 100%;
+        margin-left: 0;
     }
 
     .filter-bar {
@@ -36,16 +37,12 @@
 
     #root { 
         .left-sidebar {
-            position: fixed;
             z-index: 2;
             display: block;
-            left: 0;
             visibility: hidden;
             transition-property: transform, visibility;
             transform: translate3d(-100%, 0, 0);
             transition-duration: 200ms;
-            top: 70px;
-            bottom: 0px;
         }
 
         .left-sidebar-off {
@@ -140,50 +137,5 @@
     #root .related-videos h3 {
         font-size: 17px;
         color: #ffffff;
-    }
-}
-
-@include media-breakpoint-up(lg) {
-    /* Scrollbar */
-
-    ::-webkit-scrollbar {
-        width: 5px;
-        height: 5px;
-    }
-
-    ::-webkit-scrollbar-button {
-        width: 0px;
-        height: 0px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-        background: #999999;
-        border-radius: 28px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: #666666;
-    }
-
-    ::-webkit-scrollbar-thumb:active {
-        background: #666666;
-    }
-
-    ::-webkit-scrollbar-track {
-        background: transparent;
-        border: 0px none #ffffff;
-        border-radius: 0px;
-    }
-
-    ::-webkit-scrollbar-track:hover {
-        background: #1b2023;
-    }
-
-    ::-webkit-scrollbar-track:active {
-        background: #1b2023;
-    }
-
-    ::-webkit-scrollbar-corner {
-        background: transparent;
     }
 }

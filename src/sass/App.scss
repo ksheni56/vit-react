@@ -15,14 +15,12 @@ body:not(.login) {
 .content {
     overflow-y: auto;
     color:#fff;
-    min-width:calc(100% - 250px);
-    max-width:calc(100% - 250px);
+    margin-left: 250px;
 }
 
 .left-sidebar-off {
     .content {
-        min-width:100%;
-        max-width:100%;
+        margin-left: 0px;
     }
 
     .left-sidebar {
@@ -55,6 +53,49 @@ body:not(.login) {
           width:calc(100% - 40px);
       }
   }
+}
+
+/* Scrollbar */
+
+div.left-sidebar::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+div.left-sidebar::-webkit-scrollbar-button {
+    width: 0px;
+    height: 0px;
+}
+
+div.left-sidebar::-webkit-scrollbar-thumb {
+    background: #999999;
+    border-radius: 28px;
+}
+
+div.left-sidebar::-webkit-scrollbar-thumb:hover {
+    background: #666666;
+}
+
+div.left-sidebar::-webkit-scrollbar-thumb:active {
+    background: #666666;
+}
+
+div.left-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+    border: 0px none #ffffff;
+    border-radius: 0px;
+}
+
+div.left-sidebar::-webkit-scrollbar-track:hover {
+    background: #1b2023;
+}
+
+div.left-sidebar::-webkit-scrollbar-track:active {
+    background: #1b2023;
+}
+
+div.left-sidebar::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 /* Misc */
