@@ -47,6 +47,18 @@ class Comments extends Component {
         });
     }
 
+    componentWillReceiveProps(nextProps) {
+        if(nextProps.matchParams.permalink !== this.state.permalink) {
+            this.setState({
+                author: nextProps.matchParams.author,
+                permalink: nextProps.matchParams.permalink,
+                loading_comments: true
+            });
+
+            this.loadComments();
+        }
+    }
+
     setReplyTarget(value) {
         
         // set state to reply target with value
