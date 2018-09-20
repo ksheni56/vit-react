@@ -22,7 +22,7 @@
     }
 
     .sidebar-overlay {
-        position: absolute;
+        position: fixed;
         top: 70px;
         right: 0;
         bottom: 0;
@@ -36,7 +36,7 @@
 
     #root { 
         .left-sidebar {
-            position: absolute;
+            position: fixed;
             z-index: 2;
             display: block;
             left: 0;
@@ -44,7 +44,8 @@
             transition-property: transform, visibility;
             transform: translate3d(-100%, 0, 0);
             transition-duration: 200ms;
-            max-height: calc(100% - 70px);
+            top: 70px;
+            bottom: 0px;
         }
 
         .left-sidebar-off {
@@ -139,5 +140,50 @@
     #root .related-videos h3 {
         font-size: 17px;
         color: #ffffff;
+    }
+}
+
+@include media-breakpoint-up(lg) {
+    /* Scrollbar */
+
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+
+    ::-webkit-scrollbar-button {
+        width: 0px;
+        height: 0px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #999999;
+        border-radius: 28px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #666666;
+    }
+
+    ::-webkit-scrollbar-thumb:active {
+        background: #666666;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+        border: 0px none #ffffff;
+        border-radius: 0px;
+    }
+
+    ::-webkit-scrollbar-track:hover {
+        background: #1b2023;
+    }
+
+    ::-webkit-scrollbar-track:active {
+        background: #1b2023;
+    }
+
+    ::-webkit-scrollbar-corner {
+        background: transparent;
     }
 }

@@ -41,20 +41,18 @@ class History extends Component {
     }
 
     attachScrollListener() {
-        window.document.getElementById('vitContent').addEventListener('scroll', this.scrollListener, {
+        window.addEventListener('scroll', this.scrollListener, {
             capture: false,
             passive: true,
         });
     }
 
     detachScrollListener() {
-        window.document.getElementById('vitContent').removeEventListener('scroll', this.scrollListener)
+        window.removeEventListener('scroll', this.scrollListener)
     }    
 
     scrollListener = debounce(() => {
-        const el = window.document.getElementById('vitContent');
-        if (!el) return;
-        if(el.offsetHeight + el.scrollTop + this.scrollThreshold >= el.scrollHeight) {
+        if(window.innerHeight + window.scrollY + this.scrollThreshold >= document.documentElement.scrollHeight) {
             this.loadMoreContent();
         }
     }, 150)
@@ -92,7 +90,7 @@ class History extends Component {
 
     loadMoreContent() {
 
-        if (this.state.loading_more || this.state.no_more_post) return;
+        if (this.state.loading || this.state.loading_more || this.state.no_more_post) return;
 
         this.setState({
             loading_more: true
@@ -142,11 +140,15 @@ class History extends Component {
                     <div className="col-md-8 col-sm-12 mt-4 upload-wrapper">
                         <h3 className="mb-4">Your History</h3>
                         { 
-                        this.state.posts.map(
-
-                            (Post) =>
-                                <Item key={ Post.id } ref={ Post.id } data={ Post } vertical="true" />
-                            ) 
+                            this.state.posts.length === 0 ?
+                            (
+                                <p>You haven't posted any video!</p>
+                            ):(
+                                this.state.posts.map(
+                                    (Post) =>
+                                        <Item key={ Post.id } ref={ Post.id } data={ Post } vertical="true" />
+                                )
+                            )
                         }
                     </div>
                 </div>
@@ -158,10 +160,10 @@ class History extends Component {
         
         return [
             <div key="posts">{ this.renderPosts() }</div>,
-            <div className="mb-4 mt-1 text-center" key="load-more">
+            <div className="mb-4 mt-3 text-center loader-more" key="load-more">
                 {
                     !this.state.loading && this.state.loading_more ? (
-                        <i className="fas fa-spinner fa-pulse"></i>
+                        <i className="fas fa-circle-notch fa-spin fa-lg"></i>
                     ) : (
                         null
                     )

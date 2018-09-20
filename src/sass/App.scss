@@ -3,30 +3,20 @@ html, body {
     height: 100%;
 }
 
+body:not(.login) {
+    background: #1C2023;
+
+    #root {
+        padding-top: 70px;
+    }
+}
+
 /* Layout */
-
-#root {
-    padding-top: 70px;
-}
-
-/* .content-wrapper {
-    overflow: auto
-    // min-height: calc(100% - 70px);
-    // max-height: calc(100% - 70px);
-} */
-
-.loader-wrapper {
-    background: #1C2023;
-}
-
 .content {
-    background: #1C2023;
     overflow-y: auto;
-    height: 100%;
     color:#fff;
     min-width:calc(100% - 250px);
     max-width:calc(100% - 250px);
-    // -webkit-overflow-scrolling: touch;
 }
 
 .left-sidebar-off {
@@ -107,49 +97,6 @@ html, body {
     }
 
 }
-
-/* Scrollbar */
-
-/* ::-webkit-scrollbar {
-  	width: 5px;
-  	height: 5px;
-}
-
-::-webkit-scrollbar-button {
-  	width: 0px;
-  	height: 0px;
-}
-
-::-webkit-scrollbar-thumb {
-  	background: #999999;
-  	border-radius: 28px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  	background: #666666;
-}
-
-::-webkit-scrollbar-thumb:active {
-  	background: #666666;
-}
-
-::-webkit-scrollbar-track {
-	background: transparent;
-	border: 0px none #ffffff;
-	border-radius: 0px;
-}
-
-::-webkit-scrollbar-track:hover {
-  	background: #1b2023;
-}
-
-::-webkit-scrollbar-track:active {
-  	background: #1b2023;
-}
-
-::-webkit-scrollbar-corner {
-  	background: transparent;
-} */
 
 /* Wallet */
 
@@ -266,4 +213,8 @@ code {
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg);
   }
+}
+
+.loader-more {
+    height: 40px;
 }

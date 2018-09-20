@@ -14,7 +14,8 @@ class LeftSidebar extends Component {
 
         this.state = {
             tags: [],
-            loading: true
+            loading: true,
+            expanded: false
         }  
 
     } 
@@ -47,6 +48,9 @@ class LeftSidebar extends Component {
 
         var node = ReactDOM.findDOMNode(this.refs.taglist);
         node.classList.toggle('tag-list');
+        this.setState({
+            expanded: !this.state.expanded
+        })
 
     }
 
@@ -91,7 +95,7 @@ class LeftSidebar extends Component {
                         }
                     </ul>,
 
-                    <button className="btn btn-dark btn-sm  btn-block" onClick={(e) => this.toggleTags(e)} key="tag-button-control">Expand</button>
+                    <button className="btn btn-dark btn-sm  btn-block" onClick={(e) => this.toggleTags(e)} key="tag-button-control">{ this.state.expanded ? 'Collapse' : 'Expand' }</button>
                 ]
             }
 
