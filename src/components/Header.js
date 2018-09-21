@@ -108,7 +108,7 @@ class Header extends Component {
                                 <span>
                                     <Link to="/login" className="btn btn-light mr-3">Login</Link>
                                     <a href="https://signup.vit.tube/" className="btn btn-light mr-3 link-signup">Signup</a>
-                                    <Link to="/login" className="btn btn-danger"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
+                                    <Link to="/upload" className="btn btn-danger"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
                                 </span>
 
                             )

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import moment from 'moment'
 import Formsy from 'formsy-react';
 import TextArea from './forms/TextArea';

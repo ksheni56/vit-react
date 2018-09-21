@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import LeftSidebar from './components/LeftSidebar';
 import Header from './components/Header';
 import { connect } from 'react-redux';
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import { restoreLogin } from './actions/app';
 import ReactDOM from 'react-dom';
 
@@ -26,9 +26,11 @@ class Bootstrap extends Component {
             publicWif = localStorage.getItem("publicWif"),
             postingWif = localStorage.getItem("postingWif");
 
-        if(!username || !publicWif || !postingWif) {
+        if(!username || !publicWif || !postingWif 
+            || (username && publicWif && this.props.app.authorized)) {
 
             // not logged in, nothing in Local Storage. Just show the UI
+            // OR logged in, show the UI
 
             this.setState({
                 initializing: false

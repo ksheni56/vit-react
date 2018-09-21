@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import FilterBar from './components/FilterBar';
 import Item from './components/Item';
 import debounce from 'lodash.debounce';

@@ -1,4 +1,4 @@
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 
 export function vote(request) {
 

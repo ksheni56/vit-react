@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import { post } from './actions/post';
 import './sass/Select.scss';
 import './sass/History.scss';

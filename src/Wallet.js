@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import { Link } from 'react-router-dom';
 import { post } from './actions/post';
 import { loginUser } from './actions/app';

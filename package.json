@@ -46,7 +46,7 @@
     "redux-saga": "^0.16.0",
     "redux-thunk": "^2.3.0",
     "rheostat": "^3.0.1",
-    "steem": "^0.7.1",
+    "@steemit/steem-js": "git+https://git@github.com/ViceIndustryToken/steem-js.git#vit-release-0.7.1",
     "video-react": "^0.13.0"
   },
   "scripts": {
