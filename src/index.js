@@ -97,8 +97,6 @@ ReactDOM.render((
                         } }
                     />
                     <Route path="/@:author/:permalink" component={ Post } />
-
-
                 </Bootstrap>
 
             </Switch>

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import LeftSidebar from './components/LeftSidebar';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import { connect } from 'react-redux';
 import steem from '@steemit/steem-js';
 import { restoreLogin } from './actions/app';
@@ -13,20 +14,20 @@ class Bootstrap extends Component {
         super(props);
         this.state = {
             initializing: true
-        };  
+        };
 
         this.toggleLeftSidebarCallback = this.toggleLeftSidebarCallback.bind(this);
 
-    } 
+    }
 
     componentDidMount() {
 
         // check if we have any creds saved up in localStorage
-        let username = localStorage.getItem("username"), 
+        let username = localStorage.getItem("username"),
             publicWif = localStorage.getItem("publicWif"),
             postingWif = localStorage.getItem("postingWif");
 
-        if(!username || !publicWif || !postingWif 
+        if(!username || !publicWif || !postingWif
             || (username && publicWif && this.props.app.authorized)) {
 
             // not logged in, nothing in Local Storage. Just show the UI
@@ -48,7 +49,7 @@ class Bootstrap extends Component {
 
 
                 if(accounts.length === 0) {
-                    
+
                     // Invalid account name. Clean up local storage
                     localStorage.removeItem('username');
                     localStorage.removeItem('publicWif');
@@ -125,14 +126,15 @@ class Bootstrap extends Component {
                             <LeftSidebar { ...this.props } />
                             <div className="col content" id="vitContent">
                                 { this.props.children }
-                            </div> 
+                            </div>
                         </div>
-                        
+
                     )
                 }
 
-                           
-            </div>
+
+            </div>,
+            <Footer {...this.props} key="footer"/>
         ]
 
     }
@@ -142,10 +144,10 @@ class Bootstrap extends Component {
 
 function mapStateToProps(state) {
 
-    return { 
+    return {
         app: state.app
     };
-    
+
 }
 
 export default connect(mapStateToProps, { restoreLogin })(Bootstrap);

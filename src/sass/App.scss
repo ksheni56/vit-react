@@ -11,11 +11,26 @@ body:not(.login) {
     }
 }
 
+$footer-height: 15px;
+
+/* footer */
+footer {
+    height: $footer-height;
+    font-size: 12px;
+    background: #272C2F;
+    color: #fff;
+}
+
+.left-sidebar {
+    bottom: $footer-height;
+}
+
 /* Layout */
 .content {
     overflow-y: auto;
     color:#fff;
     margin-left: 250px;
+    margin-bottom: $footer-height;
 }
 
 .left-sidebar-off {
