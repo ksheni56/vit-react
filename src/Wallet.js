@@ -346,8 +346,7 @@ class Wallet extends Component {
                                                                 console.log(res)
                                                                 this.updateAccountBalance()
                                                             }).catch((err) => {
-                                                                debugger
-                                                                console.log(err)
+                                                                console.log("error claiming reward balance:", err)
                                                             })
                                                         }}>
                                                         Claim Rewards
