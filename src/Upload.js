@@ -553,9 +553,11 @@ class Upload extends Component {
                         break
 
                     case UploadStatus.TRANSCODED:
+                    case UploadStatus.DELETING:
                         let foundObject = this.state.uploadVideos.find(e => {
                             return e.hasOwnProperty(key);
                         });
+                        const isDeleting = file.status === UploadStatus.DELETING
                         
                         message = 
                         <div key={key}>
@@ -570,7 +572,7 @@ class Upload extends Component {
                                             </div>
                                             <div className="col-12 col-lg-3 text-right">
                                                 <button className="btn btn-danger btn-sm" onClick={() => this.setPreviewPost(key, file, "add")}>Post</button>
-                                                <button className="btn btn-secondary btn-sm progress-cancel ml-2" onClick={() => this.onCancel(key, file)}>Delete</button>
+                                                <button className="btn btn-secondary btn-sm progress-cancel ml-2" onClick={() => this.onCancel(key, file)} disabled={isDeleting} >{ isDeleting ? 'Deleting' : 'Delete' }</button>
                                             </div>
                                         </div>
                                     </div>
@@ -583,19 +585,11 @@ class Upload extends Component {
                         </div>
                         break
 
-                    case UploadStatus.CANCEL_FAILED:
-                    case UploadStatus.CANCELLING:
+                    case UploadStatus.DELETE_FAILED:
                         message = 
                         <div className={file.status === UploadStatus.COMPLETED ? 'complete-message': ''}>
-                            <div className="alert alert-warning" role="alert"> Cancelling video <strong>{file.original_filename}</strong>
-                            {
-                                file.status === UploadStatus.CANCEL_FAILED && (
-                                    [
-                                        <strong>failed</strong>,
-                                        <button className="btn btn-danger btn-sm progress-cancel" onClick={() => this.onCancel(key, file)}>Try again</button>
-                                    ]
-                                )
-                            }
+                            <div className="alert alert-warning" role="alert">Deleting video <strong>{file.original_filename}</strong> has <strong>failed</strong>
+                            <button className="ml-2 btn btn-danger btn-sm progress-cancel" onClick={() => this.onCancel(key, file)}>Try again</button>
                             </div>
                         </div>
                         break
@@ -609,11 +603,12 @@ class Upload extends Component {
                             </div>
                         break
                         
+                    case UploadStatus.DELETED:
                     case UploadStatus.CANCELLED:
                         more_className = 'collapse-message'
                         message = 
                             <div className="alert alert-warning" role="alert" key={key}>
-                                <strong>{ file.original_filename }</strong> is cancelled!
+                                <strong>{ file.original_filename }</strong> is {file.status === UploadStatus.DELETED ? 'deleted' : 'cancelled'}!
                             </div>
                         
                         break

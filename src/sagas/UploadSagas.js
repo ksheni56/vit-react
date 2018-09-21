@@ -273,19 +273,19 @@ function callCompleteUpload(id, endpoint, headers, onFailure, onSuccess) {
 
 function* deleteUpload (action) {
     const { id, endpoint, headers } = action.payload
-    yield put(updateStatus(id, UploadStatus.CANCELLING))
+    yield put(updateStatus(id, UploadStatus.DELETING))
 
     const channel = yield call(createUploadDeleteChannel, id, endpoint, headers)
     while (true) {
         const { success, err } = yield take(channel)
 
         if (err) {
-            yield put(updateStatus(id, UploadStatus.CANCEL_FAILED))
+            yield put(updateStatus(id, UploadStatus.DELETE_FAILED))
             return
         }
 
         if (success) {
-            yield put(updateStatus(id, UploadStatus.CANCELLED))
+            yield put(updateStatus(id, UploadStatus.DELETED))
             yield call(delay, 3000)
             yield put(removeUpload(id))
             return

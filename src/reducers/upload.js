@@ -22,8 +22,9 @@ export const UploadStatus = {
     TRANSCODED: "TRANSCODED",
     COMPLETING: "COMPLETING",
     COMPLETED: "COMPLETED",
-    CANCELLING: "CANCELLING",
-    CANCEL_FAILED: "CANCEL_FAILED",
+    DELETING: "DELETING",
+    DELETE_FAILED: "DELETE_FAILED",
+    DELETED: 'DELETED',
     CANCELLED: "CANCELLED",
     FAILED: "FAILED"
 }
@@ -86,7 +87,7 @@ export default function(state = initialState, action) {
 
             for(let i in keys) {
                 const key = keys[i]
-                if (uploads.hasOwnProperty(key) && uploads[key].status === UploadStatus.CANCELLING) continue;
+                if (uploads.hasOwnProperty(key) && uploads[key].status === UploadStatus.DELETING) continue;
 
                 const upload = Object.assign({}, uploads[key], data[key])
                 uploads[key] = upload;
