@@ -7,7 +7,7 @@ class Footer extends Component {
             <footer className="page-footer fixed-bottom font-small blue">
                 <div className="container-fluid text-center text-md-left">
                     <div className="row">
-                        <div className="col-md-6 mt-md-0 mt-3">
+                        <div className="col-md-12 mt-md-0 mt-3 text-right">
                             <a href="#">Privacy Policy</a> | <a href="#">2257 Statement</a>
                         </div>
                     </div>
