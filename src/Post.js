@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import { Player, BigPlayButton, PosterImage } from 'video-react';
 import { Link } from 'react-router-dom';
 import { vote, comment } from './actions/post';

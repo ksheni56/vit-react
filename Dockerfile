@@ -40,9 +40,9 @@ RUN mkdir -p /var/app
 COPY . /var/app
 RUN env
 ENV NODE_ENV development
-RUN npm install
+RUN yarn install
 ENV NODE_ENV production
-RUN npm run build
+RUN yarn run build
 
 #RUN mkdir tmp && \
 #    npm test && npm run build
@@ -56,7 +56,7 @@ EXPOSE 8080
 
 # uncomment the lines below to run it in development mode
 # ENV NODE_ENV development
-CMD [ "npm", "run", "start" ]
+CMD [ "yarn", "run", "start" ]
 
 FROM nginx:alpine as Production
 

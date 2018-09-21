@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import Item from './components/Item';
 import moment from 'moment';
 import { subscribe, unsubscribe, getSubs } from './actions/app';

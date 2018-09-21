@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import 'moment-timezone';
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import {
     API_URL,
     API_ADDRESS_PREFIX,
