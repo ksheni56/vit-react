@@ -155,9 +155,9 @@ export const updateProgress = (id, progress) => ({
     payload: { id, progress }
 })
 
-export const uploadCancel = (id, data, endpoint, headers) => ({
+export const uploadCancel = (id, data, endpoint, headers, failedCallback) => ({
     type: UploadActionTypes.UPLOAD_CANCEL,
-    payload: { id, data, endpoint, headers }
+    payload: { id, data, endpoint, headers, failedCallback }
 })
 
 export const updateStatus = (id, status) => ({

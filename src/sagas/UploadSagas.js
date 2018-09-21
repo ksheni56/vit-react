@@ -272,7 +272,7 @@ function callCompleteUpload(id, endpoint, headers, onFailure, onSuccess) {
 }
 
 function* deleteUpload (action) {
-    const { id, endpoint, headers } = action.payload
+    const { id, data, endpoint, headers, failedCallback } = action.payload
     yield put(updateStatus(id, UploadStatus.DELETING))
 
     const channel = yield call(createUploadDeleteChannel, id, endpoint, headers)
@@ -281,6 +281,7 @@ function* deleteUpload (action) {
 
         if (err) {
             yield put(updateStatus(id, UploadStatus.DELETE_FAILED))
+            yield call(failedCallback, data)
             return
         }
 

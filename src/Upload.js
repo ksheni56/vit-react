@@ -108,7 +108,11 @@ class Upload extends Component {
             'X-Auth-UserHost': signUserHost
         }
         
-        this.props.onCancel(id, file, endpoint, headers)
+        this.props.onCancel(id, file, endpoint, headers, this.onFailedCancel)
+    }
+
+    onFailedCancel (data) {
+        toast.error(`Deleting video ${data.original_filename} has failed. Please try again.`);
     }
 
     setPreviewPost(key, file, type) {
@@ -554,6 +558,7 @@ class Upload extends Component {
 
                     case UploadStatus.TRANSCODED:
                     case UploadStatus.DELETING:
+                    case UploadStatus.DELETE_FAILED:
                         let foundObject = this.state.uploadVideos.find(e => {
                             return e.hasOwnProperty(key);
                         });
@@ -571,7 +576,7 @@ class Upload extends Component {
                                                 It is now ready to post.
                                             </div>
                                             <div className="col-12 col-lg-3 text-right">
-                                                <button className="btn btn-danger btn-sm" onClick={() => this.setPreviewPost(key, file, "add")}>Post</button>
+                                                <button className="btn btn-danger btn-sm" onClick={() => this.setPreviewPost(key, file, "add")} disabled={isDeleting}>Post</button>
                                                 <button className="btn btn-secondary btn-sm progress-cancel ml-2" onClick={() => this.onCancel(key, file)} disabled={isDeleting} >{ isDeleting ? 'Deleting' : 'Delete' }</button>
                                             </div>
                                         </div>
@@ -582,15 +587,6 @@ class Upload extends Component {
                                 )
                                 
                             }
-                        </div>
-                        break
-
-                    case UploadStatus.DELETE_FAILED:
-                        message = 
-                        <div className={file.status === UploadStatus.COMPLETED ? 'complete-message': ''}>
-                            <div className="alert alert-warning" role="alert">Deleting video <strong>{file.original_filename}</strong> has <strong>failed</strong>
-                            <button className="ml-2 btn btn-danger btn-sm progress-cancel" onClick={() => this.onCancel(key, file)}>Try again</button>
-                            </div>
                         </div>
                         break
 
@@ -702,8 +698,8 @@ const mapDispatchToProps = (dispatch) => ({
     onUpload: (upload_backend, formData, headers) => {
         dispatch(uploadRequest(upload_backend, formData, headers))
     },
-    onCancel: (id, data, endpoint, headers) => {
-        dispatch(uploadCancel(id, data, endpoint, headers))
+    onCancel: (id, data, endpoint, headers, failedCallback) => {
+        dispatch(uploadCancel(id, data, endpoint, headers, failedCallback))
     },
     completeUpload: (id, endpoint, headers) => {
         dispatch(completeUpload(id, endpoint, headers))
