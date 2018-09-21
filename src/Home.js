@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import FilterBar from './components/FilterBar';
 import Item from './components/Item';
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import debounce from 'lodash.debounce';
 import { PAGESIZE_HOMEPAGE } from './config'
 import { shouldDisplayPost } from './utils/Filter'

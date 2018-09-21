@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import LeftSidebar from './components/LeftSidebar';
 import Header from './components/Header';
 import { connect } from 'react-redux';
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import { restoreLogin } from './actions/app';
 import ReactDOM from 'react-dom';
 

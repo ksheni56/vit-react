@@ -1,7 +1,7 @@
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import axios from 'axios'
 import { DMCA_CONTENT_ENDPOINT, DMCA_USER_ENDPOINT } from './../config'
-import { sign } from 'steem/lib/auth/ecc/src/signature';
+import { sign } from '@steemit/steem-js/lib/auth/ecc/src/signature';
 
 export function loginUser(request) {   
 
