@@ -166,11 +166,16 @@ class Post extends Component {
 
                 result.splice(0, 1);
 
-                result = result.filter((item) => {return shouldDisplayPost(this.state, item)})
+                let related_posts = [];
+
+                result.forEach((item) => {
+                    if(shouldDisplayPost(this.props, item, related_posts))
+                        related_posts.push(item)
+                })
 
                 this.setState({
                     loading_related: false,
-                    related: result
+                    related: related_posts
                 });
 
 
