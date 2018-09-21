@@ -41,6 +41,7 @@ import Categories from './Categories';
 import Wallet from './Wallet';
 import Profile from './Profile';
 import Transfers from './Transfers';
+import Legal2257Statement from './Legal2257Statement';
 import ScrollToTop from './components/ScrollToTop ';
 
 // Connect to Vit
@@ -80,6 +81,7 @@ ReactDOM.render((
                             else if(props.location.pathname === '/transfers') return <Transfers {...props} />
                             else if(props.location.pathname === '/profile') return <Profile {...props} />
                             else if(props.location.pathname === '/categories') return <Categories {...props} />
+                            else if(props.location.pathname === '/2257') return <Legal2257Statement {...props} />
                             else if(test_if_channel) return <Channel {...props} />
                             else return <Redirect to="/new/"/>
 
