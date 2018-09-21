@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import steem from '@steemit/steem-js';
 import { Link } from 'react-router-dom';
 import { post } from './actions/post';
-import { loginUser } from './actions/app';
+import { loginUser, claimRewardBalance } from './actions/app';
 import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 import TokenAmountSlider from './components/forms/TokenAmountSlider';
@@ -36,7 +36,8 @@ class Wallet extends Component {
             power_error_text: '',
             power_error: false,
             power_success:false,
-            powering: false
+            powering: false,
+            pending_rewards: false
         };
 
         this.transfer = this.transfer.bind(this);
@@ -78,11 +79,15 @@ class Wallet extends Component {
                 }
                 account_info.raw_balance = parseFloat(account_info.balance.split(' ')[0]);
                 account_info.balance = account_info.balance.split(' ')[0] + ' ' + LIQUID_TOKEN;
-                account_info.vesting_shares = numberWithCommas(vestingSteem(account_info, gprops).toFixed(3)) + ' ' + LIQUID_TOKEN;
+                account_info.vesting_shares = numberWithCommas(vestingSteem(account_info.vesting_shares, gprops).toFixed(3)) + ' ' + LIQUID_TOKEN;
+                account_info.unclaimed_vit = numberWithCommas(vestingSteem(account_info.reward_vesting_balance, gprops).toFixed(3)) + ' ' + LIQUID_TOKEN;
                 console.log("Account has been loaded", account_info);
+                // check if account has pending rewards to claim
+                let pending_rewards = (parseFloat(account_info.reward_steem_balance) > 0 || parseFloat(account_info.reward_vesting_balance) > 0)
                 this.setState({
                     loading: false,
-                    account: account_info
+                    account: account_info,
+                    pending_rewards: pending_rewards
                 })
             });
         });
@@ -286,7 +291,7 @@ class Wallet extends Component {
                                         <div className="row">
 
                                             <div className="col-md-4 col-sm-12">
-                                                <div className="balance-tile">
+                                                <div className="balance-tile text-center">
                                                     <h4>VIT Balance:</h4>
                                                     <span className="text-danger">{ this.state.account.balance }</span>
                                                 </div>
@@ -308,18 +313,47 @@ class Wallet extends Component {
                                             */}
 
                                             <div className="col-md-4 col-sm-12">
-                                                <div className="balance-tile">
+                                                <div className="balance-tile text-center">
                                                     <h4>VIT Power:</h4>
                                                     <span className="text-danger">{ this.state.account.vesting_shares }</span>
+                                                </div>
+                                            </div>
+                                            <div className="col-md-4 col-sm-12">
+                                                <div className="balance-tile text-center">
+                                                    <h4>Unclaimed VIT:</h4>
+                                                    <span className="text-danger">{ this.state.account.unclaimed_vit }</span>
                                                 </div>
                                             </div>
 
                                         </div>
 
                                         <div className="row">
-                                            <div className="col-12 balance-action-links">
+                                            <div className="col-6 balance-action-links">
                                                 <Link className="text-danger" to="/transfers">View Transfers History</Link>
                                             </div>
+                                            {this.state.pending_rewards ? (
+                                                <div className="col-6 balance-action-links text-right">
+                                                    <Link
+                                                        className="text-danger"
+                                                        to='#'
+                                                        onClick={() => {
+                                                            claimRewardBalance({
+                                                                postingWif: this.props.app.postingWif,
+                                                                username: this.props.app.username,
+                                                                vit_balance: this.state.account.reward_steem_balance,
+                                                                vests_balance: this.state.account.reward_vesting_balance
+                                                            }).then((res) => {
+                                                                console.log(res)
+                                                                this.updateAccountBalance()
+                                                            }).catch((err) => {
+                                                                debugger
+                                                                console.log(err)
+                                                            })
+                                                        }}>
+                                                        Claim Rewards
+                                                    </Link>
+                                                </div>
+                                            ) : ('')}
                                         </div>
 
                                     </div>
