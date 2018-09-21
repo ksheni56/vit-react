@@ -2,8 +2,10 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import moment from 'moment'
-import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, VIDEO_THUMBNAIL_LIST_SIZE, SCREENSHOT_IMAGE, AVATAR_UPLOAD_PREFIX} from '../config'
+import { VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_THUMBNAIL_LIST_SIZE, SCREENSHOT_IMAGE, AVATAR_UPLOAD_PREFIX} from '../config'
 import proxifyImage from '../utils/ProxifyImage';
+import { displayPayoutAmount } from '../utils/Format';
+
 
 class Item extends Component {
     renderThumbnail() {
@@ -22,7 +24,7 @@ class Item extends Component {
             }
             URL = proxifyImage(URL, VIDEO_THUMBNAIL_LIST_SIZE)
             
-            console.log("URL", URL);
+            // console.log("URL", URL);
             return <img
               onError={ e => {e.target.src="/images/thumbnail.jpg" }}
               src={ URL } className="img-fluid"
@@ -36,10 +38,6 @@ class Item extends Component {
         return title.substring(0, 40);
     }
 
-    displayPayoutAmount(amount) {
-        return parseInt(amount.replace(' SBD',''), 10).toFixed(2);
-    }
-
     renderVertially() {
         return (
             <div className="col-lg-3 col-md-4 item-wrapper mb-3" key={ this.props.data.id } ref={ this.props.data.id }>
@@ -51,7 +49,7 @@ class Item extends Component {
                         <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>{this.truncateTitle(this.props.data.title)}</Link>
                     </div>
                     <div className="earnings text-right">
-                        { this.displayPayoutAmount(this.props.data.pending_payout_value) } { LIQUID_TOKEN }
+                        { displayPayoutAmount(this.props.data) }
                     </div>
                 </div>
                 <div className="meta-info">
@@ -75,7 +73,7 @@ class Item extends Component {
                             <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>{this.truncateTitle(this.props.data.title)}</Link>
                         </h6>
                         <div className="earnings text-right">
-                            { this.displayPayoutAmount(this.props.data.pending_payout_value) } { LIQUID_TOKEN }
+                            { displayPayoutAmount(this.props.data) }
                         </div>
                     </div>
                     <div className="meta-info">

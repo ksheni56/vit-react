@@ -10,7 +10,8 @@ import Item from './components/Item';
 import Avatar from './components/Avatar';
 import Comments from './components/Comments';
 import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
-import { shouldDisplayPost } from './utils/Filter'
+import { shouldDisplayPost } from './utils/Filter';
+import { displayPayoutAmount } from './utils/Format';
 
 class Post extends Component {
 
@@ -231,10 +232,6 @@ class Post extends Component {
 
     }
 
-    displayPayoutAmount(amount) {
-        if(amount) return parseInt(amount.replace(' SBD',''), 10).toFixed(2);
-    }
-
     renderVideoPlayer() {
 
         if(this.state.post.json_metadata.vit_data &&
@@ -319,7 +316,7 @@ class Post extends Component {
                             <div className="col-9 col-md-10">
                                 <h2>{ this.state.post.title }</h2>
                                 <div className="payout small">
-                                    Pending Payout: <span className="font-weight-bold">{ this.displayPayoutAmount(this.state.post.pending_payout_value) } { LIQUID_TOKEN }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
+                                    Pending Payout: <span className="font-weight-bold">{ displayPayoutAmount(this.state.post) }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
                                 </div>
                                 <div className="votes">
                                     {/* <button className="btn btn-danger btn-sm">Like</button> */}
