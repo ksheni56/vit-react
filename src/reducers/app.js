@@ -60,6 +60,10 @@ export default function(state = initialState, action) {
             });
         }
 
+        case 'CLAIM_REWARDS': {
+            console.log(action.payload)
+        }
+
         default:
             return state;
     }
