@@ -16,6 +16,8 @@ import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_HISTORY_ENDPOI
 import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck, completeUpload, removeUpload } from './reducers/upload';
 import HLSSource from './HLS';
 import { Player, BigPlayButton } from 'video-react';
+import BlockUi from 'react-block-ui';
+import 'react-block-ui/style.css';
 
 class Upload extends Component {
 
@@ -55,6 +57,7 @@ class Upload extends Component {
         this.postVideo = this.postVideo.bind(this);
         this.handleThumnailScreenShot = this.handleThumnailScreenShot.bind(this);
         this.b64toBlob = this.b64toBlob.bind(this);
+        this.handleDropThumbnail = this.handleDropThumbnail.bind(this);
     } 
 
     componentDidMount() {
@@ -97,7 +100,7 @@ class Upload extends Component {
             // show the Upload form
             if (this.state.uploadVideos.length === 0) {
                 this.setState({
-                    uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file, 'videoThumbnail': ''} }]
+                    uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file, 'videoThumbnail': '', 'thumbnailType': ''} }]
                 });
             } else {
                 let foundObject = this.state.uploadVideos.find(e => {
@@ -106,7 +109,7 @@ class Upload extends Component {
 
                 if (!foundObject || foundObject === undefined) {
                     this.setState({
-                        uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file, 'videoThumbnail': ''} }]
+                        uploadVideos: [...this.state.uploadVideos, {[key]: {'post': '', 'file': file, 'videoThumbnail': '', 'thumbnailType': ''} }]
                     })
                 }
             }
@@ -178,13 +181,19 @@ class Upload extends Component {
         categories.push('touch-tube');
 
         // post video thumnail, then return the IPFS hash store into metajson
-        const imageURL = updateObject.videoThumbnail;
-        const block = imageURL.split(";");
-        const contentType = block[0].split(":")[1];
-        const realData = block[1].split(",")[1];
+        let videoBlob;
+        const videoThumbnail = updateObject.videoThumbnail;
+        const thumbnailType = updateObject.thumbnailType;
+        if (thumbnailType === 0) {
+            // capture screenshot, so we need to convert to blob data
+            const block = videoThumbnail.split(";");
+            const contentType = block[0].split(":")[1];
+            const realData = block[1].split(",")[1];
+            videoBlob = this.b64toBlob(realData, contentType);
+        } else {
+            videoBlob = videoThumbnail;
+        }
 
-        // Convert to blob
-        var videoBlob = this.b64toBlob(realData, contentType);
         let formData = new FormData();
         formData.append('file', videoBlob, SCREENSHOT_IMAGE);
 
@@ -331,16 +340,33 @@ class Upload extends Component {
         });
     }
 
-    handleThumnailScreenShot(key) {
+    handleDropThumbnail(accepted, rejected, key) {
+        this.handleThumnailScreenShot(key, accepted[0]);
+    }
+
+    handleThumnailScreenShot(key, file = '') {
         // draw a video thumbnail
         const videoElement = this.refs['video_' + key].video.video;
         const canvasElement = this.refs['canvas_' + key]
         canvasElement.width = videoElement.videoWidth;
         canvasElement.height = videoElement.videoHeight;
         const context = canvasElement.getContext('2d');
-        context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
-        const videoThumbnailURL = canvasElement.toDataURL('image/png');
-
+        let thumbnailType;
+        let videoThumbnailURL;
+        if (file !== '') { // drop file
+            let base_image = new Image();
+            base_image.src = file.preview;
+            base_image.onload = function(){
+                context.drawImage(base_image, 0, 0, canvasElement.width, canvasElement.height);
+            };
+            videoThumbnailURL = file;
+            thumbnailType = 1; 
+        } else { // click capture button
+            context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+            videoThumbnailURL = canvasElement.toDataURL();
+            thumbnailType = 0;
+        }
+        
         // update videoThumbnail which is used later on for posting 
         const uploadVideos = [...this.state.uploadVideos];
         const foundObject = uploadVideos.find(e => {
@@ -350,7 +376,8 @@ class Upload extends Component {
         const index = uploadVideos.indexOf(foundObject);
         uploadVideos.splice(index, 1);
         foundObject.videoThumbnail = videoThumbnailURL;
-
+        foundObject.thumbnailType = thumbnailType;
+        
         this.setState({
             uploadVideos: [...uploadVideos, foundObject]
         });
@@ -363,6 +390,7 @@ class Upload extends Component {
         });
 
         return (
+            <BlockUi tag="div" blocking={this.state.uploading} key={key}>
             <div className="upload-form row" key={key} style={{'marginTop': '20px'}}>
                 <div className="col-md-6 col-sm-12 video-player" style={{'marginTop': '33px'}}>
                     <Player ref={'video_' + key} playsInline videoId={'video_' + key}>
@@ -374,7 +402,21 @@ class Upload extends Component {
                     </Player>
 
                     <div style={{'textAlign': 'center', 'marginTop': '10px', 'marginBottom': '10px'}}>
-                        
+
+                        <button className="btn btn-info btn-sm" onClick={() => this.handleThumnailScreenShot(key)}>Capture</button>        
+                        <Dropzone
+                            ref={'dropzone_' + key}
+                            className="dropzone-thumbnail" 
+                            accept="image/jpeg, image/png"
+                            onDrop={(accepted, rejected) => this.handleDropThumbnail(accepted, rejected, key)}
+                            multiple={ false }     
+                            >
+                            
+                            <div className="w-100 text-center">
+                                <div>Click on Capture button or drag a file here to upload your own video thumbnail<span className="small d-block">(<strong>15MB max</strong>, JPEG or PNG<strong> only</strong>)</span></div>
+                            </div>
+                        </Dropzone>
+
                         {
                             foundObject.videoThumbnail === undefined ?
                             (
@@ -384,7 +426,6 @@ class Upload extends Component {
                             )
                         }
                         
-                        <button className="btn btn-info btn-sm" onClick={() => this.handleThumnailScreenShot(key)}>Capture</button>
                     </div>
                 </div>
                 <div className="col-md-6 col-sm-12">
@@ -443,6 +484,7 @@ class Upload extends Component {
                     </Formsy>    
                 </div>
             </div>
+            </BlockUi>
         )
     }
 
