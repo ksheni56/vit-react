@@ -22,6 +22,8 @@ export const UploadStatus = {
     TRANSCODED: "TRANSCODED",
     COMPLETING: "COMPLETING",
     COMPLETED: "COMPLETED",
+    CANCELLING: "CANCELLING",
+    CANCEL_FAILED: "CANCEL_FAILED",
     CANCELLED: "CANCELLED",
     FAILED: "FAILED"
 }
@@ -33,6 +35,7 @@ export const UploadStatus = {
         progress (for both upload and transcode), 
         cancelToken, 
         status,
+        cancelStatus,
         vit_data // hash, playlist for posting on chain
     } 
 } */
@@ -70,7 +73,6 @@ export default function(state = initialState, action) {
 
             let uploads = Object.assign({}, state.uploads)
             uploads = renameProp(hid, ipfs_hash, uploads)
-            console.log(uploads)
 
             return Object.assign({}, state, {
                 uploads: uploads
@@ -84,6 +86,8 @@ export default function(state = initialState, action) {
 
             for(let i in keys) {
                 const key = keys[i]
+                if (uploads.hasOwnProperty(key) && uploads[key].status === UploadStatus.CANCELLING) continue;
+
                 const upload = Object.assign({}, uploads[key], data[key])
                 uploads[key] = upload;
             }
@@ -150,9 +154,9 @@ export const updateProgress = (id, progress) => ({
     payload: { id, progress }
 })
 
-export const uploadCancel = (id, data) => ({
+export const uploadCancel = (id, data, endpoint, headers) => ({
     type: UploadActionTypes.UPLOAD_CANCEL,
-    payload: { id, data }
+    payload: { id, data, endpoint, headers }
 })
 
 export const updateStatus = (id, status) => ({

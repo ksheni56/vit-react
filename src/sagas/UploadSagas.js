@@ -198,10 +198,14 @@ function callTranscodeCheck (emitter, transcodingURL, onFailure) {
 
 function* cancelUpload(action) {
     const { id, data } = action.payload
-    data.cancelToken.cancel()
-    yield put(updateStatus(id, UploadStatus.CANCELLED))
-    yield call(delay, 3000)
-    yield put(removeUpload(id))
+    if (data.status === UploadStatus.UPLOADING) {
+        data.cancelToken.cancel()
+        yield put(updateStatus(id, UploadStatus.CANCELLED))
+        yield call(delay, 3000)
+        yield put(removeUpload(id))
+    } else {
+        yield deleteUpload(action)
+    }
 }
 
 function* completeUpload (action) {
@@ -265,4 +269,59 @@ function callCompleteUpload(id, endpoint, headers, onFailure, onSuccess) {
                 onFailure(e)
             }
         })
+}
+
+function* deleteUpload (action) {
+    const { id, endpoint, headers } = action.payload
+    yield put(updateStatus(id, UploadStatus.CANCELLING))
+
+    const channel = yield call(createUploadDeleteChannel, id, endpoint, headers)
+    while (true) {
+        const { success, err } = yield take(channel)
+
+        if (err) {
+            yield put(updateStatus(id, UploadStatus.CANCEL_FAILED))
+            return
+        }
+
+        if (success) {
+            yield put(updateStatus(id, UploadStatus.CANCELLED))
+            yield call(delay, 3000)
+            yield put(removeUpload(id))
+            return
+        }
+    }
+}
+
+function createUploadDeleteChannel(id, endpoint, headers) {
+    return eventChannel(emitter => {
+
+        const onFailure = (e) => {
+            emitter({ err: new Error("Cannot delete upload") })
+            emitter(END)
+        };
+
+        const onSuccess = () => {
+            emitter({ success : true})
+            emitter(END)
+        }
+
+        axios.post(endpoint, '', {
+            headers: headers
+            })
+            .then(response => {
+                if (response.status === 200) {
+                    onSuccess()
+                } else {
+                    // user can try it again manually
+                    onFailure()
+                }
+            })
+            .catch(e => {
+                // user can try it again manually
+                onFailure()
+            })
+                   
+        return () => {}
+    }, buffers.sliding(2))
 }
