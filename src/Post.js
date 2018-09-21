@@ -10,6 +10,7 @@ import Item from './components/Item';
 import Avatar from './components/Avatar';
 import Comments from './components/Comments';
 import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
+import { shouldDisplayPost } from './utils/Filter'
 
 class Post extends Component {
 
@@ -97,8 +98,6 @@ class Post extends Component {
             return false;
         }
 
-        
-
         this.setState({
             voting: true
         });
@@ -163,9 +162,11 @@ class Post extends Component {
             }
 
             steem.api.getDiscussionsByAuthorBeforeDate(author.replace('@',''), permalink, post.active, 5, (err, result) => {
-                
+
                 result.splice(0, 1);
- 
+
+                result = result.filter((item) => {return shouldDisplayPost(this.state, item)})
+
                 this.setState({
                     loading_related: false,
                     related: result
