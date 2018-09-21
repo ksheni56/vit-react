@@ -13,7 +13,7 @@ class LegalPrivacyPolicy extends Component {
                 <p>By using the Services, you accept the terms of this Policy and our Terms of Service, and consent to our initial collection, use, disclosure, and retention of your information as described in this Policy and Terms of Service.</p>
                 <p>Please note that this Policy does not apply to information collected through third-party websites or services that you may access through the Services or that you submit to us through email, text message or other electronic message or offline.</p>
                 <p>If you are visiting this site from the European Union (EU), see our Notice to EU Data Subjects below for our legal bases for processing and transfer of your data.</p>
-                <h2>WHAT WE COLLECT<h2>
+                <h2>WHAT WE COLLECT</h2>
                 <p>We get information about you in a range of ways.</p>
                 <h3>Information You Give Us.</h3>
                 <p>Information we collect from you includes:</p>
