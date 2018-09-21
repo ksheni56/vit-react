@@ -507,14 +507,14 @@ class Upload extends Component {
                 switch (file.status) {
                     case UploadStatus.UPLOADING:
                         message = 
-                        <div class="row alert alert-warning" key={key}>
-                            <div class="col-md-12 col-sm-12">
+                        <div className="row alert alert-warning" key={key}>
+                            <div className="col-md-12 col-sm-12">
                                 <strong>Uploading progress of {file.original_filename}: {file.progress}%</strong> complete. Do not close/leave this page!
-                                <div class="row">
-                                    <div class="col-lg-10 col-md-9 col-sm-6">
+                                <div className="row">
+                                    <div className="col-lg-10 col-md-9 col-sm-6">
                                         <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
                                     </div>
-                                    <div class="col-lg-2 col-md-3 col-sm-6">
+                                    <div className="col-lg-2 col-md-3 col-sm-6">
                                         <button className="btn btn-danger btn-sm" onClick={() => this.props.onCancel(key, file)}>Cancel</button>
                                     </div>
                                 </div>
