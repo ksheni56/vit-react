@@ -138,33 +138,6 @@ class Comments extends Component {
                 replyTarget: [this.props.matchParams.author, this.props.matchParams.permalink].join('|')
             });
 
-            
-
-            // const responseData = response.payload.operations[0][1];
-            // const parentPermlink = responseData.parent_permlink;
-            // if (parentPermlink === this.state.permalink) {
-            //     // add as the top comment of post
-            //     // this.state.comments.unshift({
-            //     //     id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
-            //     //     author: responseData.author,
-            //     //     body: responseData.body,
-            //     //     created: new Date()
-            //     // });
-
-                
-
-            // } else {
-            //     // reload the comments again
-            //     this.setReplyTarget([this.state.author, this.state.permalink].join('|'));
-            //     this.loadComments();
-            // }
-
-            // this.setState({
-            //     commenting: false,
-            //     // initial to comment on the post instead of nested replies
-            //     replyTarget: [this.props.matchParams.author, this.props.matchParams.permalink].join('|')
-            // });
-
         }).catch(err => {
             console.log("comment submit error", err)
 
