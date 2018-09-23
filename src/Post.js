@@ -12,6 +12,7 @@ import Comments from './components/Comments';
 import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
 import { shouldDisplayPost } from './utils/Filter';
 import { displayPayoutAmount } from './utils/Format';
+import BlockUi from 'react-block-ui';
 
 class Post extends Component {
 
@@ -42,7 +43,8 @@ class Post extends Component {
             this.setState({
                 loading: true,
                 author: nextProps.match.params.author,
-                permalink: nextProps.match.params.permalink
+                permalink: nextProps.match.params.permalink,
+                commentForPost: false
             })
 
             this.loadContent(nextProps.match.params.author, nextProps.match.params.permalink)

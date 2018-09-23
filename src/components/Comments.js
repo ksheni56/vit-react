@@ -8,6 +8,7 @@ import { vote, comment } from '../actions/post';
 import { Promise } from 'bluebird';
 import { AVATAR_UPLOAD_PREFIX } from '../config';
 import Avatar from './Avatar';
+import BlockUi from 'react-block-ui';
 
 class Comments extends Component {
     constructor(props) {
@@ -124,21 +125,11 @@ class Comments extends Component {
             const responseData = response.payload.operations[0][1];
             const parentPermlink = responseData.parent_permlink;
             if (parentPermlink === this.state.permalink) {
-                // add as the top comment of post
-                this.state.comments.unshift({
-                    id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
-                    author: responseData.author,
-                    body: responseData.body,
-                    created: new Date()
-                });
-
                 // close the replybox of post
                 this.props.togglePostReply();
-
             } else {
                 // reload the comments again
                 this.setReplyTarget([this.state.author, this.state.permalink].join('|'));
-                this.loadComments();
             }
 
             this.setState({
@@ -146,6 +137,33 @@ class Comments extends Component {
                 // initial to comment on the post instead of nested replies
                 replyTarget: [this.props.matchParams.author, this.props.matchParams.permalink].join('|')
             });
+
+            
+
+            // const responseData = response.payload.operations[0][1];
+            // const parentPermlink = responseData.parent_permlink;
+            // if (parentPermlink === this.state.permalink) {
+            //     // add as the top comment of post
+            //     // this.state.comments.unshift({
+            //     //     id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
+            //     //     author: responseData.author,
+            //     //     body: responseData.body,
+            //     //     created: new Date()
+            //     // });
+
+                
+
+            // } else {
+            //     // reload the comments again
+            //     this.setReplyTarget([this.state.author, this.state.permalink].join('|'));
+            //     this.loadComments();
+            // }
+
+            // this.setState({
+            //     commenting: false,
+            //     // initial to comment on the post instead of nested replies
+            //     replyTarget: [this.props.matchParams.author, this.props.matchParams.permalink].join('|')
+            // });
 
         }).catch(err => {
             console.log("comment submit error", err)
@@ -162,32 +180,35 @@ class Comments extends Component {
     // render Comment Input Box
     renderCommentBox(mainComment = true) {
         return (
-            <div className="row my-4 comments">
-                <div className="col-12">
-                    <Formsy 
-                        onValidSubmit={this.submitComment} 
-                        ref="comment_form" 
-                        >
-                        <TextArea 
-                            name="comment"
-                            id="comment"
-                            label="Your comment"
-                            placeholder="Type here..." 
-                            value={this.state.comment_text}
-                            required />
-                        <input type="hidden" name="info" value={this.state.replyTarget}></input>    
-
-                        <button type="submit" className="btn btn-danger" disabled={this.state.commenting || this.state.submitting}>Submit</button>
-                        {
-                            mainComment ? (
-                                <a className="btn" onClick={() => this.props.togglePostReply()}>Cancel</a>
-                            ) : (
-                                <a className="btn" onClick={() => this.setReplyTarget([this.state.author, this.state.permalink].join('|'))}>Cancel</a>
-                            )
-                        }
-                    </Formsy>
+            <BlockUi tag="div" blocking={this.state.commenting}>
+                <div className="row my-4 comments">
+                    <div className="col-12">
+                        <Formsy 
+                            onValidSubmit={this.submitComment} 
+                            ref="comment_form" 
+                            >
+                            <TextArea 
+                                name="comment"
+                                id="comment"
+                                label="Your comment"
+                                placeholder="Type here..." 
+                                value={this.state.comment_text}
+                                required />
+                            <input type="hidden" name="info" value={this.state.replyTarget}></input>    
+                                
+                            <button type="submit" className="btn btn-danger">Submit</button>
+                            {
+                                mainComment ? (
+                                    <a className="btn" onClick={() => this.props.togglePostReply()}>Cancel</a>
+                                ) : (
+                                    <a className="btn" onClick={() => this.setReplyTarget([this.state.author, this.state.permalink].join('|'))}>Cancel</a>
+                                )
+                            }
+                        
+                        </Formsy>
+                    </div>
                 </div>
-            </div>
+            </BlockUi>
         )   
     }
 
