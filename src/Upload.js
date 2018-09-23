@@ -12,8 +12,11 @@ import CreatableSelect from 'react-select/lib/Creatable';
 import './sass/Select.scss';
 import { ToastContainer, toast } from 'react-toastify';
 import { Line } from 'rc-progress';
-import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_HISTORY_ENDPOINT, AVATAR_UPLOAD_ENDPOINT, SCREENSHOT_IMAGE, VIDEO_UPLOAD_POSTED_ENDPOINT } from './config'
-import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck, completeUpload, removeUpload } from './reducers/upload';
+import { VIDEO_UPLOAD_ENDPOINT, VIDEO_THUMBNAIL_URL_PREFIX, 
+    VIDEO_HISTORY_ENDPOINT, AVATAR_UPLOAD_ENDPOINT, 
+    SCREENSHOT_IMAGE, VIDEO_UPLOAD_POSTED_ENDPOINT,
+    VIDEO_CANCEL_ENDPOINT } from './config'
+import { uploadRequest, UploadStatus, uploadCancel, startTranscodeCheck, stopTranscodeCheck, completeUpload } from './reducers/upload';
 import HLSSource from './HLS';
 import { Player, BigPlayButton } from 'video-react';
 import BlockUi from 'react-block-ui';
@@ -92,6 +95,24 @@ class Upload extends Component {
 
     componentWillUnmount () {
         this.props.stopTranscodeCheck()
+    }
+
+    onCancel (id, file) {
+        const signature = localStorage.getItem("signature");
+        const signUserHost = localStorage.getItem("signUserHost");
+        const endpoint = VIDEO_CANCEL_ENDPOINT + id
+
+        const headers = {
+            'Content-Type': 'multipart/form-data',
+            'X-Auth-Token':  signature,
+            'X-Auth-UserHost': signUserHost
+        }
+        
+        this.props.onCancel(id, file, endpoint, headers, this.onFailedCancel)
+    }
+
+    onFailedCancel (data) {
+        toast.error(`Deleting video ${data.original_filename} has failed. Please try again.`);
     }
 
     setPreviewPost(key, file, type) {
@@ -317,13 +338,15 @@ class Upload extends Component {
 
     handleOnKeyDown = (event) => {
         switch(event.key) {
-            //case ' ':
             case ',':
                 this.creatableRef.select.select.selectOption(
                     this.creatableRef.select.select.state.focusedOption
                     //Grab the last element in the list ('Create...')
                     //this.creatableRef.select.select.state.menuOptions.focusable.slice(-1)[0]
-                );
+                )
+                break
+
+            default:
         }
     }
 
@@ -492,31 +515,27 @@ class Upload extends Component {
         // block UI until finishing loading transcoding videos
         if (!this.props.initialized)
             return (
-                <div className="row text-center">
-                    <div className="col-12">
-                        <i className="fas fa-spinner fa-pulse"></i>
-                    </div>
+                <div className="col-12 text-center">
+                    <i className="fas fa-spinner fa-pulse"></i>
                 </div>
             )
 
         return (
             Object.keys(this.props.uploads).map(key => {
                 const file = this.props.uploads[key]
-                console.log(file)
-                let message;
+                let message, more_className = '';
                 switch (file.status) {
                     case UploadStatus.UPLOADING:
-                        message =
-                        <div className="row alert alert-warning" key={key}>
-                            <div className="col-md-12 col-sm-12">
-                                <strong>Uploading progress of {file.original_filename}: {file.progress}%</strong> complete. Do not close/leave this page!
-                                <div className="row">
-                                    <div className="col-lg-10 col-md-9 col-sm-6">
-                                        <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
-                                    </div>
-                                    <div className="col-lg-2 col-md-3 col-sm-6">
-                                        <button className="btn btn-danger btn-sm" onClick={() => this.props.onCancel(key, file)}>Cancel</button>
-                                    </div>
+                        message = 
+                        <div className="alert alert-warning" key={key}>
+                            Uploading progress of <strong>{file.original_filename}: {file.progress}%</strong> completed.<br/>
+                            Do not close/leave this page!
+                            <div className="row">
+                                <div className="col-lg-10 col-md-9 col-sm-6">
+                                    <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
+                                </div>
+                                <div className="col-lg-2 col-md-3 col-sm-6">
+                                    <button className="btn btn-danger btn-sm" onClick={() => this.props.onCancel(key, file)}>Cancel</button>
                                 </div>
                             </div>
                         </div>
@@ -525,34 +544,42 @@ class Upload extends Component {
                     case UploadStatus.UPLOADED:
                         message =
                         <div className="alert alert-warning" role="alert" key={key}>
-                            <strong>{ file.original_filename } uploaded! Waiting for transcoding!</strong>
+                            <strong>{ file.original_filename }</strong> uploaded! Waiting for transcoding!
                         </div>
                         break;
 
                     case UploadStatus.TRANSCODING:
-                        message =
-                        <div className="row alert alert-warning" key={key}>
-                            <div className="col-md-12 col-sm-12">
-                                <strong>Trancoding progress of {file.original_filename}: {file.progress}%</strong> complete.
-                                <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
-                            </div>
+                        message = 
+                        <div className="alert alert-warning" key={key}>
+                            Transcoding progress of <strong>{file.original_filename}: {file.progress}%</strong> completed.
+                            <Line percent={file.progress} strokeWidth="4" strokeColor="#D3D3D3" />
                         </div>
                         break
 
                     case UploadStatus.TRANSCODED:
+                    case UploadStatus.DELETING:
+                    case UploadStatus.DELETE_FAILED:
                         let foundObject = this.state.uploadVideos.find(e => {
                             return e.hasOwnProperty(key);
                         });
-
-                        message =
+                        const isDeleting = file.status === UploadStatus.DELETING
+                        
+                        message = 
                         <div key={key}>
                             {
                                 foundObject === undefined ?
                                 (
-                                    <div className="row alert alert-warning" role="alert" key={key}>
-                                        <span>
-                                            Trancoding of <strong>{file.original_filename} completed</strong>, it is now <button className="btn btn-primary btn-sm" onClick={() => this.setPreviewPost(key, file, "add")}>ready to post</button>
-                                        </span>
+                                    <div className="alert alert-warning" role="alert" key={key}>
+                                        <div className="row"> 
+                                            <div className="col-12 col-lg-9">
+                                                Transcoding of <strong>{file.original_filename}</strong> is <strong>completed</strong>.<br/>
+                                                It is now ready to post.
+                                            </div>
+                                            <div className="col-12 col-lg-3 text-right">
+                                                <button className="btn btn-danger btn-sm" onClick={() => this.setPreviewPost(key, file, "add")} disabled={isDeleting}>Post</button>
+                                                <button className="btn btn-secondary btn-sm progress-cancel ml-2" onClick={() => this.onCancel(key, file)} disabled={isDeleting} >{ isDeleting ? 'Deleting' : 'Delete' }</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 ) :
                                 (
@@ -565,22 +592,19 @@ class Upload extends Component {
 
                     case UploadStatus.COMPLETING:
                     case UploadStatus.COMPLETED:
-                        message =
-                        <div className={file.status === UploadStatus.COMPLETED ? 'complete-message': ''}>
-                            <div className="alert alert-warning" role="alert"> Recently posted {file.original_filename}, please see the
+                        more_className = file.status === UploadStatus.COMPLETED ? 'collapse-message' : ''
+                        message = 
+                            <div className="alert alert-warning" role="alert"> Recently posted {file.original_filename}, please see the 
                                 <Link to="/history" target="_blank" className="btn btn-primary btn-sm"> History</Link>
                             </div>
-                        </div>
                         break
-
+                    case UploadStatus.DELETED:
                     case UploadStatus.CANCELLED:
-                        message =
-                        <div className="cancel-message">
+                        more_className = 'collapse-message'
+                        message = 
                             <div className="alert alert-warning" role="alert" key={key}>
-                                <strong>{ file.original_filename } cancelled!</strong>
+                                <strong>{ file.original_filename }</strong> is {file.status === UploadStatus.DELETED ? 'deleted' : 'cancelled'}!
                             </div>
-                        </div>
-
                         break
 
                     default:
@@ -590,24 +614,13 @@ class Upload extends Component {
                         </div>
                 }
                 return (
-                    <div key={key}>
+                    <div key={key} className={"col-12 " + more_className}>
                         {message}
                     </div>
                 )
             })
         )
 
-    }
-
-    showTranscoding() {
-        if(!this.state.uploading && this.state.transcoding) {
-            return (
-                <div className="alert alert-warning mt-4" role="alert">
-                    <strong>Transcoding progress:</strong> {this.state.transcode_progress}% complete
-                    <Line percent={ this.state.transcode_progress } strokeWidth="4" strokeColor="#D3D3D3" />
-                </div>
-            )
-        }
     }
 
     handleDropRejected(file) {
@@ -628,8 +641,9 @@ class Upload extends Component {
                         {/* Upload Area */}
                         <div>
                             <h3 className="mb-4">Upload your content</h3>
-
-                            { this.showProgress() }
+                            <div className="row">
+                                { this.showProgress() }
+                            </div>
 
                             <Dropzone
                                     className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center"
@@ -684,14 +698,11 @@ const mapDispatchToProps = (dispatch) => ({
     onUpload: (upload_backend, formData, headers) => {
         dispatch(uploadRequest(upload_backend, formData, headers))
     },
-    onCancel: (id, data) => {
-        dispatch(uploadCancel(id, data))
+    onCancel: (id, data, endpoint, headers, failedCallback) => {
+        dispatch(uploadCancel(id, data, endpoint, headers, failedCallback))
     },
     completeUpload: (id, endpoint, headers) => {
         dispatch(completeUpload(id, endpoint, headers))
-    },
-    removeUpload: (id) => {
-        dispatch(removeUpload(id))
     },
     startTranscodeCheck: (url) => {
         dispatch(startTranscodeCheck(url))

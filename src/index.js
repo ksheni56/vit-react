@@ -20,6 +20,7 @@ import './sass/video/video-react.scss';
 import './sass/Header.scss';
 import './sass/LeftSidebar.scss';
 import './sass/Item.scss';
+import './sass/PreloadImage.scss'
 import './sass/Upload.scss';
 import './sass/Post.scss';
 import './sass/Channel.scss';

@@ -283,3 +283,20 @@ function fetchData(endpoint) {
 	})        
 }  
 
+export function claimRewardBalance(request) {
+	return new Promise((resolve, reject) => {
+		steem.broadcast.claimRewardBalance(request.postingWif,request.username,request.vit_balance,request.vests_balance, function(err,res){
+			if(err) {
+				reject({
+					payload: err
+				});
+					return;
+			}
+
+			resolve({
+				type: 'CLAIM_REWARDS',
+				payload: res
+			});
+		});
+	})
+}

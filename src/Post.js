@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from '@steemit/steem-js';
-import { Player, BigPlayButton, PosterImage } from 'video-react';
+import { Player, BigPlayButton } from 'video-react';
 import { Link } from 'react-router-dom';
 import { vote, comment } from './actions/post';
 import moment from 'moment';
@@ -9,7 +9,8 @@ import HLSSource from './HLS';
 import Item from './components/Item';
 import Avatar from './components/Avatar';
 import Comments from './components/Comments';
-import { VIDEO_THUMBNAIL_URL_PREFIX, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
+import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
+import { shouldDisplayPost } from './utils/Filter';
 import { displayPayoutAmount } from './utils/Format';
 
 class Post extends Component {
@@ -98,8 +99,6 @@ class Post extends Component {
             return false;
         }
 
-        
-
         this.setState({
             voting: true
         });
@@ -164,12 +163,19 @@ class Post extends Component {
             }
 
             steem.api.getDiscussionsByAuthorBeforeDate(author.replace('@',''), permalink, post.active, 5, (err, result) => {
-                
+
                 result.splice(0, 1);
- 
+
+                let related_posts = [];
+
+                result.forEach((item) => {
+                    if(shouldDisplayPost(this.props, item, related_posts))
+                        related_posts.push(item)
+                })
+
                 this.setState({
                     loading_related: false,
-                    related: result
+                    related: related_posts
                 });
 
 

@@ -1,4 +1,4 @@
-FROM node:8.11.4 as Base
+FROM node:8.12.0 as Base
 
 # Set DOCKER_BUILD so that jest will run all the tests (see scripts/test.js)
 ENV DOCKER_BUILD yes
@@ -40,7 +40,9 @@ RUN mkdir -p /var/app
 COPY . /var/app
 RUN env
 ENV NODE_ENV development
-RUN yarn install
+RUN npm upgrade yarn
+RUN yarn cache clean
+RUN yarn install --network-concurrency=1
 ENV NODE_ENV production
 RUN yarn run build
 
