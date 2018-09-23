@@ -21,6 +21,7 @@ export const AVATAR_UPLOAD_PREFIX = process.env.REACT_APP_AVATAR_UPLOAD_PREFIX ?
 export const VIDEO_THUMBNAIL_URL_PREFIX = process.env.REACT_APP_VIDEO_THUMBNAIL_URL_PREFIX ? process.env.REACT_APP_VIDEO_THUMBNAIL_URL_PREFIX : "https://media.proto.vit.tube/playback/";
 export const VIDEO_THUMBNAIL_LIST_SIZE = process.env.REACT_APP_VIDEO_THUMBNAIL_LIST_SIZE ? process.env.REACT_APP_VIDEO_THUMBNAIL_LIST_SIZE : '600x400'
 export const VIDEO_UPLOAD_ENDPOINT = process.env.REACT_APP_VIDEO_UPLOAD_ENDPOINT ? process.env.REACT_APP_VIDEO_UPLOAD_ENDPOINT : "https://media.proto.vit.tube/upload/video";
+export const VIDEO_CANCEL_ENDPOINT = process.env.REACT_APP_VIDEO_CANCEL_ENDPOINT ? process.env.REACT_APP_VIDEO_CANCEL_ENDPOINT : VIDEO_UPLOAD_ENDPOINT + "/cancel/"
 export const IMAGE_UPLOAD_ENDPOINT = process.env.REACT_APP_IMAGE_UPLOAD_ENDPOINT ? process.env.REACT_APP_IMAGE_UPLOAD_ENDPOINT : "https://media.proto.vit.tube/upload/image";
 export const VIDEO_HISTORY_ENDPOINT = process.env.REACT_APP_VIDEO_HISTORY_ENDPOINT ? process.env.REACT_APP_VIDEO_HISTORY_ENDPOINT : "https://media.proto.vit.tube/history";
 export const VIDEO_UPLOAD_POSTED_ENDPOINT = process.env.REACT_APP_VIDEO_UPLOAD_POSTED_ENDPOINT ? process.env.REACT_APP_VIDEO_UPLOAD_POSTED_ENDPOINT : "https://media.proto.vit.tube/upload/video/posted/";
