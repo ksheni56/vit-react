@@ -1,0 +1,27 @@
+.preload-background {
+    width: 100%;
+    background: url(/images/thumbnail.jpg);
+    position: relative;
+    padding-top: 60%;
+    background-size: contain;
+    border-radius:6px;
+    margin-bottom:7px;
+}
+.thumbnail {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    border-radius:6px;
+}
+
+.thumbnail-fade-in {
+    transition: opacity 300ms cubic-bezier(0.215, 0.61, 0.355, 1);
+    opacity: 1
+}
