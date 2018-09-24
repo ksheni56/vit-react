@@ -3,9 +3,8 @@ pipeline {
     docker {
       image 'node:8'
       args '-p 9002:3000'
-      
+      args '-u 0:0'
     }
-    environment { HOME="." }
   }
   stages {
     stage('Build') {
