@@ -3,15 +3,15 @@ pipeline {
     docker {
       image 'node:8'
       args '-p 9002:3000'
+      environment { HOME="." }
     }
 
   }
   stages {
     stage('Build') {
       steps {
-        sh 'npm install -g yarn'
-        sh 'sudo yarn install'
-        sh 'yarn run build'
+        sh 'npm install'
+        sh 'npm run build'
       }
     }
   }
