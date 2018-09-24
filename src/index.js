@@ -23,6 +23,7 @@ import './sass/Item.scss';
 import './sass/PreloadImage.scss'
 import './sass/Upload.scss';
 import './sass/Post.scss';
+import './sass/Comment.scss';
 import './sass/Channel.scss';
 import './sass/Responsive.scss';
 

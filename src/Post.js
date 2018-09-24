@@ -304,34 +304,28 @@ class Post extends Component {
                 <div key="video-player">{ this.renderVideoPlayer() }</div>,
 
                 <div className="row mt-3 video-info align-items-center" key="video-info">
-                    <div className="col-9">
+                    <div className="col-12">
                         <div className="row align-items-center">
                             <div className="col-3 col-md-2">
                                 <div>
                                     <div>
                                         <Avatar profile_image={avatar} />
-                                        <div className="username text-center">
-                                            <Link to={ "/@" + this.state.post.author }>
-                                                { this.state.post.author }
-                                            </Link>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
                             <div className="col-9 col-md-10">
                                 <h2>{ this.state.post.title }</h2>
                                 <div className="payout small">
-                                    Pending Payout: <span className="font-weight-bold">{ displayPayoutAmount(this.state.post) }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
+                                    Pending Payout: <span className="font-weight-bold">{ displayPayoutAmount(this.state.post) }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } by <Link to={ "/@" + this.state.post.author } className="username text-center">{ this.state.post.author }</Link> 
+                                </div>
+                                <div className="payout small">
+                                    Category: <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
                                 </div>
                                 <div className="votes">
-                                    {/* <button className="btn btn-danger btn-sm">Like</button> */}
-                                    {this.getVotes(this.state.post)} | {this.state.post.net_votes} Votes
+                                    {this.getVotes(this.state.post)} | {this.state.post.net_votes} Votes | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.togglePostReply()}>Reply</button>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div className="col-3 text-right">
-                        <button className="btn btn-sm post-reply-btn" onClick={() => this.togglePostReply()}>Reply</button>
                     </div>
                 </div>
             ]
