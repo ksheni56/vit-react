@@ -61,7 +61,7 @@ class Upload extends Component {
         this.handleThumnailScreenShot = this.handleThumnailScreenShot.bind(this);
         this.b64toBlob = this.b64toBlob.bind(this);
         this.handleDropThumbnail = this.handleDropThumbnail.bind(this);
-    } 
+    }
 
     componentDidMount() {
 
@@ -69,7 +69,7 @@ class Upload extends Component {
             this.props.history.push("/login");
             return false;
         }
-        
+
         // update transcoding progress
         this.props.startTranscodeCheck(VIDEO_HISTORY_ENDPOINT + "/" + this.props.app.username + "?posted=false")
 
@@ -83,7 +83,7 @@ class Upload extends Component {
                     categories.push({ value: result[i]['name'], label: result[i]['name']})
                 }
             }
-            
+
             this.setState({
                 categories: categories,
                 loading_categories: false
@@ -185,11 +185,11 @@ class Upload extends Component {
 
         let categories = [];
         if(this.state.selected_category.length > 0 ) {
-       
+
             for(var i in this.state.selected_category) {
                 if(i < 5) categories.push(this.state.selected_category[i]['value']);
             }
-        
+
         } else {
             toast.error("Please select at least 1 category!");
             return false;
@@ -238,9 +238,9 @@ class Upload extends Component {
 
             // post to block chain
             this.props.post({
-                postingWif: this.props.app.postingWif, 
+                postingWif: this.props.app.postingWif,
                 category: categories[0].replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase(), // category
-                username: this.props.app.username, 
+                username: this.props.app.username,
                 slug: slug, // slug
                 title: form.title, // title
                 body: form.description, // body,
@@ -254,16 +254,16 @@ class Upload extends Component {
                     'X-Auth-Token': localStorage.getItem("signature"),
                     'X-Auth-UserHost': localStorage.getItem("signUserHost")
                 }
-    
+
                 self.props.completeUpload(hash, VIDEO_UPLOAD_POSTED_ENDPOINT + hash, headers)
-    
+
                 self.setState({
                     uploading: false
                 })
-    
+
             }).catch(err => {
                 console.log("post error", err);
-    
+
                 if(err.payload.data && err.payload.data.stack[0].format === '( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL: You may only post once every 5 minutes.') {
                     self.setState({
                         error: true,
@@ -279,7 +279,7 @@ class Upload extends Component {
                         custom_error_text: err.payload.data.stack[0].format
                     });
                 }
-    
+
                 toast.error(self.state.custom_error_text);
             });
 
@@ -383,14 +383,14 @@ class Upload extends Component {
                 context.drawImage(base_image, 0, 0, canvasElement.width, canvasElement.height);
             };
             videoThumbnailURL = file;
-            thumbnailType = 1; 
+            thumbnailType = 1;
         } else { // click capture button
             context.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
             videoThumbnailURL = canvasElement.toDataURL();
             thumbnailType = 0;
         }
-        
-        // update videoThumbnail which is used later on for posting 
+
+        // update videoThumbnail which is used later on for posting
         const uploadVideos = [...this.state.uploadVideos];
         const foundObject = uploadVideos.find(e => {
             return e.hasOwnProperty(key);
@@ -400,14 +400,14 @@ class Upload extends Component {
         uploadVideos.splice(index, 1);
         foundObject.videoThumbnail = videoThumbnailURL;
         foundObject.thumbnailType = thumbnailType;
-        
+
         this.setState({
             uploadVideos: [...uploadVideos, foundObject]
         });
     }
 
     showUploadForm(key, file) {
-        
+
         let foundObject = this.state.uploadVideos.find(e => {
             return e.hasOwnProperty(key);
         });
@@ -426,15 +426,15 @@ class Upload extends Component {
 
                     <div style={{'textAlign': 'center', 'marginTop': '10px', 'marginBottom': '10px'}}>
 
-                        <button className="btn btn-info btn-sm" onClick={() => this.handleThumnailScreenShot(key)}>Capture</button>        
+                        <button className="btn btn-info btn-sm" onClick={() => this.handleThumnailScreenShot(key)}>Capture</button>
                         <Dropzone
                             ref={'dropzone_' + key}
-                            className="dropzone-thumbnail" 
+                            className="dropzone-thumbnail"
                             accept="image/jpeg, image/png"
                             onDrop={(accepted, rejected) => this.handleDropThumbnail(accepted, rejected, key)}
-                            multiple={ false }     
+                            multiple={ false }
                             >
-                            
+
                             <div className="w-100 text-center">
                                 <div>Click on Capture button or drag a file here to upload your own video thumbnail<span className="small d-block">(<strong>15MB max</strong>, JPEG or PNG<strong> only</strong>)</span></div>
                             </div>
@@ -448,22 +448,22 @@ class Upload extends Component {
                                 <canvas ref={'canvas_' + key} style={{'maxWidth': '100%', 'maxHeight': '100%', 'marginTop': '1em', 'marginBottom': '1em'}}></canvas>
                             )
                         }
-                        
+
                     </div>
                 </div>
                 <div className="col-md-6 col-sm-12">
-                    <Formsy 
-                        onValidSubmit={this.postVideo} 
-                        ref="upload_form" 
+                    <Formsy
+                        onValidSubmit={this.postVideo}
+                        ref="upload_form"
                         >
 
                         <div className="col-md-12 col-sm-12 px-0">
-                            <TextField 
+                            <TextField
                                 name="title"
                                 id="title"
                                 label="Title"
                                 value={this.state.title}
-                                placeholder="" 
+                                placeholder=""
                                 maxLength={100}
                                 required />
                             <small className="text-muted mb-2 d-block" style={{'marginTop': '-5px'}}>100 characters max</small>
@@ -473,30 +473,30 @@ class Upload extends Component {
                                 ref={ ref => { this.creatableRef = ref; }}
                                 name="category"
                                 classNamePrefix="Select"
-                                placeholder="Select some tags" 
+                                placeholder="Select some tags"
                                 onKeyDown={this.handleOnKeyDown}
                                 onChange={this.handleChangeCategory}
                                 options={this.state.categories}
                                 onInputChange={this.handleInputChange}
                             />
-                            
-                            <TextArea 
+
+                            <TextArea
                                 name="description"
                                 id="description"
-                                placeholder="Type here..." 
+                                placeholder="Type here..."
                                 value={this.state.comment_text}
                                 required
                             />
 
                             {/* TODO: Is there any way to post this form without hidden field */}
-                            <TextField 
+                            <TextField
                                 name="taskId"
                                 id="taskId"
                                 value={key}
                                 type="hidden"
                                 />
 
-                            <button 
+                            <button
                                 type="submit"
                                 className="btn btn-danger"
                                 style={{'marginBottom': '10px'}}
@@ -504,7 +504,7 @@ class Upload extends Component {
                             >Post</button>
                             <a className="btn" style={{'marginBottom': '10px'}} onClick={() => this.setPreviewPost(key, file, 'remove')}>Cancel</a>
                         </div>
-                    </Formsy>    
+                    </Formsy>
                 </div>
             </div>
             </BlockUi>
@@ -513,7 +513,7 @@ class Upload extends Component {
 
     showProgress() {
         // block UI until finishing loading transcoding videos
-        if (!this.props.initialized) 
+        if (!this.props.initialized)
             return (
                 <div className="col-12 text-center">
                     <i className="fas fa-spinner fa-pulse"></i>
@@ -542,7 +542,7 @@ class Upload extends Component {
                         break
 
                     case UploadStatus.UPLOADED:
-                        message = 
+                        message =
                         <div className="alert alert-warning" role="alert" key={key}>
                             <strong>{ file.original_filename }</strong> uploaded! Waiting for transcoding!
                         </div>
@@ -585,7 +585,7 @@ class Upload extends Component {
                                 (
                                     this.showUploadForm(key, file)
                                 )
-                                
+
                             }
                         </div>
                         break
@@ -598,7 +598,6 @@ class Upload extends Component {
                                 <Link to="/history" target="_blank" className="btn btn-primary btn-sm"> History</Link>
                             </div>
                         break
-                        
                     case UploadStatus.DELETED:
                     case UploadStatus.CANCELLED:
                         more_className = 'collapse-message'
@@ -606,11 +605,10 @@ class Upload extends Component {
                             <div className="alert alert-warning" role="alert" key={key}>
                                 <strong>{ file.original_filename }</strong> is {file.status === UploadStatus.DELETED ? 'deleted' : 'cancelled'}!
                             </div>
-                        
                         break
 
                     default:
-                        message = 
+                        message =
                         <div className="alert alert-warning" role="alert">
                             <strong>Upload failed!</strong>
                         </div>
@@ -626,13 +624,13 @@ class Upload extends Component {
     }
 
     handleDropRejected(file) {
-        
+
         toast.error("Error! Cannnot upload this type of file.");
 
     }
 
     render() {
-        
+
         return (
             <div className="row justify-content-center">
 
@@ -647,10 +645,10 @@ class Upload extends Component {
                                 { this.showProgress() }
                             </div>
 
-                            <Dropzone 
-                                    className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center" 
+                            <Dropzone
+                                    className="dropzone mt-4 w-100 d-flex justify-content-center align-items-center"
                                     onDropAccepted={ this.handleDrop }
-                                    multiple={ true } 
+                                    multiple={ true }
                                     onDropRejected={this.handleDropRejected }
                                     accept="video/mp4, video/avi, video/x-matroska, video/quicktime, video/webm"
                                     disabled={ !this.props.initialized }
@@ -663,7 +661,7 @@ class Upload extends Component {
                                                 <div>Drag a file here or click to upload <span className="small d-block">(<strong>1GB max</strong>, MP4, AVI, MKV, MOV <strong>only</strong>)</span></div>
                                             )
                                         }
-                                        
+
 
                                         {
                                             this.state.files.length > 0 ? (
@@ -672,25 +670,27 @@ class Upload extends Component {
                                         }
                                     </div>
                             </Dropzone>
+
+                            <p id="legal-disclaimer">By uploading this video to Touch.Tube you hereby confirm you are 18 years of age; you certify that you keep records of the models in the content and that they are over 18 years of age, you certify that the content does not contain any illegal material, and you certify that you have the legal right to upload and share this video. By confirming all of the above, the user agrees to hold Touch.Tube and its affiliated companies harmless if any of the above statements are found to be false.</p>
                         </div>
                     </div>
                 </div>
             </div>
         )
-        
+
     }
 
 }
 
 function mapStateToProps(state) {
 
-    return { 
+    return {
         search: state.search,
         app: state.app,
         uploads: state.upload.uploads,
         initialized: state.upload.initialized
     };
-    
+
 }
 
 const mapDispatchToProps = (dispatch) => ({
