@@ -11,16 +11,16 @@ body:not(.login) {
     }
 }
 
-$footer-height: 15px;
+$footer-height: 24px;
 
 /* footer */
 footer {
     height: $footer-height;
-    font-size: 12px;
     background: #272C2F;
+    padding-top: 4px;
+    font-size: 12px;
     color: #fff;
 }
-
 .left-sidebar {
     bottom: $footer-height;
 }
