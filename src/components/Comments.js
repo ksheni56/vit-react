@@ -8,6 +8,7 @@ import { vote, comment } from '../actions/post';
 import { Promise } from 'bluebird';
 import { AVATAR_UPLOAD_PREFIX } from '../config';
 import Avatar from './Avatar';
+import BlockUi from 'react-block-ui';
 
 class Comments extends Component {
     constructor(props) {
@@ -124,21 +125,11 @@ class Comments extends Component {
             const responseData = response.payload.operations[0][1];
             const parentPermlink = responseData.parent_permlink;
             if (parentPermlink === this.state.permalink) {
-                // add as the top comment of post
-                this.state.comments.unshift({
-                    id: new Date().toISOString().replace(/[^a-zA-Z0-9]+/g, '').toLowerCase(),
-                    author: responseData.author,
-                    body: responseData.body,
-                    created: new Date()
-                });
-
                 // close the replybox of post
                 this.props.togglePostReply();
-
             } else {
                 // reload the comments again
                 this.setReplyTarget([this.state.author, this.state.permalink].join('|'));
-                this.loadComments();
             }
 
             this.setState({
@@ -162,32 +153,35 @@ class Comments extends Component {
     // render Comment Input Box
     renderCommentBox(mainComment = true) {
         return (
-            <div className="row my-4 comments">
-                <div className="col-12">
-                    <Formsy 
-                        onValidSubmit={this.submitComment} 
-                        ref="comment_form" 
-                        >
-                        <TextArea 
-                            name="comment"
-                            id="comment"
-                            label="Your comment"
-                            placeholder="Type here..." 
-                            value={this.state.comment_text}
-                            required />
-                        <input type="hidden" name="info" value={this.state.replyTarget}></input>    
-
-                        <button type="submit" className="btn btn-danger" disabled={this.state.commenting || this.state.submitting}>Submit</button>
-                        {
-                            mainComment ? (
-                                <a className="btn" onClick={() => this.props.togglePostReply()}>Cancel</a>
-                            ) : (
-                                <a className="btn" onClick={() => this.setReplyTarget([this.state.author, this.state.permalink].join('|'))}>Cancel</a>
-                            )
-                        }
-                    </Formsy>
+            <BlockUi tag="div" blocking={this.state.commenting}>
+                <div className="row my-4 comments">
+                    <div className="col-12">
+                        <Formsy 
+                            onValidSubmit={this.submitComment} 
+                            ref="comment_form" 
+                            >
+                            <TextArea 
+                                name="comment"
+                                id="comment"
+                                label="Your comment"
+                                placeholder="Type here..." 
+                                value={this.state.comment_text}
+                                required />
+                            <input type="hidden" name="info" value={this.state.replyTarget}></input>    
+                                
+                            <button type="submit" className="btn btn-danger">Submit</button>
+                            {
+                                mainComment ? (
+                                    <a className="btn" onClick={() => this.props.togglePostReply()}>Cancel</a>
+                                ) : (
+                                    <a className="btn" onClick={() => this.setReplyTarget([this.state.author, this.state.permalink].join('|'))}>Cancel</a>
+                                )
+                            }
+                        
+                        </Formsy>
+                    </div>
                 </div>
-            </div>
+            </BlockUi>
         )   
     }
 
@@ -243,57 +237,57 @@ class Comments extends Component {
     displayComments() {
 
         if(this.state.comments.length > 0) {
-
+            const depth = 0;
             return (
-                <ul className="list-unstyled comments">
+                <div className="post-comments-content">
                     { 
                     this.state.comments.map(
                         (Comment) =>
-                            <li key={ Comment.id } ref={ Comment.id } className="media mb-4">
-                                <div className="mr-3 avatar">
-                                    <Avatar 
-                                        profile_image={AVATAR_UPLOAD_PREFIX + Comment.author + "/avatar"} 
-                                    />
-                                </div>
-                                <div className="media-body">
-                                    <h6 className="mt-0 mb-1">{ Comment.author }</h6>
-                                    <span>{ Comment.body }</span>
-                                    <div className="text-muted small d-flex align-items-center comment-meta"> 
-                                        {/* TODO: Modify getVosts as get whether comments are voted or not */}
-                                        {/* <button onClick={() => this.props.castVote(Comment.permlink, Comment.author, "comment")} className="btn btn-link btn-sm px-0">Like</button> */}
-                                        {/* <button className="btn btn-link btn-sm px-0">Like</button> */}
-                                        {/* {this.props.getVotes(Comment.active_votes)} */}
-                                        {/* | <span className=""> {Comment.net_votes} Votes </span> */}
-                                        {/* { moment.utc(Comment.created).tz( moment.tz.guess() ).fromNow() } &middot; <button onClick={() => this.props.castVote(Comment.permlink, Comment.author, "comment")} className="btn btn-link btn-sm px-0">Like</button> */}
-                                        {/* | */}
-                                        {/* <button className="btn btn-link btn-sm px-0" onClick={() => this.setReplyTarget([Comment.author, Comment.permlink].join('|'))}>Reply</button> */}
+                            <div className="Comment" key={Comment.id}>
+                                <div>
+                                    <div className="Comment__Userpic">
+                                        <Avatar 
+                                            profile_image={AVATAR_UPLOAD_PREFIX + Comment.author + "/avatar"} 
+                                        />
+                                    </div>
+                                    <div className="Comment__header">
+                                        <span className="Comment__header-user">{ Comment.author }</span>
+                                    </div>
+                                    <div className="Comment__body entry-content">
+                                        <span>{ Comment.body }</span>
+                                    </div>
+                                    <div className="Comment__footer">
+                                        <div>
+                                            <span className="Comment__footer__controls">
+                                                <div className="text-muted small d-flex align-items-center comment-meta"> 
+                                                    {this.props.getVotes(Comment, "comment")} &nbsp;| {Comment.net_votes} Votes
+                                                    | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.setReplyTarget([Comment.author, Comment.permlink].join('|'))}>Reply</button>
+                                                </div>
+                                            </span>
+                                        </div>  
 
-                                        {this.props.getVotes(Comment, "comment")} | {Comment.net_votes} Votes
-                                        | <button className="btn btn-link btn-sm px-0" onClick={() => this.setReplyTarget([Comment.author, Comment.permlink].join('|'))}>Reply</button>
+                                        {/* render comment box if matched */}
+                                        { 
+                                            this.state.replyTarget === [Comment.author, Comment.permlink].join('|') && (
+                                                this.renderCommentBox(false)
+                                            )
+                                        }
 
                                     </div>
-
-                                    {/* render comment box if matched */}
-                                    { 
-                                        this.state.replyTarget === [Comment.author, Comment.permlink].join('|') && (
-                                            this.renderCommentBox(false)
-                                        )
-                                    }
-
-                                    {/* check and render the nested comments if any */}
-                                    {
-                                        Comment.children > 0 ? (
-                                            <ul className="list-unstyled sub-comments">
-                                                {this.renderNestedComments(Comment.replies)}
-                                            </ul>
-                                        ) : null
-                                    }
-                                    
                                 </div>
-                            </li>
-                        ) 
+
+                                {/* check and render the nested comments if any */}
+                                {
+                                    Comment.children > 0 ? (
+                                        <div className="Comment__replies" key={Comment.id}>
+                                            {this.renderNestedComments(Comment.replies, depth + 1)}
+                                        </div>
+                                    ) : null
+                                }
+                            </div>
+                        )
                     }
-                </ul>
+                </div>
             )
 
         } else {
@@ -306,64 +300,81 @@ class Comments extends Component {
     }
 
     // render nested comments
-    renderNestedComments(subComments) {
+    renderNestedComments(subComments, depth) {
         
+        const depth_indicator = [];
+        if (depth >= 1) {
+            for (let i = 1; i <= depth; ++i) {
+                depth_indicator.push(
+                    <div key={i} className={`depth di-${i}`}>
+                        &nbsp;
+                    </div>
+                );
+            }
+        }
+
         let lists = subComments.map(comment => {
             return (
-                <li key={comment.id} className="media mb-4">
-                    <div className="mr-3 avatar">
-                        <Avatar 
-                            profile_image={AVATAR_UPLOAD_PREFIX + comment.author + "/avatar"} 
-                        />
-                    </div>
-                    <div className="media-body">
-                        <h6 className="mt-0 mb-1">{comment.author}</h6>
-                        <span>{comment.body}</span>
-                        <div className="text-muted small d-flex align-items-center comment-meta"> 
-                            { moment.utc(comment.created).tz( moment.tz.guess() ).fromNow() } &middot;
-                            {this.props.getVotes(comment, "comment")} | {comment.net_votes} Votes
-                            | <button className="btn btn-link btn-sm px-0" onClick={() => this.setReplyTarget([comment.author, comment.permlink].join('|'))}>Reply</button>
+                <div className="Comment reply" key={comment.id}>
+                    {depth_indicator}
+                    <div>
+                        <div className="Comment__Userpic">
+                            <Avatar 
+                                profile_image={AVATAR_UPLOAD_PREFIX + comment.author + "/avatar"} 
+                            />
                         </div>
+                        <div className="Comment__header">
+                            <span className="Comment__header-user">{ comment.author }</span>
+                        </div>
+                        <div className="Comment__body entry-content">
+                            <span>{ comment.body }</span>
+                        </div>
+                        <div className="Comment__footer">
+                            <div>
+                                <span className="Comment__footer__controls">
+                                    <div className="text-muted small d-flex align-items-center comment-meta"> 
+                                        {this.props.getVotes(comment, "comment")} &nbsp;| {comment.net_votes} Votes
+                                        | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.setReplyTarget([comment.author, comment.permlink].join('|'))}>Reply</button>
+                                    </div>
+                                </span>
+                            </div>  
 
-                        {/* render comment box if matched */}
-                        { 
-                            this.state.replyTarget === [comment.author, comment.permlink].join('|') && (
-                                this.renderCommentBox(false)
-                            )
-                        }
-
-                        {/* check and render the nested comments if any */}
-                        {
-                            comment.children > 0 ? (
-                                <ul className="list-unstyled sub-comments">
-                                    {this.renderNestedComments(comment.replies)}
-                                </ul>
-                            ) : null
-                        }
-
+                            {/* render comment box if matched */}
+                            { 
+                                this.state.replyTarget === [comment.author, comment.permlink].join('|') && (
+                                    this.renderCommentBox(false)
+                                )
+                            }
+                        </div>
                     </div>
-                </li>
+
+                    {/* check and render the nested comments if any */}
+                    {
+                        comment.children > 0 ? (
+                            <div className="Comment__replies" key={comment.id}>
+                                {this.renderNestedComments(comment.replies, depth + 1)}
+                            </div>
+                        ) : null
+                    }
+                </div>
             )
         })
 
         return lists;        
     }
 
-    // render list of comments
     renderComments() {
         
         return (
             (!this.state.loading_comments) ? (
-                <span>
-                    <div className="row mt-3 comments mb-3">
-                        <div className="col-12">
-                            <h3 className="mb-4">Comments <span>({this.state.comments.length})</span></h3>
-                        </div>
-                        <div className="col-12">
-                            { this.displayComments() }
-                        </div>
+                <div className="row mt-3">
+                    <div className="col-12">
+                        <h6>Comments <span>({this.state.comments.length})</span></h6>
                     </div>
-                </span>
+                    <div className="col-12">
+                        {this.displayComments()}
+                    </div>
+                </div>
             ) : (
                 <div className="row w-100 h-100 justify-content-center mt-5">
                     <div className="text-center">Loading comments...</div>
