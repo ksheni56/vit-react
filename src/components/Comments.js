@@ -307,7 +307,7 @@ class Comments extends Component {
             for (let i = 1; i <= depth; ++i) {
                 depth_indicator.push(
                     <div key={i} className={`depth di-${i}`}>
-                        &middot;
+                        &nbsp;
                     </div>
                 );
             }
