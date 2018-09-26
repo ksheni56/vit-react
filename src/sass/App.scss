@@ -11,11 +11,26 @@ body:not(.login) {
     }
 }
 
+$footer-height: 24px;
+
+/* footer */
+footer {
+    height: $footer-height;
+    background: #272C2F;
+    padding-top: 4px;
+    font-size: 12px;
+    color: #fff;
+}
+.left-sidebar {
+    bottom: $footer-height;
+}
+
 /* Layout */
 .content {
     overflow-y: auto;
     color:#fff;
     margin-left: 250px;
+    margin-bottom: $footer-height;
 }
 
 .left-sidebar-off {
@@ -166,6 +181,12 @@ div.left-sidebar::-webkit-scrollbar-corner {
           text-decoration:underline;
         }
     }
+}
+
+#legal-disclaimer {
+    // from the upload page
+    margin-top: 10px;
+    font-size: 12px;
 }
 
 .token-amount-slider {

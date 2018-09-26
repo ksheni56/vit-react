@@ -1,4 +1,4 @@
-FROM node:8.11.4 as Base
+FROM node:8.12.0 as Base
 
 # Set DOCKER_BUILD so that jest will run all the tests (see scripts/test.js)
 ENV DOCKER_BUILD yes
@@ -40,9 +40,11 @@ RUN mkdir -p /var/app
 COPY . /var/app
 RUN env
 ENV NODE_ENV development
-RUN npm install
+RUN npm upgrade yarn
+RUN yarn cache clean
+RUN yarn install --network-concurrency=1
 ENV NODE_ENV production
-RUN npm run build
+RUN yarn run build
 
 #RUN mkdir tmp && \
 #    npm test && npm run build
@@ -56,7 +58,7 @@ EXPOSE 8080
 
 # uncomment the lines below to run it in development mode
 # ENV NODE_ENV development
-CMD [ "npm", "run", "start" ]
+CMD [ "yarn", "run", "start" ]
 
 FROM nginx:alpine as Production
 

@@ -94,6 +94,7 @@ class Header extends Component {
                                             <Link to="/wallet" className="dropdown-item" onClick={this.toggle}>Wallet</Link> 
                                             <Link to="/profile" className="dropdown-item" onClick={this.toggle}>Profile</Link> 
                                             <Link to="/history" className="dropdown-item" onClick={this.toggle}>History</Link> 
+                                            <Link to="//explore.vit.tube" target="_new" className="dropdown-item" onClick={this.toggle}>Chain Explorer</Link>
                                             <DropdownItem onClick={this.logout}>Logout</DropdownItem>
                                         </DropdownMenu>
                                     </ButtonDropdown>
@@ -107,7 +108,7 @@ class Header extends Component {
                                 <span>
                                     <Link to="/login" className="btn btn-light mr-3">Login</Link>
                                     <a href="https://signup.vit.tube/" className="btn btn-light mr-3 link-signup">Signup</a>
-                                    <Link to="/login" className="btn btn-danger"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
+                                    <Link to="/upload" className="btn btn-danger"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
                                 </span>
 
                             )

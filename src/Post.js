@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import steem from 'steem';
-import { Player, BigPlayButton, PosterImage } from 'video-react';
+import steem from '@steemit/steem-js';
+import { Player, BigPlayButton } from 'video-react';
 import { Link } from 'react-router-dom';
 import { vote, comment } from './actions/post';
 import moment from 'moment';
@@ -10,6 +10,8 @@ import Item from './components/Item';
 import Avatar from './components/Avatar';
 import Comments from './components/Comments';
 import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
+import { shouldDisplayPost } from './utils/Filter';
+import { displayPayoutAmount } from './utils/Format';
 
 class Post extends Component {
 
@@ -97,8 +99,6 @@ class Post extends Component {
             return false;
         }
 
-        
-
         this.setState({
             voting: true
         });
@@ -163,12 +163,19 @@ class Post extends Component {
             }
 
             steem.api.getDiscussionsByAuthorBeforeDate(author.replace('@',''), permalink, post.active, 5, (err, result) => {
-                
+
                 result.splice(0, 1);
- 
+
+                let related_posts = [];
+
+                result.forEach((item) => {
+                    if(shouldDisplayPost(this.props, item, related_posts))
+                        related_posts.push(item)
+                })
+
                 this.setState({
                     loading_related: false,
-                    related: result
+                    related: related_posts
                 });
 
 
@@ -228,10 +235,6 @@ class Post extends Component {
 
         }
 
-    }
-
-    displayPayoutAmount(amount) {
-        if(amount) return parseInt(amount.replace(' SBD',''), 10).toFixed(2);
     }
 
     renderVideoPlayer() {
@@ -318,7 +321,7 @@ class Post extends Component {
                             <div className="col-9 col-md-10">
                                 <h2>{ this.state.post.title }</h2>
                                 <div className="payout small">
-                                    Pending Payout: <span className="font-weight-bold">{ this.displayPayoutAmount(this.state.post.pending_payout_value) } { LIQUID_TOKEN }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
+                                    Pending Payout: <span className="font-weight-bold">{ displayPayoutAmount(this.state.post) }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } &middot; <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
                                 </div>
                                 <div className="votes">
                                     {/* <button className="btn btn-danger btn-sm">Like</button> */}
@@ -382,6 +385,7 @@ class Post extends Component {
                         !loading && this.state.post ? (
 
                             <Comments
+                                {...this.props}
                                 matchParams={this.props.match.params}
                                 post={this.state.post}
                                 commentForPost={this.state.commentForPost}

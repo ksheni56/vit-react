@@ -1,7 +1,7 @@
-import steem from 'steem';
+import steem from '@steemit/steem-js';
 import axios from 'axios'
 import { DMCA_CONTENT_ENDPOINT, DMCA_USER_ENDPOINT } from './../config'
-import { sign } from 'steem/lib/auth/ecc/src/signature';
+import { sign } from '@steemit/steem-js/lib/auth/ecc/src/signature';
 
 export function loginUser(request) {   
 
@@ -283,3 +283,20 @@ function fetchData(endpoint) {
 	})        
 }  
 
+export function claimRewardBalance(request) {
+	return new Promise((resolve, reject) => {
+		steem.broadcast.claimRewardBalance(request.postingWif,request.username,request.vit_balance,request.vests_balance, function(err,res){
+			if(err) {
+				reject({
+					payload: err
+				});
+					return;
+			}
+
+			resolve({
+				type: 'CLAIM_REWARDS',
+				payload: res
+			});
+		});
+	})
+}

@@ -19,6 +19,7 @@
     "rc-progress": "^2.2.5",
     "rc-slider": "^8.6.2",
     "react": "^16.4.1",
+    "react-block-ui": "^1.1.3",
     "react-collapsible": "^2.2.0",
     "react-dev-utils": "^5.0.1",
     "react-dom": "^16.4.1",
@@ -45,7 +46,7 @@
     "redux-saga": "^0.16.0",
     "redux-thunk": "^2.3.0",
     "rheostat": "^3.0.1",
-    "steem": "^0.7.1",
+    "@steemit/steem-js": "git+https://git@github.com/ViceIndustryToken/steem-js.git#vit-release-0.7.1",
     "video-react": "^0.13.0"
   },
   "scripts": {

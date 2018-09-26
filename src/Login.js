@@ -23,7 +23,9 @@ class Login extends Component {
 
     componentWillReceiveProps(nextState) {
         if(nextState.app.username && nextState.app.publicWif) {
-            this.props.history.push("/");
+            const history = this.props.history
+            if (history.length > 0 && history.action === 'PUSH') history.goBack()
+            else this.props.history.push('/')
         }
     }
 
@@ -68,6 +70,14 @@ class Login extends Component {
             this.setState({
                 username: this.props.match.params.username
             })
+        }
+
+        let username = localStorage.getItem("username"), 
+        publicWif = localStorage.getItem("publicWif");
+
+        // if already logged in and user tries to navigate to login page again
+        if (username && publicWif && this.props.app.authorized) {
+            this.props.history.push('/')
         }
     }
 
