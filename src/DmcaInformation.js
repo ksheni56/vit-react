@@ -15,11 +15,16 @@ class DmcaInformation extends Component {
                 url: '',
                 description: ''
             }],
-            firstname: '',
-            lastname: '',
+            first_name: '',
+            last_name: '',
+            copyright_holder: '',
             address: '',
+            city: '',
             country: '',
             region: '',
+            postal_code: '',
+            phone_number: '',
+            email: ''
         };
     }
 
@@ -119,28 +124,28 @@ class DmcaInformation extends Component {
                             <h4>Your Details</h4>
                             <div className="col-md-8 col-sm-12 px-0">
                                 <TextField
-                                    name="firstname"
-                                    id="firstname"
+                                    name="first_name"
+                                    id="first_name"
                                     label="First Name:"
-                                    value={this.state.firstname}
+                                    value={this.state.first_name}
                                     placeholder="Enter your first name"
                                     maxLength={100}
                                     required />
 
                                 <TextField
-                                        name="lastname"
-                                        id="lastname"
+                                        name="last_name"
+                                        id="last_name"
                                         label="Last Name:"
-                                        value={this.state.lastname}
+                                        value={this.state.last_name}
                                         placeholder="Enter your last name"
                                         maxLength={100}
                                         required />
 
                                 <TextField
-                                        name="copyrightholder"
-                                        id="copyrightholder"
+                                        name="copyright_holder"
+                                        id="copyright_holder"
                                         label="Copyright Holder:"
-                                        value={this.state.copyrightholder}
+                                        value={this.state.copyright_holder}
                                         placeholder="Enter the name(s) of the copyright holder, if different"
                                         maxLength={100} />
 
@@ -150,7 +155,7 @@ class DmcaInformation extends Component {
                                         label="Address:"
                                         value={this.state.address}
                                         placeholder="Enter your street address"
-                                        maxLength={100}
+                                        maxLength={200}
                                         required />
 
                                 <TextField
@@ -186,21 +191,21 @@ class DmcaInformation extends Component {
                                 </div>
 
                                 <TextField
-                                    name="postalcode"
-                                    id="postalcode"
+                                    name="postal_code"
+                                    id="postal_code"
                                     label="Postal or Zip Code:"
-                                    value={this.state.postalcode}
+                                    value={this.state.postal_code}
                                     placeholder="Enter your postal code"
-                                    maxLength={20}
+                                    maxLength={25}
                                     required />
 
                                 <TextField
-                                    name="phonenumber"
-                                    id="phonenumber"
+                                    name="phone_number"
+                                    id="phone_number"
                                     label="Phone Number:"
-                                    value={this.state.phonenumber}
+                                    value={this.state.phone_number}
                                     placeholder="Enter your phone number"
-                                    maxLength={20}
+                                    maxLength={30}
                                     required />
 
                                 <TextField
