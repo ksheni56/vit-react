@@ -32,3 +32,5 @@ export const DMCA_CONTENT_ENDPOINT = process.env.REACT_APP_DMCA_CONTENT_ENDPOINT
 export const DMCA_USER_ENDPOINT = process.env.REACT_APP_DMCA_USER_ENDPOINT ? process.env.REACT_APP_DMCA_USER_ENDPOINT : "/blank";
 
 export const LIQUID_TOKEN = process.env.REACT_APP_LIQUID_TOKEN ? process.env.REACT_APP_LIQUID_TOKEN : 'WIT';
+
+export const DMCA_TAKEDOWN_REQUEST_ENDPOINT = process.env.REACT_DMCA_CONTENT_TAKEDOWN_REQUEST_ENDPOINT || 'https://content.proto.vit.tube/takedowns';

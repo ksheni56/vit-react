@@ -5,6 +5,7 @@ import Formsy from 'formsy-react';
 import TextField from './components/forms/TextField';
 import { ToastContainer, toast } from 'react-toastify';
 import { RegionDropdown, CountryDropdown } from 'react-country-region-selector';
+import { DMCA_TAKEDOWN_REQUEST_ENDPOINT } from './config';
 
 class DmcaInformation extends Component {
     constructor(props) {
@@ -24,8 +25,12 @@ class DmcaInformation extends Component {
             region: '',
             postal_code: '',
             phone_number: '',
-            email: ''
+            email: '',
+
+            submitting: false
         };
+
+        this.submitTakedownRequest = this.submitTakedownRequest.bind(this);
     }
 
     changeCountry(newCountry) {
@@ -59,6 +64,16 @@ class DmcaInformation extends Component {
         this.setState({
             infringements: infringements
         });
+    }
+
+    submitTakedownRequest(form_data) {
+        this.setState( { submitting: true } );
+
+        console.log(`Takedown endpoint is ${DMCA_TAKEDOWN_REQUEST_ENDPOINT}`)
+
+        toast.warning('Here we go..')
+
+        this.setState( { submitting: false } );
     }
 
     render() {
@@ -99,10 +114,10 @@ class DmcaInformation extends Component {
                                                     Description of the work claimed to be infringed:
                                                 </label>
                                                 <select
+                                                    name={ `infringement-${idx}-description`}
                                                     className="form-control"
                                                     value={ infringement.description }
-                                                    onChange={ (e) => this.changeInfringementDescription(idx, e.target.value) }
-                                                    name={ `infringement-${idx}-description` }>
+                                                    onChange={ (e) => this.changeInfringementDescription(idx, e.target.value) }>
                                                     <option value="1">My or my company's, organization's or client's video</option>
                                                     <option value="2">My or my company's, organization's or client's photo</option>
                                                     <option value="3">My or my company's, organization's or client's original music or song</option>
