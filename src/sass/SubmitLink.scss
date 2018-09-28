@@ -1,0 +1,20 @@
+@keyframes fadeout {
+    from { opacity: 1; max-height: 700px; overflow: inherit;}
+    to   { opacity: 0; max-height: 0px; overflow: hidden;}
+}
+
+@keyframes fadein {
+    from { opacity: 0; max-height: 0px; overflow: hidden;}
+    to   { opacity: 1; max-height: 700px; overflow: inherit;}
+}
+
+.collapse-form {
+    overflow: hidden;
+    animation: fadeout 1s 0s ease-in-out forwards;
+}
+
+.expand-form {
+    max-height: 0px;
+    overflow: hidden;
+    animation: fadein 1s 0s ease-in-out forwards;
+}

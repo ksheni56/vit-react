@@ -13,15 +13,19 @@ class PreloadImage extends React.Component {
     this.setPreloader()
   }
 
-  setPreloader() {
-    const image = new Image();
+  componentWillUnmount() {
+    this.image.onload = null
+  }
 
-    image.onload = () => this.setState({
+  setPreloader() {
+    this.image = new Image();
+
+    this.image.onload = () => this.setState({
       loaded: true,
-      src: `url(${this.props.src})`
+      src: `url('${this.props.src}')`
     });
 
-    image.src = this.props.src;
+    this.image.src = this.props.src;
   }
 
   render() {

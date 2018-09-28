@@ -10,6 +10,8 @@ class TextField extends Component {
 
     changeValue(event) {
         this.props.setValue(event.currentTarget.value);
+        if (this.props.onChange !== undefined) 
+            this.props.onChange()
     }
 
     render() {
@@ -32,6 +34,7 @@ class TextField extends Component {
                     onChange={this.changeValue} 
                     value={this.props.getValue()} 
                     maxLength={this.props.maxLength}
+                    disabled={this.props.disabled}
                     placeholder={this.props.placeholder}/>
                 <small className="text-muted">{this.props.memo}</small>
                 <div className='invalid-feedback'>{ this.props.getErrorMessage() ? this.props.getErrorMessage() : null }</div>

@@ -13,17 +13,24 @@ class Header extends Component {
 
         this.state = {
             "authenticated": false,
-            dropdownOpen: false
+            dropdownOpen: false,
+            uploadDropdownOpen: false
         }   
         this.toggle = this.toggle.bind(this);
         this.logout = this.logout.bind(this);
         this.toggleLeftSidebar = this.toggleLeftSidebar.bind(this);
-
+        this.toggleUpload = this.toggleUpload.bind(this)
     } 
 
     toggle() {
         this.setState({
             dropdownOpen: !this.state.dropdownOpen
+        });
+    }
+
+    toggleUpload() {
+        this.setState({
+            uploadDropdownOpen: !this.state.uploadDropdownOpen
         });
     }
 
@@ -98,9 +105,18 @@ class Header extends Component {
                                             <DropdownItem onClick={this.logout}>Logout</DropdownItem>
                                         </DropdownMenu>
                                     </ButtonDropdown>
-                                
-                                    <Link to="/upload" className="btn btn-danger ml-3"><i className="fa fa-cloud-upload-alt mr-2"></i>Upload</Link>
 
+                                    <ButtonDropdown isOpen={this.state.uploadDropdownOpen} toggle={this.toggleUpload} className="ml-3">
+                                        <DropdownToggle caret className="btn btn-danger">
+                                            <span>
+                                                Upload
+                                            </span>
+                                        </DropdownToggle>
+                                        <DropdownMenu>
+                                            <Link to="/upload" className="dropdown-item" onClick={this.toggleUpload}><i className="fas fa-video mr-3"></i>Video</Link>
+                                            <Link to="/post" className="dropdown-item" onClick={this.toggleUpload}><i className="fas fa-link mr-3"></i>Link</Link> 
+                                        </DropdownMenu>
+                                    </ButtonDropdown>
                                 </span>
 
                             ) : (

@@ -26,6 +26,7 @@ export const IMAGE_UPLOAD_ENDPOINT = process.env.REACT_APP_IMAGE_UPLOAD_ENDPOINT
 export const VIDEO_HISTORY_ENDPOINT = process.env.REACT_APP_VIDEO_HISTORY_ENDPOINT ? process.env.REACT_APP_VIDEO_HISTORY_ENDPOINT : "https://media.proto.vit.tube/history";
 export const VIDEO_UPLOAD_POSTED_ENDPOINT = process.env.REACT_APP_VIDEO_UPLOAD_POSTED_ENDPOINT ? process.env.REACT_APP_VIDEO_UPLOAD_POSTED_ENDPOINT : "https://media.proto.vit.tube/upload/video/posted/";
 
+export const VIDEO_LINK_EMBEDED_CODE_PARSER = process.env.REACT_APP_VIDEO_LINK_EMBEDED_CODE_PARSER ? process.env.REACT_APP_VIDEO_LINK_EMBEDED_CODE_PARSER : "http://localhost:5000/embed?url=";
 
 // DMCA endpoints
 export const DMCA_CONTENT_ENDPOINT = process.env.REACT_APP_DMCA_CONTENT_ENDPOINT ? process.env.REACT_APP_DMCA_CONTENT_ENDPOINT : "/blank";

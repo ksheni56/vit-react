@@ -9,10 +9,9 @@ import HLSSource from './HLS';
 import Item from './components/Item';
 import Avatar from './components/Avatar';
 import Comments from './components/Comments';
-import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
+import { VIDEO_THUMBNAIL_URL_PREFIX, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
 import { shouldDisplayPost } from './utils/Filter';
 import { displayPayoutAmount } from './utils/Format';
-import BlockUi from 'react-block-ui';
 
 class Post extends Component {
 
@@ -267,6 +266,20 @@ class Post extends Component {
 
             )
         
+        } else if (this.state.post.json_metadata.vit_data
+            && this.state.post.json_metadata.vit_data.type === 'external') {
+                const vit_data = this.state.post.json_metadata.vit_data;
+                return (
+                    <div className="embedded-video-container">
+                        <iframe tabIndex="-1"
+                            title={vit_data.provider_name} 
+                            className="embedded-video" allow="fullscreen" 
+                            allowFullScreen="true" 
+                            src={vit_data.embedded_url} 
+                            frameBorder="0" scrolling="no"
+                            height='100%' width='100%'></iframe>
+                    </div>
+                )
         } else {
 
             return (

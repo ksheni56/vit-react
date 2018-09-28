@@ -14,13 +14,15 @@ class Item extends Component {
             json_metadata = JSON.parse(this.props.data.json_metadata);
         } catch (e) { }
 
-        if(json_metadata && json_metadata.vit_data && json_metadata.vit_data.Hash) {
-            let URL;
-            if (json_metadata.vit_data.Screenshot === undefined) {
+        if(json_metadata && json_metadata.vit_data && (json_metadata.vit_data.Hash || json_metadata.vit_data.thumbnail_url)) {
+            let URL
+            if (json_metadata.vit_data.Screenshot) {
+                URL = AVATAR_UPLOAD_PREFIX + json_metadata.vit_data.Screenshot + '/' + SCREENSHOT_IMAGE;
+            } else if (json_metadata.vit_data.thumbnail_url) {
+                URL = json_metadata.vit_data.thumbnail_url
+            } else {
                 // for videos already on production, we use the default one
                 URL = VIDEO_THUMBNAIL_URL_PREFIX + json_metadata.vit_data.Hash + "/thumbnail-01.jpg";
-            } else {
-                URL = AVATAR_UPLOAD_PREFIX + json_metadata.vit_data.Screenshot + '/' + SCREENSHOT_IMAGE;
             }
 
             URL = proxifyImage(URL, VIDEO_THUMBNAIL_LIST_SIZE)
@@ -57,12 +59,12 @@ class Item extends Component {
     renderHorizontally() {
         return (
             <div className="row item-wrapper mb-3" key={ this.props.data.id } ref={ this.props.data.id }>
-                <div className="col-5">
+                <div className="col-12 col-md-5">
                     <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>
                         { this.renderThumbnail() }
                     </Link>
                 </div>
-                <div className="col-7">
+                <div className="col-12 col-md-7">
                     <div className="d-flex w-100">
                         <h6>
                             <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>{this.truncateTitle(this.props.data.title)}</Link>

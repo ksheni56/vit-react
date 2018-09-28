@@ -22,6 +22,7 @@ import './sass/LeftSidebar.scss';
 import './sass/Item.scss';
 import './sass/PreloadImage.scss'
 import './sass/Upload.scss';
+import './sass/SubmitLink.scss';
 import './sass/Post.scss';
 import './sass/Comment.scss';
 import './sass/Channel.scss';
@@ -46,6 +47,7 @@ import Transfers from './Transfers';
 import Legal2257Statement from './Legal2257Statement';
 import LegalPrivacyPolicy from './LegalPrivacyPolicy';
 import ScrollToTop from './components/ScrollToTop ';
+import SubmitLink from './SubmitLink';
 
 // Connect to Vit
 steem.api.setOptions({
@@ -78,6 +80,7 @@ ReactDOM.render((
                             var test_if_channel = /@/.test(props.location.pathname);
 
                             if(test_if_home) return <Home {...props} />
+                            else if(props.location.pathname === '/post') return <SubmitLink {...props} />
                             else if(props.location.pathname === '/upload') return <Upload {...props} />
                             else if(props.location.pathname === '/history') return <History {...props} />
                             else if(props.location.pathname === '/wallet') return <Wallet {...props} />
