@@ -107,7 +107,7 @@ class DmcaInformation extends Component {
             // FIXME: for some reason only 'description' gets set, the TextField
             // refuses to update the nested 'url' from the mapping.
             const url = form_data[`infringement-${i}-url`];
-            const descriptionIndex = parseInt(this.state.infringements[i].description);
+            const descriptionIndex = parseInt(this.state.infringements[i].description, 10);
             const description = _.find(this.infringementTypes, x => x.value === descriptionIndex).text;
 
             complaint.infringements.push({
