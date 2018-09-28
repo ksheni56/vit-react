@@ -6,6 +6,8 @@ import TextField from './components/forms/TextField';
 import { ToastContainer, toast } from 'react-toastify';
 import { RegionDropdown, CountryDropdown } from 'react-country-region-selector';
 import { DMCA_TAKEDOWN_REQUEST_ENDPOINT } from './config';
+import ComboSelect from 'react-formsy-combo-select';
+import _ from 'lodash';
 
 class DmcaInformation extends Component {
     constructor(props) {
@@ -27,8 +29,17 @@ class DmcaInformation extends Component {
             phone_number: '',
             email: '',
 
+            electronic_signature: '',
             submitting: false
         };
+
+        this.infringementTypes = [
+            { text: "Video", value: 1 },
+            { text: "Photo", value: 2 },
+            { text: "Original music or song", value: 3 },
+            { text: "Software", value: 4 },
+            { text: "Artwork", value: 5 },
+        ];
 
         this.submitTakedownRequest = this.submitTakedownRequest.bind(this);
     }
@@ -46,6 +57,7 @@ class DmcaInformation extends Component {
     }
 
     changeInfringementDescription(infringement_idx, newDescription) {
+        console.log(`Changing infringement id = ${infringement_idx} to desc=${newDescription}`);
         let infringements = this.state.infringements.slice();
         infringements[infringement_idx].description = newDescription;
         this.setState({
@@ -71,7 +83,59 @@ class DmcaInformation extends Component {
 
         console.log(`Takedown endpoint is ${DMCA_TAKEDOWN_REQUEST_ENDPOINT}`)
 
-        toast.warning('Here we go..')
+        toast.warning('Submitting complaint...');
+
+        var complaint = {
+            first_name: form_data.first_name,
+            last_name: form_data.last_name,
+            copyright_holder: form_data.copyright_holder,
+            address: form_data.address,
+            city: form_data.city,
+            country: this.state.country,
+            region: this.state.region,
+            postal_code: form_data.postal_code,
+            phone_number: form_data.phone_number,
+            email: form_data.email,
+            // this is a lot of fields to keep up to date...
+            // there must be a cleaner way to do this with assign
+            // that also lets me delete the infringement-*-description/url fields.
+            infringements: [],
+        };
+
+        // Append the infringements to the blob
+        for(var i = 0; i < this.state.infringements.length; ++i) {
+            // FIXME: for some reason only 'description' gets set, the TextField
+            // refuses to update the nested 'url' from the mapping.
+            const url = form_data[`infringement-${i}-url`];
+            const descriptionIndex = parseInt(this.state.infringements[i].description);
+            const description = _.find(this.infringementTypes, x => x.value === descriptionIndex).text;
+
+            complaint.infringements.push({
+                url, description
+            });
+        }
+
+        console.log("preparing to submit complaint");
+
+        fetch(DMCA_TAKEDOWN_REQUEST_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(complaint)
+        })
+        .then(res => {
+            if(res.ok) {
+                toast.success("Successfully submitted complaint.");
+            } else {
+                toast.error("An error occurred when submitting the complaint.");
+            }
+        })
+        .catch(err => {
+            console.log(`Submit error: ${err}`);
+            toast.error("An error occurred when submitting the complaint.");
+        });
 
         this.setState( { submitting: false } );
     }
@@ -113,18 +177,16 @@ class DmcaInformation extends Component {
                                                 <label htmlFor={`infringement-${idx}-description`} className="form-label">
                                                     Description of the work claimed to be infringed:
                                                 </label>
-                                                <select
+                                                <ComboSelect type="select"
                                                     name={ `infringement-${idx}-description`}
                                                     className="form-control"
                                                     value={ infringement.description }
-                                                    onChange={ (e) => this.changeInfringementDescription(idx, e.target.value) }>
-                                                    <option value="1">My or my company's, organization's or client's video</option>
-                                                    <option value="2">My or my company's, organization's or client's photo</option>
-                                                    <option value="3">My or my company's, organization's or client's original music or song</option>
-                                                    <option value="4">My or my company's, organization's or client's software</option>
-                                                    <option value="5">My or my company’s, organization’s or client’s artwork</option>
-                                                    <option value="6">Other</option>
-                                                </select>
+                                                    onChange={ (value, text) => this.changeInfringementDescription(idx, value) }
+                                                    data={ this.infringementTypes }
+                                                    icon="fa fa-chevron-down"
+                                                    iconSelectInactive=""
+                                                    iconSelectActive="fa fa-check"
+                                                />
                                             </div>
                                         </div>
                                     )
@@ -287,7 +349,7 @@ class DmcaInformation extends Component {
                                 <TextField
                                     id="electronicsignature"
                                     name="electronicsignature"
-                                    value={this.state.electronicsignature}
+                                    value={this.state.electronic_signature}
                                     label="Type your full name here to provide your electronic signature:"
                                     required/>
 

@@ -27,7 +27,8 @@ import './sass/Channel.scss';
 import './sass/Responsive.scss';
 
 import 'react-toastify/dist/ReactToastify.css';
-
+import 'react-combo-select/style.css';
+import 'font-awesome/css/font-awesome.min.css';
 
 // Components
 import Bootstrap from './Bootstrap';
