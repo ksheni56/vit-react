@@ -166,7 +166,7 @@ class DmcaInformation extends Component {
                                 this.state.infringements.map((infringement, idx) => {
                                     return (
                                         <div className="col-md-8 col-sm-12 px-0" key={idx}>
-                                            <h4>Content #{ idx + 1 }</h4>
+                                            <b>Content #{ idx + 1 }</b>
                                             <TextField
                                                 name={ `infringement-${idx}-url` }
                                                 value={ infringement.url }

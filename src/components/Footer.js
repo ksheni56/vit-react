@@ -9,6 +9,8 @@ class Footer extends Component {
                 <Link style={{'color': 'white'}} to="/privacy">Privacy Policy</Link>
                 &nbsp;|&nbsp;
                 <Link style={{'color': 'white'}} to="/2257">2257 Statement</Link>
+                &nbsp;|&nbsp;
+                <Link style={{'color': 'white'}} to="/dmca">DMCA</Link>
             </footer>
         );
     }
