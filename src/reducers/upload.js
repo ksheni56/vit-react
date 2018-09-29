@@ -74,6 +74,7 @@ export default function(state = initialState, action) {
 
             let uploads = Object.assign({}, state.uploads)
             uploads = renameProp(hid, ipfs_hash, uploads)
+            uploads[ipfs_hash].status = UploadStatus.UPLOADED
 
             return Object.assign({}, state, {
                 uploads: uploads
@@ -82,7 +83,7 @@ export default function(state = initialState, action) {
 
         case UploadActionTypes.DATA_UPDATE: {
             const { data } = action.payload
-            const uploads = Object.assign({}, state.uploads)
+            let uploads = Object.assign({}, state.uploads)
             const keys = Object.keys(data)
 
             for(let i in keys) {
@@ -91,6 +92,16 @@ export default function(state = initialState, action) {
 
                 const upload = Object.assign({}, uploads[key], data[key])
                 uploads[key] = upload;
+            }
+
+            const ukeys = Object.keys(uploads)
+            for(let j in ukeys) {
+                const key = ukeys[j]
+                if (!keys.includes(key) 
+                    && ![UploadStatus.UPLOADING, UploadStatus.UPLOADED].includes(uploads[key].status)) {
+                    let {[key]: omit, ...res} = uploads
+                    uploads = res
+                }
             }
 
             return Object.assign({}, state, {
@@ -114,9 +125,10 @@ export default function(state = initialState, action) {
 
             const uploads = Object.assign({}, state.uploads)
             
-            // don't remove it when it hasn't been posted yet
+            // don't remove it when it hasn't been posted/cancelled yet
             if (!uploads.hasOwnProperty(rid) || 
-                (uploads[rid].status !== UploadStatus.CANCELLED && !uploads[rid].posted)) return state
+                ![UploadStatus.CANCELLED, UploadStatus.COMPLETED, UploadStatus.DELETED].includes(uploads[rid].status))
+                return state
 
             let {[rid]: omit, ...res} = uploads
 

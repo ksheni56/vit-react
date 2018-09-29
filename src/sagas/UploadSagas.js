@@ -60,7 +60,6 @@ export function* uploadFileSaga(action) {
             return;
         }
         if (success) {
-            yield put(updateStatus(uid, UploadStatus.UPLOADED))
             yield put(updateIPFSHash(uid, ipfs_hash))
             return;
         }

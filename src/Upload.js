@@ -22,6 +22,9 @@ import { Player, BigPlayButton } from 'video-react';
 import BlockUi from 'react-block-ui';
 import 'react-block-ui/style.css';
 
+const NOTIFICATION_TIMEOUT = 5000 // in ms
+const SEND_NOTIFICATION_TIMEOUT = 3000 // in ms, local storage is slow, should not set to very low value
+
 class Upload extends Component {
 
     constructor(props) {
@@ -50,6 +53,9 @@ class Upload extends Component {
         }
 
         this.creatableRef = null;
+        this.canSendNotification = false
+        this.notificationTimeoutObj = null
+        this.staleNotificationHashesChecked = false
         this.handleDrop = this.handleDrop.bind(this);
         this.handleDropRejected = this.handleDropRejected.bind(this);
         this.handleChangeCategory = this.handleChangeCategory.bind(this);
@@ -91,9 +97,90 @@ class Upload extends Component {
 
         });
 
+        // only send request if notification is supported by the browser
+        if ("Notification" in window) {
+            if (Notification.permission === "granted") {
+                this.canSendNotification = true
+            } else if (Notification.permission !== 'denied' || Notification.permission === "default") {
+                Notification.requestPermission((permission) => {
+                    // If the user accepts
+                    if (permission === "granted") {
+                        this.canSendNotification = true
+                    }
+                });
+            }
+
+            this.sendNotification()
+        }
+    }
+
+    // cannot aggregate notification messages as browsers limit no of characters per message
+    showNotification(body) {
+        const options = {
+            icon: '/favicon.png',
+            body: body,
+            
+        }
+        const n = new Notification("Upload Notifications", options)
+        n.onclick = () => { window.focus(); }
+
+        // close notification when timeout or comment out for default browser behaviour
+        setTimeout(n.close.bind(n), NOTIFICATION_TIMEOUT);
+    }
+
+    sendNotification (file) {
+        // when data hasn't been bound to component or the list is empty
+        if (!this.props.uploads || Object.keys(this.props.uploads).length === 0) {
+            this.notificationTimeoutObj = setTimeout(this.sendNotification.bind(this), SEND_NOTIFICATION_TIMEOUT);
+            return
+        }
+
+        clearTimeout(this.notificationTimeoutObj)
+
+        // parse storage data
+        let notifiedHashes = localStorage.getItem('notifiedHashes')
+        try {
+            notifiedHashes = JSON.parse(notifiedHashes)
+        } catch (e) {
+            notifiedHashes = { uploaded: [], transcoded: [] }
+        } finally {
+            if (!notifiedHashes) notifiedHashes = { uploaded: [], transcoded: [] }
+        }
+
+        // remove stale hashes
+        if (!this.staleNotificationHashesChecked) {
+            const keys = Object.keys(this.props.uploads)
+            notifiedHashes.uploaded = notifiedHashes.uploaded.filter(hash => keys.includes(hash))
+            notifiedHashes.transcoded = notifiedHashes.transcoded.filter(hash => keys.includes(hash))
+        }
+
+        if (this.canSendNotification) {
+            for (let key in this.props.uploads) {
+                const file = this.props.uploads[key]
+                if (file.status === UploadStatus.UPLOADED) {
+                    if (notifiedHashes.uploaded.includes(key)) continue
+
+                    this.showNotification('Video ' + file.original_filename + ' has been uploaded. In queue for transcoding.')
+                    notifiedHashes.uploaded.push(key)
+                } else if (file.status === UploadStatus.TRANSCODED) {
+                    if (notifiedHashes.transcoded.includes(key)) continue
+
+                    this.showNotification('Video ' + file.original_filename + ' has been transcoded. It\'s now ready for posting.')
+                    notifiedHashes.uploaded.splice(notifiedHashes.uploaded.indexOf(key), 1)
+                    notifiedHashes.transcoded.push(key)
+                }
+            }
+        }
+
+        // update storage
+        localStorage.setItem('notifiedHashes', JSON.stringify(notifiedHashes))
+
+        // set next execution
+        this.notificationTimeoutObj = setTimeout(this.sendNotification.bind(this), SEND_NOTIFICATION_TIMEOUT);
     }
 
     componentWillUnmount () {
+        clearTimeout(this.notificationTimeoutObj)
         this.props.stopTranscodeCheck()
     }
 
