@@ -63,3 +63,4 @@ CMD [ "yarn", "run", "start" ]
 FROM nginx:alpine as Production
 
 COPY --from=Base /var/app/build /usr/share/nginx/html
+COPY --from=Base /var/app/yarn.lock /root/yarn.lock
