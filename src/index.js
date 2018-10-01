@@ -93,7 +93,7 @@ ReactDOM.render((
                     />
 
                     <Route
-                        path="/:tag/:filter"
+                        path="/tags/"
                         render={ props => {
 
                             var test_if_post = /@/.test(props.location.pathname);
@@ -102,6 +102,18 @@ ReactDOM.render((
 
                         } }
                     />
+
+                    {/* <Route
+                        path="/:tag/:filter"
+                        render={ props => {
+
+                            var test_if_post = /@/.test(props.location.pathname);
+                            if(!test_if_post) return <Tag {...props} />
+                            else return null;
+
+                        } }
+                    /> */}
+
                     <Route path="/@:author/:permalink" component={ Post } />
                 </Bootstrap>
 

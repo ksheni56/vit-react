@@ -85,8 +85,10 @@ class LeftSidebar extends Component {
 
                             (Tag) =>
                                 <li key={ Tag.name } ref={ Tag.name }>
-        
-                                    <Link className={ this.getActiveClass(Tag.name) } to={ '/' + Tag.name + '/new' }>
+                                    {/* <Link className={ this.getActiveClass(Tag.name) } to={ '/' + Tag.name + '/new' } onClick={() => this.props.addSelectedTags(Tag.name)}>
+                                        { Tag.name } <span className="active-dot"><i className="fa fa-circle text-danger"></i></span>
+                                    </Link> */}
+                                    <Link className={ this.getActiveClass(Tag.name) } to={ '/tags/new' } onClick={() => this.props.addSelectedTags(Tag.name)}>
                                         { Tag.name } <span className="active-dot"><i className="fa fa-circle text-danger"></i></span>
                                     </Link>
                                 </li>
@@ -103,7 +105,7 @@ class LeftSidebar extends Component {
     }
 
     render() {
-        
+        console.log(this.props.app.seletedTags);
         return (
             <div className="col left-sidebar">
                 <div className="d-flex justify-content-between align-items-center">
@@ -133,4 +135,13 @@ function mapStateToProps(state) {
     
 }
 
-export default connect(mapStateToProps, {})(LeftSidebar);
+const mapDispatchToProps = dispatch => {
+    return {
+        addSelectedTags: (tagName) => dispatch({
+            type: 'UPDATE_SELECTED_TAGS',
+            payload: tagName
+        })
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(LeftSidebar);

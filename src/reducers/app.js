@@ -6,6 +6,7 @@ const initialState = {
     "subs": [],
     dmcaContents: null,
     blockedUsers: null,
+    seletedTags: []
 };
 
 export default function(state = initialState, action) {
@@ -63,6 +64,26 @@ export default function(state = initialState, action) {
         case 'CLAIM_REWARDS': {
             console.log(action.payload)
         }
+
+        case 'UPDATE_SELECTED_TAGS':
+            let tempTags = [...state.seletedTags];
+            const foundElement = tempTags.find(e => {
+                return e === action.payload
+            });
+
+            if (!foundElement) {
+                // add 
+                tempTags.push(action.payload);
+            } else {
+                // remove
+                const index = tempTags.indexOf(foundElement);
+                tempTags.splice(index, 1);
+            }
+
+            return {
+                ...state,
+                seletedTags: tempTags
+            }
 
         default:
             return state;
