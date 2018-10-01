@@ -14,7 +14,7 @@ class HLS extends Component {
             startLevel: 10,
         }
         this.hls = new Hls(config);
-    } 
+    }
 
     componentWillReceiveProps(nextProps) {}
 
@@ -28,6 +28,10 @@ class HLS extends Component {
                 // Video loaded
                 //video.play();
             });
+
+            this.hls.media.onvolumechange = this.onVolumeChange
+            this.hls.media.volume = this.getVolume()
+            this.hls.media.muted = this.isMuted()
         }
     }
 
@@ -37,6 +41,24 @@ class HLS extends Component {
         }
     }
 
+    getVolume() {
+        let vol = parseFloat(localStorage.getItem("volume"))
+        if (isNaN(vol) || vol < 0 || vol > 1)
+            vol = 1
+        
+        return vol
+    }
+
+    isMuted() {
+        const isMuted = localStorage.getItem("isMuted")
+        if (!isMuted) return false        
+        return isMuted === 'true'
+    }
+
+    onVolumeChange(e) {
+        localStorage.setItem("isMuted", e.target.muted);
+        localStorage.setItem("volume", e.target.volume);
+    }
 
     render() {
 
