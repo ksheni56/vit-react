@@ -114,7 +114,7 @@ class SubmitLink extends React.Component {
         }
 
         const endpoint = VIDEO_LINK_EMBEDED_CODE_PARSER + encodeURI(form.link)
-        axios.get(endpoint, '', {
+        axios.get(endpoint, {
             headers: headers
             })
             .then(response => {
