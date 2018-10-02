@@ -13,6 +13,9 @@ import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, AVATAR_UPLOAD_PREFIX, SCREENS
 import { shouldDisplayPost } from './utils/Filter';
 import { displayPayoutAmount } from './utils/Format';
 import BlockUi from 'react-block-ui';
+import Slider from 'react-rangeslider';
+import 'react-rangeslider/lib/index.css'
+
 
 class Post extends Component {
 
@@ -29,12 +32,17 @@ class Post extends Component {
             tag: this.props.match.params.tag,
             author: this.props.match.params.author,
             permalink: this.props.match.params.permalink,
-            commentForPost: false
+            commentForPost: false,
+            volume: 0,
+            currentVote: ''
         }
 
         this.castVote = this.castVote.bind(this);
         this.getVotes = this.getVotes.bind(this);
         this.togglePostReply = this.togglePostReply.bind(this);
+        this.handleOnChangeSlider = this.handleOnChangeSlider.bind(this);
+        this.renderVoteSlider = this.renderVoteSlider.bind(this);
+        this.toggleVoteSlider = this.toggleVoteSlider.bind(this);
     } 
 
     componentWillReceiveProps(nextProps) {
@@ -65,6 +73,39 @@ class Post extends Component {
             commentForPost: !this.state.commentForPost
         })
     }
+
+    toggleVoteSlider(value) {
+        this.setState({
+            currentVote: value,
+            volume: 0 // set back to default value
+        })
+    }
+
+    handleOnChangeSlider(value) {
+        this.setState({
+          volume: value
+        })
+    }
+
+    renderVoteSlider (permalink, author, type) {
+        
+        return (
+            <div className="div-slider" key={permalink}>
+                <Slider
+                    value={this.state.volume}
+                    min={-100}
+                    max={100}
+                    labels={{ '-100': '100', '0': '', 100: '100'}}
+                    onChange={this.handleOnChangeSlider}
+                />
+                <div className="text-center">You vote: {this.state.volume}</div>
+                <div className="text-center">
+                    <button className="btn btn-sm btn-danger" disabled={this.state.voting} onClick={() => this.castVote(permalink, author, type, this.state.volume)}>Agree</button>
+                    <button className="btn btn-sm" style={{'marginLeft': '5px'}} onClick={() => this.toggleVoteSlider('')}>Cancel</button>
+                </div>
+            </div>
+        )
+    }
     
     getVotes(data, type = 'post') {
         let votes = data.active_votes;
@@ -75,7 +116,6 @@ class Post extends Component {
             voted = votes.filter(vote => {
                 return (vote.voter === this.props.app.username ? vote : null);
             })
-            
             // AS DOWNVOTE does not remove a record out of the active_votes
             // So we need to check the percent as well
             if (voted.length > 0 && voted[0].percent > 0) {
@@ -83,12 +123,14 @@ class Post extends Component {
                     <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 0)}>Unlike</span>
             } else {
                 btnLike = 
-                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
+                // <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
+                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.toggleVoteSlider(data.permlink)}>Like</span>
             }
 
         } else {
             btnLike = 
-                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
+                // <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
+                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.toggleVoteSlider(data.permlink)}>Like</span>
         }
 
         return btnLike;
@@ -126,7 +168,8 @@ class Post extends Component {
             }
 
             this.setState({
-                voting: false
+                voting: false,
+                currentVote: ''
             });
 
         }).catch(err => {
@@ -325,6 +368,13 @@ class Post extends Component {
                                 </div>
                                 <div className="votes">
                                     {this.getVotes(this.state.post)} | {this.state.post.net_votes} Votes | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.togglePostReply()}>Reply</button>
+
+                                    {
+                                        this.state.currentVote === this.state.permalink && (
+                                            this.renderVoteSlider(this.state.permalink, this.state.author, 'post')
+                                        )
+                                    }
+                                    
                                 </div>
                             </div>
                         </div>
@@ -336,6 +386,7 @@ class Post extends Component {
     }
 
     render() {
+        
         let loading = this.state.loading;
 
         if (this.props.dmcaContents == null || this.props.blockedUsers == null) {
@@ -387,6 +438,8 @@ class Post extends Component {
                                 commentForPost={this.state.commentForPost}
                                 togglePostReply={this.togglePostReply}
                                 getVotes={this.getVotes}
+                                renderVoteSlider={this.renderVoteSlider}
+                                currentVote={this.state.currentVote}
                             />
                           
                         ) : null
