@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import FeaturedChannels from './FeaturedChannels';
 import Subscriptions from './Subscriptions';
+import { processTags } from '../utils/Filter';
 
 class LeftSidebar extends Component {
 
@@ -36,7 +37,7 @@ class LeftSidebar extends Component {
 
                     
             this.setState({
-                tags: result.filter(function(e) { return ['touch-tube','touchit-social'].indexOf(e.name) < 0 }),
+                tags: processTags(result),
                 loading: false
             });
 
@@ -84,9 +85,9 @@ class LeftSidebar extends Component {
                         this.state.tags.map(
 
                             (Tag) =>
-                                <li key={ Tag.name } ref={ Tag.name }>
+                                <li key={ Tag.tag } ref={ Tag.tag }>
         
-                                    <Link className={ this.getActiveClass(Tag.name) } to={ '/' + Tag.name + '/new' }>
+                                    <Link className={ this.getActiveClass(Tag.tag) } to={ '/' + Tag.tag + '/new' }>
                                         { Tag.name } <span className="active-dot"><i className="fa fa-circle text-danger"></i></span>
                                     </Link>
                                 </li>

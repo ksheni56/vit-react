@@ -21,6 +21,7 @@ import HLSSource from './HLS';
 import { Player, BigPlayButton } from 'video-react';
 import BlockUi from 'react-block-ui';
 import 'react-block-ui/style.css';
+import { processTags } from './utils/Filter';
 
 class Upload extends Component {
 
@@ -75,12 +76,12 @@ class Upload extends Component {
 
         // TODO: change 'life'
         steem.api.getTrendingTags('', 60, (err, result) => {
-
+            let filtered_result = processTags(result, 'user');
             let categories = [];
 
-            for(var i in result) {
-                if(result[i]['name'] !== '') {
-                    categories.push({ value: result[i]['name'], label: result[i]['name']})
+            for(var i in filtered_result) {
+                if(filtered_result[i]['name'] !== '') {
+                    categories.push({ value: filtered_result[i]['name'], label: filtered_result[i]['name']})
                 }
             }
 

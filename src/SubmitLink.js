@@ -162,7 +162,7 @@ class SubmitLink extends React.Component {
             let url = new URL(this.state.embedded_data.embedded_url)
             let domain = url.hostname.replace(/^www\./, '');
             if(domain) {
-                categories.push(domain);
+                categories.push('external:'+domain);
             }
         } catch(e) {
             console.error("Oops", e);

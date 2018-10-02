@@ -10,7 +10,7 @@ import Item from './components/Item';
 import Avatar from './components/Avatar';
 import Comments from './components/Comments';
 import { VIDEO_THUMBNAIL_URL_PREFIX, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
-import { shouldDisplayPost } from './utils/Filter';
+import { shouldDisplayPost, processSimpleTags } from './utils/Filter';
 import { displayPayoutAmount } from './utils/Format';
 
 class Post extends Component {
@@ -336,10 +336,10 @@ class Post extends Component {
                                 </div>
                                 <div className="payout small">
                                     {
-                                        this.state.post.json_metadata.tags.filter(t => {
-                                            return !['touch-tube', 'touchit-social'].includes(t)
-                                        }).map(t => {
-                                            return <Link className="font-weight-bold badge badge-secondary" to={"/" + t + "/new"} style={{'marginLeft': '2px'}}>{t}</Link>
+                                        processSimpleTags(
+                                            this.state.post.json_metadata.tags
+                                        ).map(t => {
+                                            return <Link className="font-weight-bold badge badge-secondary" to={"/" + t.tag + "/new"} style={{'marginLeft': '2px'}}>{t.name}</Link>
                                         })
                                     }
                                 </div>
