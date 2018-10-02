@@ -157,6 +157,16 @@ class SubmitLink extends React.Component {
             return false;
         }
         categories.push('touch-tube');
+        // Add a tag for the site's domain to enable filtering by site
+        try {
+            let url = new URL(this.state.embedded_data.embedded_url)
+            let domain = url.hostname.replace(/^www\./, '');
+            if(domain) {
+                categories.push(domain);
+            }
+        } catch(e) {
+            console.error("Oops", e);
+        }
 
         // Set parameters before posting
         this.setState({
