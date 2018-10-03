@@ -49,13 +49,16 @@ class Upload extends Component {
             'permlink': '',
             'transcoding': false,
             'transcode_progress': 0,
-            'uploadVideos': []
+            'uploadVideos': [],
+            can_request_notification: false
         }
 
         this.creatableRef = null;
         this.canSendNotification = false
         this.notificationTimeoutObj = null
         this.staleNotificationHashesChecked = false
+        this.onPermissionReturned = this.onPermissionReturned.bind(this)
+        this.onRequestForNotification = this.onRequestForNotification.bind(this)
         this.handleDrop = this.handleDrop.bind(this);
         this.handleDropRejected = this.handleDropRejected.bind(this);
         this.handleChangeCategory = this.handleChangeCategory.bind(this);
@@ -101,16 +104,12 @@ class Upload extends Component {
         if ("Notification" in window) {
             if (Notification.permission === "granted") {
                 this.canSendNotification = true
+                this.onPermissionReturned('granted')
             } else if (Notification.permission !== 'denied' || Notification.permission === "default") {
-                Notification.requestPermission((permission) => {
-                    // If the user accepts
-                    if (permission === "granted") {
-                        this.canSendNotification = true
-                    }
-                });
+                this.setState({
+                    can_request_notification: true
+                })
             }
-
-            this.sendNotification()
         }
     }
 
@@ -128,7 +127,7 @@ class Upload extends Component {
         setTimeout(n.close.bind(n), NOTIFICATION_TIMEOUT);
     }
 
-    sendNotification (file) {
+    sendNotification () {
         // when data hasn't been bound to component or the list is empty
         if (!this.props.uploads || Object.keys(this.props.uploads).length === 0) {
             this.notificationTimeoutObj = setTimeout(this.sendNotification.bind(this), SEND_NOTIFICATION_TIMEOUT);
@@ -177,6 +176,22 @@ class Upload extends Component {
 
         // set next execution
         this.notificationTimeoutObj = setTimeout(this.sendNotification.bind(this), SEND_NOTIFICATION_TIMEOUT);
+    }
+
+    onPermissionReturned(permission) {
+        // If the user accepts
+        if (permission === "granted") {
+            this.canSendNotification = true
+            this.sendNotification()
+        }
+
+        this.setState({
+            can_request_notification: false
+        })
+    }
+
+    onRequestForNotification() {
+        Notification.requestPermission(this.onPermissionReturned);
     }
 
     componentWillUnmount () {
@@ -717,7 +732,6 @@ class Upload extends Component {
     }
 
     render() {
-
         return (
             <div className="row justify-content-center">
 
@@ -728,6 +742,12 @@ class Upload extends Component {
                         {/* Upload Area */}
                         <div>
                             <h3 className="mb-4">Upload your content</h3>
+                            {   this.state.can_request_notification ? 
+                                <div className="alert alert-primary" style={{cursor: 'pointer'}} role="alert" onClick={this.onRequestForNotification}>
+                                    Click <strong>this bar</strong> to enable desktop notification for your uploads, then click <strong>"Allow"</strong> on your browser.
+                                </div>
+                                : null
+                            }
                             <div className="row">
                                 { this.showProgress() }
                             </div>
