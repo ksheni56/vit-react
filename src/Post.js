@@ -15,6 +15,7 @@ import { displayPayoutAmount } from './utils/Format';
 import BlockUi from 'react-block-ui';
 import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css'
+import { ToastContainer, toast } from 'react-toastify';
 
 
 class Post extends Component {
@@ -173,7 +174,9 @@ class Post extends Component {
             });
 
         }).catch(err => {
-            console.log("castVote error", err)
+            console.log("castVote error", err);
+
+            toast.error("There is something wrong with your vote, please try it again!");
 
             this.setState({
                 voting: false
@@ -415,6 +418,8 @@ class Post extends Component {
             <div className="row justify-content-center mt-3">
                 <div className="col-lg-9 col-md-12 video-post">
 
+                    <ToastContainer />
+
                     {
                         !loading ? (
 
@@ -440,6 +445,7 @@ class Post extends Component {
                                 getVotes={this.getVotes}
                                 renderVoteSlider={this.renderVoteSlider}
                                 currentVote={this.state.currentVote}
+                                volume={this.state.volume}
                             />
                           
                         ) : null
