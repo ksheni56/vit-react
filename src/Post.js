@@ -326,7 +326,7 @@ class Post extends Component {
                                         this.state.post.json_metadata.tags.filter(t => {
                                             return !['touch-tube', 'touchit-social'].includes(t)
                                         }).map(t => {
-                                            return <Link className="font-weight-bold badge badge-secondary" to={"/" + t + "/new"} style={{'marginLeft': '2px'}}>{t}</Link>
+                                            return <Link className="font-weight-bold badge badge-secondary" to={"/" + t + "/new"} style={{'marginLeft': '2px'}} key={t}>{t}</Link>
                                         })
                                     }
                                 </div>
