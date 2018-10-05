@@ -26,6 +26,7 @@ class Tag extends Component {
         }
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
+        this.validDisplayPost = this.validDisplayPost.bind(this);
 
     }
 
@@ -69,6 +70,14 @@ class Tag extends Component {
         }
     }, 150)
 
+    validDisplayPost(post) {
+        if (JSON.parse(post.json_metadata).tags &&
+            JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0 &&
+            post.net_rshares >= -3000)
+            return true;
+        else return false;
+    }
+
     loadMoreContent () {
 
         if (this.state.loading || this.state.loading_more || this.state.no_more_post) return;
@@ -95,8 +104,7 @@ class Tag extends Component {
 
                 result.forEach((post) => {
                     try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                        if (this.validDisplayPost(post)) {
                             related_posts.push(post)
                         }
                     } catch(e) {
@@ -125,8 +133,7 @@ class Tag extends Component {
 
                 result.forEach((post) => {
                     try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                        if (this.validDisplayPost(post)) {
                             related_posts.push(post)
                         }
                     } catch(e) {
@@ -156,8 +163,7 @@ class Tag extends Component {
 
                 result.forEach((post) => {
                     try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                        if (this.validDisplayPost(post)) {
                             related_posts.push(post)
                         }
                     } catch(e) {
@@ -204,8 +210,7 @@ class Tag extends Component {
 
                 result.forEach((post) => {
                     try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                        if (this.validDisplayPost(post)) {
                             related_posts.push(post)
                         }
                     } catch(e) {
@@ -240,8 +245,7 @@ class Tag extends Component {
 
                 result.forEach((post) => {
                     try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                        if (this.validDisplayPost(post)) {
                             related_posts.push(post)
                         }
                     } catch(e) {
@@ -276,8 +280,7 @@ class Tag extends Component {
 
                 result.forEach((post) => {
                     try {
-                        if (JSON.parse(post.json_metadata).tags &&
-                                JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0) {
+                        if (this.validDisplayPost(post)) {
                             related_posts.push(post)
                         }
                     } catch(e) {
