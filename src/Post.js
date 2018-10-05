@@ -69,6 +69,12 @@ class Post extends Component {
         this.loadContent(author, permalink);
     }
 
+    componentDidUpdate() {
+        if (document.getElementsByClassName("rangeslider__fill").length) {
+            document.getElementsByClassName("rangeslider__fill")[0].style.backgroundColor = this.rgbify(this.state.volume);
+        }
+    }
+
     togglePostReply() {
         this.setState({
             commentForPost: !this.state.commentForPost
@@ -88,6 +94,20 @@ class Post extends Component {
         })
     }
 
+    rgbify(val) {
+        var intnsty = (val - -100) / (100 - -100);
+        var r, g;
+          if (intnsty > 0.5) {
+              g = 255;
+              r = Math.round(2 * (1 - intnsty) * 255);
+          } else {
+              r = 255;
+              g = Math.round(2 * intnsty * 255);
+          }
+
+        return "rgb(" + r.toString() + ", " + g.toString() + ", 0)";
+    }
+
     renderVoteSlider (permalink, author, type) {
         
         return (
@@ -96,7 +116,7 @@ class Post extends Component {
                     value={this.state.volume}
                     min={-100}
                     max={100}
-                    labels={{ '-100': '100', '0': '', 100: '100'}}
+                    labels={{ '-100': '-100', '0': '', 100: '100'}}
                     onChange={this.handleOnChangeSlider}
                 />
                 <div className="text-center">You vote: {this.state.volume}%</div>
