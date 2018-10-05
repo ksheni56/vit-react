@@ -101,7 +101,7 @@ class Post extends Component {
                 />
                 <div className="text-center">You vote: {this.state.volume}%</div>
                 <div className="text-center">
-                    <button className="btn btn-sm btn-danger" disabled={this.state.voting} onClick={() => this.castVote(permalink, author, type, this.state.volume)}>Cast Vote</button>
+                    <button className="btn btn-sm btn-danger" disabled={this.state.voting} onClick={() => this.castVote(permalink, author, type, this.state.volume*100)}>Cast Vote</button>
                     <button className="btn btn-sm" style={{'marginLeft': '5px'}} onClick={() => this.toggleVoteSlider('')}>Cancel</button>
                 </div>
             </div>
