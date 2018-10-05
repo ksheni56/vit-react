@@ -1,6 +1,7 @@
 pipeline {
   environment {
     HOME = "."
+    NODE_PATH = "src/"
   }
   agent {
     docker {
@@ -11,7 +12,8 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'npm install && npm run build'
+        sh 'npm install'
+        sh 'npm run build'
       }
     }
   }
