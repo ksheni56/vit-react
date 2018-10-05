@@ -99,9 +99,9 @@ class Post extends Component {
                     labels={{ '-100': '100', '0': '', 100: '100'}}
                     onChange={this.handleOnChangeSlider}
                 />
-                <div className="text-center">You vote: {this.state.volume}</div>
+                <div className="text-center">You vote: {this.state.volume}%</div>
                 <div className="text-center">
-                    <button className="btn btn-sm btn-danger" disabled={this.state.voting} onClick={() => this.castVote(permalink, author, type, this.state.volume)}>Agree</button>
+                    <button className="btn btn-sm btn-danger" disabled={this.state.voting} onClick={() => this.castVote(permalink, author, type, this.state.volume)}>Cast Vote</button>
                     <button className="btn btn-sm" style={{'marginLeft': '5px'}} onClick={() => this.toggleVoteSlider('')}>Cancel</button>
                 </div>
             </div>
@@ -125,13 +125,13 @@ class Post extends Component {
             } else {
                 btnLike = 
                 // <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
-                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.toggleVoteSlider(data.permlink)}>Like</span>
+                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.toggleVoteSlider(data.permlink)}>Vote</span>
             }
 
         } else {
             btnLike = 
                 // <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
-                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.toggleVoteSlider(data.permlink)}>Like</span>
+                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.toggleVoteSlider(data.permlink)}>Vote</span>
         }
 
         return btnLike;
