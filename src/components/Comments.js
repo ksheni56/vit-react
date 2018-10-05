@@ -263,6 +263,13 @@ class Comments extends Component {
                                                     {this.props.getVotes(Comment, "comment")} &nbsp;| {Comment.net_votes} Votes
                                                     | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.setReplyTarget([Comment.author, Comment.permlink].join('|'))}>Reply</button>
                                                 </div>
+
+                                                {   
+                                                    this.props.currentVote === Comment.permlink && (
+                                                        this.props.renderVoteSlider(Comment.permlink, Comment.author, 'comment')
+                                                    )
+                                                }
+                                                
                                             </span>
                                         </div>  
 
@@ -336,6 +343,12 @@ class Comments extends Component {
                                         {this.props.getVotes(comment, "comment")} &nbsp;| {comment.net_votes} Votes
                                         | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.setReplyTarget([comment.author, comment.permlink].join('|'))}>Reply</button>
                                     </div>
+                                    {   
+                                        this.props.currentVote === comment.permlink && (
+                                            this.props.renderVoteSlider(comment.permlink, comment.author, 'comment')
+                                        )
+                                    }
+
                                 </span>
                             </div>  
 
