@@ -2,7 +2,7 @@ export const shouldDisplayPost = (state, post, loadedPosts=[]) => {
     let displayPost = false;
 
     // if the net_rshares of post is a negative, should not return this related post
-    if (post.net_rshares < 0) { console.log('post has a negative rshares'); return displayPost; }
+    if (post.net_rshares < -3000) { console.log('post has a negative rshares'); return displayPost; }
 
     // more check
     try {

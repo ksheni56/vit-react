@@ -73,7 +73,7 @@ class Tag extends Component {
     validDisplayPost(post) {
         if (JSON.parse(post.json_metadata).tags &&
             JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0 &&
-            post.net_rshares >= 0)
+            post.net_rshares >= -3000)
             return true;
         else return false;
     }
