@@ -132,16 +132,16 @@ class Post extends Component {
         let votes = data.active_votes;
         let btnLike;
 
-        if (data.net_votes > 0) {
+        if (Math.abs(data.net_votes) > 0) {
             let voted;
             voted = votes.filter(vote => {
                 return (vote.voter === this.props.app.username ? vote : null);
             })
             // AS DOWNVOTE does not remove a record out of the active_votes
             // So we need to check the percent as well
-            if (voted.length > 0 && voted[0].percent > 0) {
+            if (voted.length > 0 && voted[0].percent != 0) {
                 btnLike = 
-                    <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 0)}>Unlike</span>
+                    <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 0)}>Unvote</span>
             } else {
                 btnLike = 
                 // <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
@@ -397,7 +397,7 @@ class Post extends Component {
                                     }
                                 </div>
                                 <div className="votes">
-                                    {this.getVotes(this.state.post)} | {this.state.post.net_votes} Votes | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.togglePostReply()}>Reply</button>
+                                    {this.getVotes(this.state.post)} | {Math.abs(this.state.post.net_votes)} Votes | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.togglePostReply()}>Reply</button>
 
                                     {
                                         this.state.currentVote === this.state.permalink && (
