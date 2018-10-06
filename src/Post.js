@@ -13,6 +13,10 @@ import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, AVATAR_UPLOAD_PREFIX, SCREENS
 import { shouldDisplayPost } from './utils/Filter';
 import { displayPayoutAmount } from './utils/Format';
 import BlockUi from 'react-block-ui';
+import Slider from 'react-rangeslider';
+import 'react-rangeslider/lib/index.css'
+import { ToastContainer, toast } from 'react-toastify';
+
 
 class Post extends Component {
 
@@ -29,12 +33,17 @@ class Post extends Component {
             tag: this.props.match.params.tag,
             author: this.props.match.params.author,
             permalink: this.props.match.params.permalink,
-            commentForPost: false
+            commentForPost: false,
+            volume: 0,
+            currentVote: ''
         }
 
         this.castVote = this.castVote.bind(this);
         this.getVotes = this.getVotes.bind(this);
         this.togglePostReply = this.togglePostReply.bind(this);
+        this.handleOnChangeSlider = this.handleOnChangeSlider.bind(this);
+        this.renderVoteSlider = this.renderVoteSlider.bind(this);
+        this.toggleVoteSlider = this.toggleVoteSlider.bind(this);
     } 
 
     componentWillReceiveProps(nextProps) {
@@ -60,35 +69,89 @@ class Post extends Component {
         this.loadContent(author, permalink);
     }
 
+    componentDidUpdate() {
+        if (document.getElementsByClassName("rangeslider__fill").length) {
+            document.getElementsByClassName("rangeslider__fill")[0].style.backgroundColor = this.rgbify(this.state.volume);
+        }
+    }
+
     togglePostReply() {
         this.setState({
             commentForPost: !this.state.commentForPost
         })
+    }
+
+    toggleVoteSlider(value) {
+        this.setState({
+            currentVote: value,
+            volume: 0 // set back to default value
+        })
+    }
+
+    handleOnChangeSlider(value) {
+        this.setState({
+          volume: value
+        })
+    }
+
+    rgbify(val) {
+        var intnsty = (val - -100) / (100 - -100);
+        var r, g;
+          if (intnsty > 0.5) {
+              g = 255;
+              r = Math.round(2 * (1 - intnsty) * 255);
+          } else {
+              r = 255;
+              g = Math.round(2 * intnsty * 255);
+          }
+
+        return "rgb(" + r.toString() + ", " + g.toString() + ", 0)";
+    }
+
+    renderVoteSlider (permalink, author, type) {
+        
+        return (
+            <div className="div-slider" key={permalink}>
+                <Slider
+                    value={this.state.volume}
+                    min={-100}
+                    max={100}
+                    labels={{ '-100': '-100', '0': '', 100: '100'}}
+                    onChange={this.handleOnChangeSlider}
+                />
+                <div className="text-center">You vote: {this.state.volume}%</div>
+                <div className="text-center">
+                    <button className="btn btn-sm btn-danger" disabled={this.state.voting} onClick={() => this.castVote(permalink, author, type, this.state.volume*100)}>Cast Vote</button>
+                    <button className="btn btn-sm" style={{'marginLeft': '5px'}} onClick={() => this.toggleVoteSlider('')}>Cancel</button>
+                </div>
+            </div>
+        )
     }
     
     getVotes(data, type = 'post') {
         let votes = data.active_votes;
         let btnLike;
 
-        if (data.net_votes > 0) {
+        if (Math.abs(data.net_votes) > 0) {
             let voted;
             voted = votes.filter(vote => {
                 return (vote.voter === this.props.app.username ? vote : null);
             })
-            
             // AS DOWNVOTE does not remove a record out of the active_votes
             // So we need to check the percent as well
-            if (voted.length > 0 && voted[0].percent > 0) {
+            if (voted.length > 0 && voted[0].percent != 0) {
                 btnLike = 
-                    <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 0)}>Unlike</span>
+                    <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 0)}>Unvote</span>
             } else {
                 btnLike = 
-                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
+                // <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
+                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.toggleVoteSlider(data.permlink)}>Vote</span>
             }
 
         } else {
             btnLike = 
-                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
+                // <span className="badge badge-pill badge-danger btn-like" onClick={() => this.castVote(data.permlink, data.author, type, 10000)}>Like</span>
+                <span className="badge badge-pill badge-danger btn-like" onClick={() => this.toggleVoteSlider(data.permlink)}>Vote</span>
         }
 
         return btnLike;
@@ -126,11 +189,14 @@ class Post extends Component {
             }
 
             this.setState({
-                voting: false
+                voting: false,
+                currentVote: ''
             });
 
         }).catch(err => {
-            console.log("castVote error", err)
+            console.log("castVote error", err);
+
+            toast.error("There is something wrong with your vote, please try it again!");
 
             this.setState({
                 voting: false
@@ -318,13 +384,27 @@ class Post extends Component {
                             <div className="col-9 col-md-10">
                                 <h2>{ this.state.post.title }</h2>
                                 <div className="payout small">
-                                    Pending Payout: <span className="font-weight-bold">{ displayPayoutAmount(this.state.post) }</span> <br/> { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } by <Link to={ "/@" + this.state.post.author } className="username text-center">{ this.state.post.author }</Link> 
+                                    Pending Payout: <span className="font-weight-bold">{ displayPayoutAmount(this.state.post) }</span> <br/>
+                                    { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } by <Link to={ "/@" + this.state.post.author } className="username text-center">{ this.state.post.author }</Link>
                                 </div>
                                 <div className="payout small">
-                                    Category: <Link  className="font-weight-bold" to={"/" + this.state.post.category + "/new"}>{this.state.post.category}</Link>
+                                    {
+                                        this.state.post.json_metadata.tags.filter(t => {
+                                            return !['touch-tube', 'touchit-social'].includes(t)
+                                        }).map(t => {
+                                            return <Link className="font-weight-bold badge badge-secondary" to={"/" + t + "/new"} style={{'marginLeft': '2px'}} key={t}>{t}</Link>
+                                        })
+                                    }
                                 </div>
                                 <div className="votes">
-                                    {this.getVotes(this.state.post)} | {this.state.post.net_votes} Votes | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.togglePostReply()}>Reply</button>
+                                    {this.getVotes(this.state.post)} | {Math.abs(this.state.post.net_votes)} Votes | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.togglePostReply()}>Reply</button>
+
+                                    {
+                                        this.state.currentVote === this.state.permalink && (
+                                            this.renderVoteSlider(this.state.permalink, this.state.author, 'post')
+                                        )
+                                    }
+                                    
                                 </div>
                             </div>
                         </div>
@@ -336,6 +416,7 @@ class Post extends Component {
     }
 
     render() {
+        
         let loading = this.state.loading;
 
         if (this.props.dmcaContents == null || this.props.blockedUsers == null) {
@@ -364,6 +445,8 @@ class Post extends Component {
             <div className="row justify-content-center mt-3">
                 <div className="col-lg-9 col-md-12 video-post">
 
+                    <ToastContainer />
+
                     {
                         !loading ? (
 
@@ -387,6 +470,9 @@ class Post extends Component {
                                 commentForPost={this.state.commentForPost}
                                 togglePostReply={this.togglePostReply}
                                 getVotes={this.getVotes}
+                                renderVoteSlider={this.renderVoteSlider}
+                                currentVote={this.state.currentVote}
+                                volume={this.state.volume}
                             />
                           
                         ) : null
