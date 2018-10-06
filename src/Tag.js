@@ -65,7 +65,7 @@ class Tag extends Component {
     }
 
     scrollListener = debounce(() => {
-        if(window.innerHeight + window.scrollY + this.scrollThreshold >= document.documentElement.scrollHeight) {
+        if(window.innerHeight + window.pageYOffset + this.scrollThreshold >= document.documentElement.scrollHeight) {
             this.loadMoreContent();
         }
     }, 150)
