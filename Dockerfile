@@ -60,7 +60,7 @@ EXPOSE 8080
 # ENV NODE_ENV development
 CMD [ "yarn", "run", "start" ]
 
-FROM nginx:alpine as Production
+FROM nginx:alpine
 
 COPY --from=1 /var/app/build /usr/share/nginx/html
 COPY --from=1 /var/app/yarn.lock /root/yarn.lock
