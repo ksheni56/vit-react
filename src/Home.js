@@ -6,6 +6,7 @@ import steem from '@steemit/steem-js';
 import debounce from 'lodash.debounce';
 import { PAGESIZE_HOMEPAGE } from './config'
 import { shouldDisplayPost } from './utils/Filter'
+import { savePrevListingState } from './reducers/app';
 
 class Home extends Component {
 
@@ -28,20 +29,52 @@ class Home extends Component {
         }
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
+        this.url = this.props.history.location.pathname
+        this.scrolled = false
 
+    }
+
+    saveState() {
+        this.props.savePrevListingState(this.url, window.pageYOffset, this.state)
+    }
+
+    restoreState() {
+        const prevListingState = this.props.prevListingState
+        if (prevListingState && this.url === prevListingState.url) {
+            this.setState(prevListingState.state)
+            this.scrolled = false
+            return true
+        } else {
+            this.scrolled = true
+            return false
+        }
+    }
+
+    componentDidUpdate() {
+        if (!this.scrolled) {
+            window.scrollTo(0, this.props.prevListingState.scrollYPosition)
+            this.scrolled = true
+        }
     }
 
     componentDidMount() {
 
         if(!this.props.match.params.filter) this.props.history.push('trending');
         else {
-            this.setState({
-                filter: this.props.match.params.filter
-            })
-            this.loadContent(this.props.match.params.filter);
+            if (!this.restoreState()) {
+                this.setState({
+                    filter: this.props.match.params.filter
+                })
+                this.loadContent(this.props.match.params.filter);
+            }
         }
 
         this.attachScrollListener();
+    }
+
+    componentWillUnmount() {
+        this.detachScrollListener();
+        this.saveState()
     }
 
     componentWillReceiveProps(nextProps) {
@@ -408,10 +441,17 @@ function mapStateToProps(state) {
     return {
         search: state.search,
         blockedUsers: state.app.blockedUsers,
-        dmcaContents: state.app.dmcaContents
+        dmcaContents: state.app.dmcaContents,
+        prevListingState: state.app.prevListingState
     };
 
 }
 
+const mapDispatchToProps = (dispatch) => ({
+    savePrevListingState: (url, scrollYPosition, state) => {
+        dispatch(savePrevListingState(url, scrollYPosition, state))
+    }
+})
 
-export default connect(mapStateToProps, {})(Home);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

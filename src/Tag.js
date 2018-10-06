@@ -5,6 +5,7 @@ import FilterBar from './components/FilterBar';
 import Item from './components/Item';
 import debounce from 'lodash.debounce';
 import { PAGESIZE_TAG } from './config'
+import { savePrevListingState } from './reducers/app';
 
 class Tag extends Component {
 
@@ -27,14 +28,47 @@ class Tag extends Component {
 
         this.loadMoreContent = this.loadMoreContent.bind(this);
         this.validDisplayPost = this.validDisplayPost.bind(this);
+        this.url = this.props.history.location.pathname
+        this.scrolled = false
 
+    }
+
+    saveState() {
+        this.props.savePrevListingState(this.url, window.pageYOffset, this.state)
+    }
+
+    restoreState() {
+        const prevListingState = this.props.prevListingState
+        if (prevListingState && this.url === prevListingState.url) {
+            this.setState(prevListingState.state)
+            this.scrolled = false
+            return true
+        } else {
+            this.scrolled = true
+            return false
+        }
+    }
+
+    componentDidUpdate() {
+        if (!this.scrolled) {
+            window.scrollTo(0, this.props.prevListingState.scrollYPosition)
+            this.scrolled = true
+        }
     }
 
     componentDidMount() {
 
-        this.loadContent(this.props.match.params.tag, this.props.match.params.filter)
+        if (!this.restoreState()) {
+            this.loadContent(this.props.match.params.tag, this.props.match.params.filter)
+        }
+
         this.attachScrollListener();
 
+    }
+
+    componentWillUnmount() {
+        this.detachScrollListener();
+        this.saveState()
     }
 
     componentWillReceiveProps(nextProps) {
@@ -377,10 +411,16 @@ class Tag extends Component {
 function mapStateToProps(state) {
 
     return {
-        search: state.search
+        search: state.search,
+        prevListingState: state.app.prevListingState
     };
 
 }
 
+const mapDispatchToProps = (dispatch) => ({
+    savePrevListingState: (url, scrollYPosition, state) => {
+        dispatch(savePrevListingState(url, scrollYPosition, state))
+    }
+})
 
-export default connect(mapStateToProps, {})(Tag);
+export default connect(mapStateToProps, mapDispatchToProps)(Tag);
