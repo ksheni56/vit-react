@@ -17,6 +17,8 @@ import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css'
 import { ToastContainer, toast } from 'react-toastify';
 
+// Internet Explorer 6-11
+const isIE = /*@cc_on!@*/false || !!document.documentMode;
 
 class Post extends Component {
 
@@ -306,6 +308,19 @@ class Post extends Component {
     }
 
     renderVideoPlayer() {
+
+        if (isIE) return (
+            <div className="row">
+                <div className="col-12">
+                    <div className="no-results my-5 text-center">
+                        <p>Video playing is not supported on Internet Explorer.</p>
+                        <p>Please upgrade your browser to better ones.</p>
+                        <p>Suggested browsers are <a href="https://www.mozilla.org/firefox" target="_blank" rel="noopener noreferrer">Mozilla Firefox</a>&nbsp;
+                         or <a href="https://www.google.com/chrome/" target="_blank" rel="noopener noreferrer">Google Chrome</a></p>
+                    </div>
+                </div>
+            </div>
+        )
 
         if(this.state.post.json_metadata.vit_data &&
             this.state.post.json_metadata.vit_data.Hash &&
