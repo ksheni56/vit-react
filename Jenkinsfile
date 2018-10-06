@@ -1,16 +1,12 @@
 pipeline {
   agent {
-    docker {
-      image 'node:8'
-      args '-p 9002:3000'
-    }
-
+    dockerfile true
   }
   stages {
-    stage('Build') {
+    stage('Test') {
       steps {
-        sh 'npm install'
-        sh 'npm run build'
+        /* Verify that we installed javascript files of non-zero length */
+        sh 'test -s /usr/share/nginx/html/static/js/*.js'
       }
     }
   }
