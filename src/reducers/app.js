@@ -6,6 +6,7 @@ const initialState = {
     "subs": [],
     dmcaContents: null,
     blockedUsers: null,
+    prevListingState: null
 };
 
 export default function(state = initialState, action) {
@@ -60,6 +61,12 @@ export default function(state = initialState, action) {
             });
         }
 
+        case 'SET_PREV_LISTING_STATE': {
+            return Object.assign({}, state, {
+                prevListingState: action.payload
+            });
+        }
+
         case 'CLAIM_REWARDS': {
             console.log(action.payload)
         }
@@ -69,3 +76,8 @@ export default function(state = initialState, action) {
     }
 
 }
+
+export const savePrevListingState = (url, scrollYPosition, state) => ({
+    type: 'SET_PREV_LISTING_STATE',
+    payload: { url, scrollYPosition, state }
+})

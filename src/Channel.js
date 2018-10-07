@@ -8,6 +8,7 @@ import debounce from 'lodash.debounce';
 import Avatar from './components/Avatar';
 import { PAGESIZE_CHANNEL } from './config'
 import { shouldDisplayPost } from './utils/Filter'
+import { savePrevListingState } from './reducers/app';
 
 class Channel extends Component {
 
@@ -38,6 +39,8 @@ class Channel extends Component {
         this.sub = this.sub.bind(this);
         this.unsub = this.unsub.bind(this);
         this.scrollListener = this.scrollListener.bind(this);
+        this.url = this.props.history.location.pathname
+        this.scrolled = false
 
     } 
 
@@ -138,13 +141,40 @@ class Channel extends Component {
 
     componentWillUnmount() {
         this.detachScrollListener();
+        this.saveState()
+    }
+
+    saveState() {
+        this.props.savePrevListingState(this.url, window.pageYOffset, this.state)
+    }
+
+    restoreState() {
+        const prevListingState = this.props.app.prevListingState
+        if (prevListingState && this.url === prevListingState.url) {
+            this.setState(prevListingState.state)
+            this.scrolled = false
+            return true
+        } else {
+            this.scrolled = true
+            return false
+        }
+    }
+
+    componentDidUpdate() {
+        if (!this.scrolled) {
+            window.scrollTo(0, this.props.app.prevListingState.scrollYPosition)
+            this.scrolled = true
+        }
     }
 
     componentDidMount() {
 
-        this.loadContent();
-        this.getAccount();
-        this.checkIfSubbed();
+        if (!this.restoreState()) {
+            this.loadContent();
+            this.getAccount();
+            this.checkIfSubbed();
+        }
+
         this.attachScrollListener();
 
     }
@@ -458,4 +488,13 @@ function mapStateToProps(state) {
     };
 }
 
-export default connect(mapStateToProps, { subscribe, unsubscribe, getSubs })(Channel);
+const mapDispatchToProps = (dispatch) => ({
+    subscribe, 
+    unsubscribe, 
+    getSubs,
+    savePrevListingState: (url, scrollYPosition, state) => {
+        dispatch(savePrevListingState(url, scrollYPosition, state))
+    }
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Channel);
