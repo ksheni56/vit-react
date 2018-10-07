@@ -26,13 +26,19 @@ class PreloadImage extends React.Component {
 
   render() {
     return (
-      <div className='preload-background img-fluid' role="img" alt={this.props.alt}>
-        <div className={this.state.loaded ? 'thumbnail thumbnail-fade-in' : 'thumbnail '} style={{
-          backgroundImage: this.state.src
-        }} />
-      </div>
+        <div className='preload-background img-fluid' role="img" alt={this.props.alt}>
+          <div 
+            className={this.state.loaded ? 'thumbnail thumbnail-fade-in' : 'thumbnail '} 
+            style={this.props.greyOutPost === false ? {backgroundImage: this.state.src} : greyOutStyle}
+          />
+        </div>
     );
   }
 }
+
+const greyOutStyle = {
+  backgroundImage: 'linear-gradient(to bottom right,#cccccc,#cccccc)',
+	opacity: 0.6
+};
 
 export default PreloadImage;

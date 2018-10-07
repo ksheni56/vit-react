@@ -10,7 +10,7 @@ import Item from './components/Item';
 import Avatar from './components/Avatar';
 import Comments from './components/Comments';
 import { VIDEO_THUMBNAIL_URL_PREFIX, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
-import { shouldDisplayPost } from './utils/Filter';
+import { shouldDisplayPost, shouldGreyOutPost } from './utils/Filter';
 import { displayPayoutAmount } from './utils/Format';
 import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css'
@@ -237,7 +237,7 @@ class Post extends Component {
 
                 result.forEach((item) => {
                     if(shouldDisplayPost(this.props, item, related_posts))
-                        related_posts.push(item)
+                        related_posts.push({'post': item, 'greyout': shouldGreyOutPost(item)});
                 })
 
                 this.setState({
@@ -281,9 +281,9 @@ class Post extends Component {
                     this.state.related.map(
 
                         (Related) =>
-                            <li key={ Related.id } ref={ Related.id }>
+                            <li key={ Related.post.id } ref={ Related.post.id }>
 
-                                <Item key={ Related.id } ref={ Related.id } data={ Related } />
+                                <Item key={ Related.post.id } ref={ Related.post.id } data={ Related.post } greyOutPost={Related.greyout} />
 
                             </li>
                         ) 

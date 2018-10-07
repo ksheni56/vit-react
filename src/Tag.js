@@ -4,8 +4,9 @@ import steem from '@steemit/steem-js';
 import FilterBar from './components/FilterBar';
 import Item from './components/Item';
 import debounce from 'lodash.debounce';
-import { PAGESIZE_TAG } from './config'
+import { PAGESIZE_TAG, NET_RSHARES_THRESHOLD } from './config'
 import { savePrevListingState } from './reducers/app';
+import { shouldGreyOutPost } from './utils/Filter'
 
 class Tag extends Component {
 
@@ -107,7 +108,7 @@ class Tag extends Component {
     validDisplayPost(post) {
         if (JSON.parse(post.json_metadata).tags &&
             JSON.parse(post.json_metadata).tags.indexOf('touch-tube') >= 0 &&
-            post.net_rshares >= -3000)
+            post.net_rshares >= NET_RSHARES_THRESHOLD.max)
             return true;
         else return false;
     }
@@ -120,11 +121,14 @@ class Tag extends Component {
             loading_more: true
         })
 
+        const startAuthor = this.state.posts[Object.keys(this.state.posts).length - 1].post.author;
+        const startPermlink = this.state.posts[Object.keys(this.state.posts).length - 1].post.permlink;
+        
         let load_more_query =  {
             'tag': this.state.tag,
             'limit': this.pageSize + 1,
-            'start_author': this.state.posts[this.state.posts.length - 1].author,
-            'start_permlink': this.state.posts[this.state.posts.length - 1].permlink
+            'start_author': startAuthor,
+            'start_permlink': startPermlink
         }
 
         if(this.state.filter === 'trending') {
@@ -139,13 +143,13 @@ class Tag extends Component {
                 result.forEach((post) => {
                     try {
                         if (this.validDisplayPost(post)) {
-                            related_posts.push(post)
+                            related_posts.push({'post': post, 'greyout': shouldGreyOutPost(post)});
                         }
                     } catch(e) {
                         // do something?; likely not a related post anyway
                     }
                 })
-
+                
                 all_posts = this.state.posts.concat(related_posts);
 
                 this.setState({
@@ -168,7 +172,7 @@ class Tag extends Component {
                 result.forEach((post) => {
                     try {
                         if (this.validDisplayPost(post)) {
-                            related_posts.push(post)
+                            related_posts.push({'post': post, 'greyout': shouldGreyOutPost(post)});
                         }
                     } catch(e) {
                         // do something?; likely not a related post anyway
@@ -198,7 +202,7 @@ class Tag extends Component {
                 result.forEach((post) => {
                     try {
                         if (this.validDisplayPost(post)) {
-                            related_posts.push(post)
+                            related_posts.push({'post': post, 'greyout': shouldGreyOutPost(post)});
                         }
                     } catch(e) {
                         // do something?; likely not a related post anyway
@@ -245,7 +249,7 @@ class Tag extends Component {
                 result.forEach((post) => {
                     try {
                         if (this.validDisplayPost(post)) {
-                            related_posts.push(post)
+                            related_posts.push({'post': post, 'greyout': shouldGreyOutPost(post)});
                         }
                     } catch(e) {
                         // do something?; likely not a related post anyway
@@ -280,7 +284,7 @@ class Tag extends Component {
                 result.forEach((post) => {
                     try {
                         if (this.validDisplayPost(post)) {
-                            related_posts.push(post)
+                            related_posts.push({'post': post, 'greyout': shouldGreyOutPost(post)});
                         }
                     } catch(e) {
                         // do something?; likely not a related post anyway
@@ -315,7 +319,7 @@ class Tag extends Component {
                 result.forEach((post) => {
                     try {
                         if (this.validDisplayPost(post)) {
-                            related_posts.push(post)
+                            related_posts.push({'post': post, 'greyout': shouldGreyOutPost(post)});
                         }
                     } catch(e) {
                         // do something?; likely not a related post anyway
@@ -369,11 +373,11 @@ class Tag extends Component {
                 return (
                     <div className="row">
                         {
-                        this.state.posts.map(
+                            this.state.posts.map(
 
-                            (Post) =>
-                                <Item key={ Post.id } ref={ Post.id } data={ Post } />
-                            )
+                                (Post) =>
+                                    <Item key={ Post.post.id } ref={ Post.post.id } data={ Post.post } greyOutPost={Post.greyout} />
+                                )
                         }
                     </div>
                 )

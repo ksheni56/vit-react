@@ -7,7 +7,7 @@ import { subscribe, unsubscribe, getSubs } from './actions/app';
 import debounce from 'lodash.debounce';
 import Avatar from './components/Avatar';
 import { PAGESIZE_CHANNEL } from './config'
-import { shouldDisplayPost } from './utils/Filter'
+import { shouldDisplayPost, shouldGreyOutPost } from './utils/Filter'
 import { savePrevListingState } from './reducers/app';
 
 class Channel extends Component {
@@ -237,7 +237,7 @@ class Channel extends Component {
 
             result.forEach((post) => {
                 if (shouldDisplayPost(this.state, post, related_posts)) {
-                    related_posts.push(post)
+                    related_posts.push({'post': post, 'greyout': shouldGreyOutPost(post)});
                 }
             })
 
@@ -260,13 +260,13 @@ class Channel extends Component {
             loading_more: true
         })
 
+        const startPermlink = this.state.posts[Object.keys(this.state.posts).length - 1].post.permlink;
         let load_more_query = {
             'tag': this.state.author,
             'limit': this.pageSize + 1,
             'start_author': this.state.author,
-            'start_permlink': this.state.posts[this.state.posts.length - 1].permlink
+            'start_permlink': startPermlink
         };
-
 
         steem.api.getDiscussionsByBlog(load_more_query, (err, result) => {
             if(err) {
@@ -284,7 +284,7 @@ class Channel extends Component {
 
             result.forEach((post) => {
                 if (shouldDisplayPost(this.state, post, this.state.posts)) {
-                    related_posts.push(post)
+                    related_posts.push({'post': post, 'greyout': shouldGreyOutPost(post)});
                 }
             })
 
@@ -394,8 +394,9 @@ class Channel extends Component {
                     this.state.posts.map(
 
                         (Post) =>
-                            <Item key={ Post.id } ref={ Post.id } data={ Post } />
-                        ) 
+                            <Item key={ Post.post.id } ref={ Post.post.id } data={ Post.post } greyOutPost={Post.greyout}/>
+                        )
+
                     }
                 </div>
             )

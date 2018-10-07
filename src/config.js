@@ -32,3 +32,10 @@ export const DMCA_CONTENT_ENDPOINT = process.env.REACT_APP_DMCA_CONTENT_ENDPOINT
 export const DMCA_USER_ENDPOINT = process.env.REACT_APP_DMCA_USER_ENDPOINT ? process.env.REACT_APP_DMCA_USER_ENDPOINT : "/blank";
 
 export const LIQUID_TOKEN = process.env.REACT_APP_LIQUID_TOKEN ? process.env.REACT_APP_LIQUID_TOKEN : 'WIT';
+
+/*
+Thresholds of displaying posts by on net_rshares
+    - Grey out from -3000 to -10000
+    - Hide when < -10000
+*/
+export const NET_RSHARES_THRESHOLD = {'min': -3000, 'max': -10000};

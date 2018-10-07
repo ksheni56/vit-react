@@ -23,8 +23,8 @@ class Item extends Component {
                 URL = AVATAR_UPLOAD_PREFIX + json_metadata.vit_data.Screenshot + '/' + SCREENSHOT_IMAGE;
             }
 
-            URL = proxifyImage(URL, VIDEO_THUMBNAIL_LIST_SIZE)
-            return <PreloadImage src={ URL } alt={this.props.data.title} />
+            URL = proxifyImage(URL, VIDEO_THUMBNAIL_LIST_SIZE);
+            return <PreloadImage src={ URL } alt={this.props.data.title} greyOutPost={this.props.greyOutPost} />
         }
         return <img src="/images/thumbnail.jpg" className="img-fluid" alt={this.props.data.title} />
     }
