@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import steem from '@steemit/steem-js';
-import moment from 'moment'
+import { Link } from 'react-router-dom';
 import Formsy from 'formsy-react';
 import TextArea from './forms/TextArea';
 import { vote, comment } from '../actions/post';
@@ -244,42 +244,48 @@ class Comments extends Component {
                     this.state.comments.map(
                         (Comment) =>
                             <div className="Comment" key={Comment.id}>
-                                <div>
+                                <div className=" d-flex">
                                     <div className="Comment__Userpic">
+                                        <Link to={ "/@" + Comment.author } >
                                         <Avatar 
                                             profile_image={AVATAR_UPLOAD_PREFIX + Comment.author + "/avatar"} 
                                         />
+                                        </Link>
                                     </div>
-                                    <div className="Comment__header">
-                                        <span className="Comment__header-user">{ Comment.author }</span>
-                                    </div>
-                                    <div className="Comment__body entry-content">
-                                        <span>{ Comment.body }</span>
-                                    </div>
-                                    <div className="Comment__footer">
-                                        <div>
-                                            <span className="Comment__footer__controls">
-                                                <div className="text-muted small d-flex align-items-center comment-meta"> 
-                                                    {this.props.getVotes(Comment, "comment")} &nbsp;| {Comment.net_votes} Votes
-                                                    | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.setReplyTarget([Comment.author, Comment.permlink].join('|'))}>Reply</button>
-                                                </div>
+                                    <div className="Comment__Content flex-fill">
+                                        <div className="Comment__header">
+                                            <Link to={ "/@" + Comment.author }  className="Comment__header-user">
+                                                { Comment.author }
+                                            </Link>
+                                        </div>
+                                        <div className="Comment__body entry-content">
+                                            <span>{ Comment.body }</span>
+                                        </div>
+                                        <div className="Comment__footer">
+                                            <div>
+                                                <span className="Comment__footer__controls">
+                                                    <div className="text-muted small d-flex align-items-center comment-meta"> 
+                                                        {this.props.getVotes(Comment, "comment")} &nbsp;| {Comment.net_votes} Votes
+                                                        | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.setReplyTarget([Comment.author, Comment.permlink].join('|'))}>Reply</button>
+                                                    </div>
 
-                                                {   
-                                                    this.props.currentVote === Comment.permlink && (
-                                                        this.props.renderVoteSlider(Comment.permlink, Comment.author, 'comment')
-                                                    )
-                                                }
-                                                
-                                            </span>
-                                        </div>  
+                                                    {   
+                                                        this.props.currentVote === Comment.permlink && (
+                                                            this.props.renderVoteSlider(Comment.permlink, Comment.author, 'comment')
+                                                        )
+                                                    }
+                                                    
+                                                </span>
+                                            </div>  
 
-                                        {/* render comment box if matched */}
-                                        { 
-                                            this.state.replyTarget === [Comment.author, Comment.permlink].join('|') && (
-                                                this.renderCommentBox(false)
-                                            )
-                                        }
+                                            {/* render comment box if matched */}
+                                            { 
+                                                this.state.replyTarget === [Comment.author, Comment.permlink].join('|') && (
+                                                    this.renderCommentBox(false)
+                                                )
+                                            }
 
+                                        </div>
                                     </div>
                                 </div>
 
@@ -323,52 +329,57 @@ class Comments extends Component {
         let lists = subComments.map(comment => {
             return (
                 <div className="Comment reply" key={comment.id}>
-                    {depth_indicator}
-                    <div>
+                    {/* {depth_indicator} */}
+                    <div className=" d-flex">
                         <div className="Comment__Userpic">
+                            <Link to={ "/@" + comment.author } >
                             <Avatar 
                                 profile_image={AVATAR_UPLOAD_PREFIX + comment.author + "/avatar"} 
                             />
+                            </Link>
                         </div>
-                        <div className="Comment__header">
-                            <span className="Comment__header-user">{ comment.author }</span>
-                        </div>
-                        <div className="Comment__body entry-content">
-                            <span>{ comment.body }</span>
-                        </div>
-                        <div className="Comment__footer">
-                            <div>
-                                <span className="Comment__footer__controls">
-                                    <div className="text-muted small d-flex align-items-center comment-meta"> 
-                                        {this.props.getVotes(comment, "comment")} &nbsp;| {comment.net_votes} Votes
-                                        | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.setReplyTarget([comment.author, comment.permlink].join('|'))}>Reply</button>
-                                    </div>
-                                    {   
-                                        this.props.currentVote === comment.permlink && (
-                                            this.props.renderVoteSlider(comment.permlink, comment.author, 'comment')
-                                        )
-                                    }
+                        <div className="Comment_Content flex-fill">
+                            <div className="Comment__header">
+                                <Link to={ "/@" + comment.author } className="Comment__header-user">
+                                    { comment.author }
+                                </Link>
+                            </div>
+                            <div className="Comment__body entry-content">
+                                <span>{ comment.body }</span>
+                            </div>
+                            <div className="Comment__footer">
+                                <div>
+                                    <span className="Comment__footer__controls">
+                                        <div className="text-muted small d-flex align-items-center comment-meta"> 
+                                            {this.props.getVotes(comment, "comment")} &nbsp;| {comment.net_votes} Votes
+                                            | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.setReplyTarget([comment.author, comment.permlink].join('|'))}>Reply</button>
+                                        </div>
+                                        {   
+                                            this.props.currentVote === comment.permlink && (
+                                                this.props.renderVoteSlider(comment.permlink, comment.author, 'comment')
+                                            )
+                                        }
 
-                                </span>
-                            </div>  
+                                    </span>
+                                </div>  
 
-                            {/* render comment box if matched */}
-                            { 
-                                this.state.replyTarget === [comment.author, comment.permlink].join('|') && (
-                                    this.renderCommentBox(false)
-                                )
-                            }
+                                {/* render comment box if matched */}
+                                { 
+                                    this.state.replyTarget === [comment.author, comment.permlink].join('|') && (
+                                        this.renderCommentBox(false)
+                                    )
+                                }
+                            </div>
                         </div>
                     </div>
-
-                    {/* check and render the nested comments if any */}
-                    {
-                        comment.children > 0 ? (
-                            <div className="Comment__replies" key={comment.id}>
-                                {this.renderNestedComments(comment.replies, depth + 1)}
-                            </div>
-                        ) : null
-                    }
+                        {/* check and render the nested comments if any */}
+                        {
+                            comment.children > 0 ? (
+                                <div className="Comment__replies" key={comment.id}>
+                                    {this.renderNestedComments(comment.replies, depth + 1)}
+                                </div>
+                            ) : null
+                        }
                 </div>
             )
         })

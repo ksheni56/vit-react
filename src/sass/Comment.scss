@@ -3,93 +3,46 @@
     color: red;
 }
 .Comment {
-    position: relative;
-    clear: both;
     margin-bottom: 1rem;
     margin-top: 1rem;
-    margin-left: 1rem;
 }
 
 .Comment__Userpic {
-    float: left;
-    position: relative;
-    top: 0.4rem;
     padding-right: 0.6rem;
-}
-
-.Comment__header {
-    margin-left: 70px;
+    padding-top: 0.5rem;
+    min-width: 80px;
 }
 
 .Comment__header-user {
-    // color: ;
+    color: white;
+    text-decoration: underline;
     font-size: 100%;
     font-weight: 600;
+
+    &:hover {
+        color: white;
+    }
 }
 
 .Comment__body {
-    margin-left: 70px;
     max-width: 50rem;
 }
 
-.Comment__footer {
-    margin-left: 70px;
-  
+.Comment__footer {  
     .Comment__footer__controls {
       a {margin: 0 0.2rem;}
     }
 }
 
 .Comment__replies {
-    margin-top: 1rem;
-    margin-left: 52px;
-    .Comment {
-      margin-bottom: 1rem;
-    }
+    margin-left: 70px;
 }
-
-.depth {
-    position: absolute;
-    top: 20px;
-    left: 0;
-    color: darkgray;
-}
-
-.depth.di-1 {
-    left: -48px;
-}
-  
-.depth.di-2 {
-    left: -117px;
-}
-
-.depth.di-3 {
-    left: -186px;
-}
-  
-.depth.di-4 {
-    left: -255px;
-}
-
-.depth.di-5 {
-    left: -324px;
-}
-
-.depth.di-6 {
-    left: -393px;
-} 
 
 @media screen and (max-width: 39.9em) {
-    
-    .Comment__header, .Comment__footer, .Comment__body, .Comment__replies {
-        margin-left: 0;
-    }
 
     .Comment__Userpic {
+        min-width: 40px;
         .avatar {
-            float: left;
-            position: relative;
-            top: 3px;
             margin-right: 0.2rem;
             background-color: red;
             width: 30px !important;
@@ -97,41 +50,13 @@
         }
     }
 
+    .Comment__replies {
+        margin-left: 40px;
+    }
+
     .Comment__footer__controls {
         .Comment__controls {
             margin-left: 40px;
         }
     }
-
-    .depth {
-        position: absolute;
-        top: 10px;
-        left: 0;
-        color: darkgray;
-    }
-    
-    .depth.di-1 {
-        left: -12px;
-    }
-      
-    .depth.di-2 {
-        left: -28px;
-    }
-    
-    .depth.di-3 {
-        left: -44px;
-    }
-      
-    .depth.di-4 {
-        left: -60px;
-    }
-    
-    .depth.di-5 {
-        left: -76px;
-    }
-    
-    .depth.di-6 {
-        left: -92px;
-    }
-      
 }

@@ -9,10 +9,9 @@ import HLSSource from './HLS';
 import Item from './components/Item';
 import Avatar from './components/Avatar';
 import Comments from './components/Comments';
-import { VIDEO_THUMBNAIL_URL_PREFIX, LIQUID_TOKEN, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
+import { VIDEO_THUMBNAIL_URL_PREFIX, AVATAR_UPLOAD_PREFIX, SCREENSHOT_IMAGE } from './config';
 import { shouldDisplayPost } from './utils/Filter';
 import { displayPayoutAmount } from './utils/Format';
-import BlockUi from 'react-block-ui';
 import Slider from 'react-rangeslider';
 import 'react-rangeslider/lib/index.css'
 import { ToastContainer, toast } from 'react-toastify';
@@ -371,41 +370,47 @@ class Post extends Component {
 
                 <div key="video-player">{ this.renderVideoPlayer() }</div>,
 
-                <div className="row mt-3 video-info align-items-center" key="video-info">
-                    <div className="col-12">
-                        <div className="row align-items-center">
-                            <div className="col-3 col-md-2">
-                                <div>
-                                    <div>
-                                        <Avatar profile_image={avatar} />
-                                    </div>
-                                </div>
+                <div className="mt-3 video-info align-items-center" key="video-info">
+                    <div className="row mb-1 ml-3 mr-3 no-gutters">
+                        <div className="col-12 col-lg-10">
+                            <h2>
+                                { this.state.post.title }
+                            </h2>
+                        </div>
+                        <div className="col-12 col-lg-2 text-lg-right mb-2 mb-lg-0">
+                            { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() }
+                        </div>
+                    </div>
+                    <div className="row ml-3 mr-3">
+                        {
+                            this.state.post.json_metadata.tags.filter(t => {
+                                return !['touch-tube', 'touchit-social'].includes(t)
+                            }).map(t => {
+                                return <Link className="font-weight-bold badge badge-secondary mr-2 mb-2" to={"/" + t + "/new"} key={t}>{t}</Link>
+                            })
+                        }
+                    </div>
+                    <hr />
+                    <div className="d-flex mt-3">
+                        <div className="avatar-wrapper">
+                            <Link to={ "/@" + this.state.post.author } >
+                                <Avatar profile_image={avatar} />
+                            </Link>
+                        </div>
+                        <div className="flex-fill">
+                            <Link className="username" to={ "/@" + this.state.post.author } >{ this.state.post.author }</Link>
+                            <div className="mt-1 mb-1">
+                                Pending Payout: <span className="font-weight-bold">{ displayPayoutAmount(this.state.post) }</span>
                             </div>
-                            <div className="col-9 col-md-10">
-                                <h2>{ this.state.post.title }</h2>
-                                <div className="payout small">
-                                    Pending Payout: <span className="font-weight-bold">{ displayPayoutAmount(this.state.post) }</span> <br/>
-                                    { moment.utc(this.state.post.created).tz( moment.tz.guess() ).fromNow() } by <Link to={ "/@" + this.state.post.author } className="username text-center">{ this.state.post.author }</Link>
-                                </div>
-                                <div className="payout small">
-                                    {
-                                        this.state.post.json_metadata.tags.filter(t => {
-                                            return !['touch-tube', 'touchit-social'].includes(t)
-                                        }).map(t => {
-                                            return <Link className="font-weight-bold badge badge-secondary" to={"/" + t + "/new"} style={{'marginLeft': '2px'}} key={t}>{t}</Link>
-                                        })
-                                    }
-                                </div>
-                                <div className="votes">
-                                    {this.getVotes(this.state.post)} | {Math.abs(this.state.post.net_votes)} Votes | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.togglePostReply()}>Reply</button>
+                            <div className="votes">
+                                {this.getVotes(this.state.post)} | {Math.abs(this.state.post.net_votes)} Votes | <button className="btn btn-link btn-sm px-0 reply-button" onClick={() => this.togglePostReply()}>Reply</button>
 
-                                    {
-                                        this.state.currentVote === this.state.permalink && (
-                                            this.renderVoteSlider(this.state.permalink, this.state.author, 'post')
-                                        )
-                                    }
-                                    
-                                </div>
+                                {
+                                    this.state.currentVote === this.state.permalink && (
+                                        this.renderVoteSlider(this.state.permalink, this.state.author, 'post')
+                                    )
+                                }
+                                
                             </div>
                         </div>
                     </div>
