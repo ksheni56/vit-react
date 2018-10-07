@@ -405,7 +405,6 @@ class Channel extends Component {
                                     <div className="d-flex justify-content-center w-100">
                                         <div>
                                             <Avatar profile_image={avatar} />
-                                            <div className="username text-center">{this.state.account_info.name}</div>
                                         </div>
                                     </div>
                                 </div>
