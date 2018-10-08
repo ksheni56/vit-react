@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import moment from 'moment'
 import { VIDEO_THUMBNAIL_URL_PREFIX, VIDEO_THUMBNAIL_LIST_SIZE, SCREENSHOT_IMAGE, AVATAR_UPLOAD_PREFIX} from '../config'
 import proxifyImage from '../utils/ProxifyImage';
-import { displayPayoutAmount } from '../utils/Format';
+import { displayPayoutAmount, displayVotes } from '../utils/Format';
 import PreloadImage from './PreloadImage';
 
 class Item extends Component {
@@ -29,9 +29,9 @@ class Item extends Component {
         return <img src="/images/thumbnail.jpg" className="img-fluid" alt={this.props.data.title} />
     }
 
-    truncateTitle(title) {
-        return title.substring(0, 40);
-    }
+    // truncateTitle(title) {
+    //     return title.substring(0, 40);
+    // }
 
     renderVertially() {
         return (
@@ -41,11 +41,11 @@ class Item extends Component {
                 </Link>
                 <div className="d-flex w-100">
                     <div className="title">
-                        <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>{this.truncateTitle(this.props.data.title)}</Link>
+                        <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink } title={this.props.data.title}>{this.props.data.title}</Link>
                     </div>
-                    <div className="earnings text-right">
-                        { displayPayoutAmount(this.props.data) }
-                    </div>
+                </div>
+                <div className="earnings">
+                    { displayPayoutAmount(this.props.data) } &middot; { displayVotes(this.props.data) }
                 </div>
                 <div className="meta-info">
                     <Link to={ "/@" + this.props.data.author }>{ this.props.data.author }</Link> &middot; { moment.utc(this.props.data.created).tz( moment.tz.guess() ).fromNow() }
@@ -65,11 +65,11 @@ class Item extends Component {
                 <div className="col-7">
                     <div className="d-flex w-100">
                         <h6>
-                            <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink }>{this.truncateTitle(this.props.data.title)}</Link>
+                            <Link to={ "/@" + this.props.data.author + "/" + this.props.data.permlink } title={this.props.data.title}>{this.props.data.title}</Link>
                         </h6>
-                        <div className="earnings text-right">
-                            { displayPayoutAmount(this.props.data) }
-                        </div>
+                    </div>
+                    <div className="earnings">
+                        { displayPayoutAmount(this.props.data) } &middot; { displayVotes(this.props.data) }
                     </div>
                     <div className="meta-info">
                         <span>{ this.props.data.category }</span> &middot; { moment.utc(this.props.data.created).tz( moment.tz.guess() ).fromNow() }

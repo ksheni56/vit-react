@@ -24,6 +24,13 @@ export const displayPayoutAmount = (post) => {
     return `${payout} ${LIQUID_TOKEN}`
 }
 
+export const displayVotes = (post) => {
+    if (post.net_votes > 0)
+        return post.net_votes + ' Votes';
+    else
+        return '0 Votes';
+}
+
 export const renameProp = (
     oldProp,
     newProp,

@@ -12,8 +12,19 @@
     }
 
     .title {
-        font-size:14px;
-        width:calc(100% - 70px);
+        display: block;
+        display: -webkit-box;
+        overflow: hidden;
+        font-weight: 500;
+        font-size: 15px;
+        white-space: normal;
+        text-align: left;
+        width: 100%;
+        line-height: 1.30em;
+        max-height: 2.6em;
+        overflow: hidden;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
     }
 
     h6 {
@@ -24,6 +35,8 @@
     .earnings {
         min-width:70px;
         font-size:12px;
+        margin-top: 10px;
+        color: #cccccc;
     }
 
     .meta-info {
